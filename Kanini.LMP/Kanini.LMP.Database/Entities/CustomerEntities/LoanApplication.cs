@@ -1,7 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Kanini.LMP.Database.Entities.LoanProductEntities;
+using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
+using Kanini.LMP.Database.Entities.LoanProductEntities.PersonalLoanEntities;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Net.NetworkInformation;
-using System.Xml.Linq;
 
 namespace Kanini.LMP.Database.Entities.CustomerEntities
 {
@@ -15,7 +16,6 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
 
         [ForeignKey(nameof(LoanProduct))]
         public string LoanProductType { get; set; } = null!;
-
         public LoanDetails LoanDetails { get; set; } = null!;
         public PersonalDetails PersonalDetails { get; set; } = null!;
         public AddressInformation AddressInformation { get; set; } = null!;
@@ -41,7 +41,10 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         EmploymentCompleted,
         FinancialCompleted,
         DeclarationCompleted,
-        Submitted
+        Submitted,
+        Pending,
+        Rejected,
+        Approved
     }
 
 }

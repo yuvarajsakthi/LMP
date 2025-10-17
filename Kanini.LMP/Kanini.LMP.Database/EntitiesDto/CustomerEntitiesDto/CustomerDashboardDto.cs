@@ -1,13 +1,13 @@
 ﻿using Kanini.LMP.Database.Entities;
 using Kanini.LMP.Database.Entities.CustomerEntities;
 
-namespace Kanini.LMP.Database.EntitiesDto
+namespace Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto
 {
     public class CustomerDashboardDto
     {
         public string CustomerName { get; set; } = null!;
-        public int EligibilityScore { get; set; }
+        public EligibilityScoreDto EligibilityScore { get; set; } = null!;
         public List<LoanApplication> RecentApplications { get; set; } = [];
-        public decimal PedningLoanAmount { get; set; }
+        public PendingLoanDto PedningLoanAmount { get; set; } = null!;
     }
 }

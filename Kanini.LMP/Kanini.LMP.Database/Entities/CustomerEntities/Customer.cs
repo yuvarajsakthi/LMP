@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kanini.LMP.Database.Enums;
+using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -13,28 +14,53 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         [ForeignKey(nameof(User))]
         public Guid UserId { get; set; }
 
-        [Required, MaxLength(10)]
-        [DisplayName("Phone Number")]
+        public DateOnly DateOfBirth { get; set; }
+
+        public Gender Gender { get; set; }
+
+        [Required]
+        [RegularExpression(@"^(\+91[-\s]?)?[6-9]\d{9}$", ErrorMessage = "Enter a valid 10-digit Indian phone number.")]
         public string PhoneNumber { get; set; } = null!;
-
-        [MaxLength(250)]
-        [DisplayName("Address")]
-        public string? Address { get; set; }
-
-        [MaxLength(100)]
-        [DisplayName("City")]
-        public string? City { get; set; }
-
-        [MaxLength(100)]
-        [DisplayName("State")]
-        public string? State { get; set; }
-
-        [MaxLength(10)]
-        [DisplayName("Postal Code")]
-        public string? PostalCode { get; set; }
-
-        [DisplayName("Date of Birth")]
-        public DateTime? DateOfBirth { get; set; }
+        public string Occupation {  get; set; } = null!;
+        public decimal AnnualIncome { get; set; }
+        public decimal CreditScore { get; set; }
+        public byte[] ProfileImage { get; set; } = null!;
         public DateTime? UpdatedAt { get; set; }
+
+        [NotMapped]
+        public int Age => DateTime.Today.Year - DateOfBirth.Year -
+                         (DateTime.Today < DateOfBirth.ToDateTime(TimeOnly.MinValue).AddYears(DateTime.Today.Year - DateOfBirth.Year) ? 1 : 0);
+
+        // [MaxLength(250)]
+        // [DisplayName("Address")]
+        // public string? Address { get; set; }
+
+        // [MaxLength(100)]
+        // [DisplayName("City")]
+        // public string? City { get; set; }
+
+        // [MaxLength(100)]
+        // [DisplayName("State")]
+        // public string? State { get; set; }
+
+        // [MaxLength(10)]
+        // [DisplayName("Postal Code")]
+        // public string? PostalCode { get; set; }
+
+        // public string AadhaarNumber { get; set; } = null!;
+
+        // public string PANNumber { get; set; } = null!;
+
+
+
+        // public byte[] PANCardImage { get; set; } = null!;
+
+        // public byte[] AadhaarFrontImage { get; set; } = null!;
+
+        // public byte[] AadhaarBackImage { get; set; } = null!;
+
+        // public byte[] IncomeProofDocument {  get; set; } = null!;
+
+
     }
 }

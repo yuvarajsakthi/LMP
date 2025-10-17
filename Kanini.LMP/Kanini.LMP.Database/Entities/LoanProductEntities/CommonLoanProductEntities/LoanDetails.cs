@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Kanini.LMP.Database.Entities.CustomerEntities;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Kanini.LMP.Database.Entities.CustomerEntities
+
+namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities
 {
     public class LoanDetails
     {
