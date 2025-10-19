@@ -9,6 +9,7 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
     {
         [Key]
         public Guid LoanDetailsId { get; set; } = Guid.NewGuid();
+
         [ForeignKey(nameof(LoanApplication))]
         public Guid LoanApplicationId { get; set; }
         public decimal RequestedAmount { get; set; }
