@@ -1,6 +1,7 @@
 ﻿using Kanini.LMP.Database.Entities.LoanProductEntities;
 using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
 using Kanini.LMP.Database.Entities.LoanProductEntities.PersonalLoanEntities;
+using Kanini.LMP.Database.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -29,22 +30,6 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         public string? RejectionReason { get; set; }
         public bool IsActive { get; set; } = true;
     }
-
-    public enum ApplicationStatus
-    {
-        Draft,
-        LoanDetailsCompleted,
-        DocumentUploaded,
-        PersonalDetailsCompleted,
-        AddressCompleted,
-        FamilyDetailsCompleted,
-        EmploymentCompleted,
-        FinancialCompleted,
-        DeclarationCompleted,
-        Submitted,
-        Pending,
-        Rejected,
-        Approved
     }
 
 }

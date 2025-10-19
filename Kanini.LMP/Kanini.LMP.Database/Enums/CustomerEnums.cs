@@ -5,4 +5,21 @@
         Male,
         Female
     }
+
+    public enum ApplicationStatus
+    {
+        Draft,
+        LoanDetailsCompleted,
+        DocumentUploaded,
+        PersonalDetailsCompleted,
+        AddressCompleted,
+        FamilyDetailsCompleted,
+        EmploymentCompleted,
+        FinancialCompleted,
+        DeclarationCompleted,
+        Submitted,
+        Pending,
+        Rejected,
+        Approved
+    }
 }
