@@ -1,4 +1,4 @@
-﻿namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto
+﻿namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.ManagerDashboard
 {
     internal class OverallMetricsDto
     {

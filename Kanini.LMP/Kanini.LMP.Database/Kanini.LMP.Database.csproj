@@ -8,8 +8,6 @@
 
   <ItemGroup>
     <Folder Include="Entities\LoanProductEntities\BusinessLoanEntities\" />
-    <Folder Include="Entities\ManagerEntities\" />
-    <Folder Include="Entities\ManagerEntities\" />
   </ItemGroup>
 
   <ItemGroup>

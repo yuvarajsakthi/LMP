@@ -15,5 +15,7 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
         public decimal RequestedAmount { get; set; }
         public int TenureMonths { get; set; }
         public DateTime AppliedDate { get; set; }
+        public decimal? InterestRate { get; set; }
+        public decimal? MonthlyInstallment { get; set; }
     }
 }
