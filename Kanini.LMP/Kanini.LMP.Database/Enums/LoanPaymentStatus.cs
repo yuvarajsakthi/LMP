@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Kanini.LMP.Database.Enums
+﻿namespace Kanini.LMP.Database.Enums
 {
     public enum LoanPaymentStatus
     {
