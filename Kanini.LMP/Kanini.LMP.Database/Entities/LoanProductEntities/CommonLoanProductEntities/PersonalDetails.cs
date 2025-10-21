@@ -18,5 +18,8 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
         public string ResidentialStatus { get; set; } = null!;
         public Gender Gender { get; set; }
 
+        public byte[] SignatureImage { get; set; } = null!;
+        public byte[] IDProofImage { get; set; } = null!;
+
     }
 }

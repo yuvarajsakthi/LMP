@@ -16,7 +16,6 @@ namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.CustomerScape
 
         public CustomerProfileDto Profile { get; set; } = new CustomerProfileDto();
 
-    
         public List<CustomerLoanSummaryDto> LoanHistory { get; set; } = new List<CustomerLoanSummaryDto>();
     }
 }
