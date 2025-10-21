@@ -14,5 +14,10 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
         public string EmailId { get; set; } = null!;
         public int MobileNumber1 { get; set; } 
         public int MobileNumber2 { get; set;}
+
+        public string StateCode { get; set; }
+
+        public string ZipCode { get; set; }
+
     }
 }
