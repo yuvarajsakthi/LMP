@@ -18,25 +18,36 @@ namespace Kanini.LMP.Database.Entities.ManagerEntities
         // Link to the completed Loan Application (1:1 relationship)
         [ForeignKey(nameof(LoanApplication))]
         public Guid LoanApplicationId { get; set; }
-        
 
+        // Link to the Customer
         [ForeignKey(nameof(Customer))]
         public Guid CustomerId { get; set; }
 
-        [Required]
-        public decimal TotalLoanAmount { get; set; }
+        // --- Core Servicing Status ---
 
         [Required]
-        public decimal PrincipalRemaining { get; set; }
+        public LoanPaymentStatus CurrentPaymentStatus { get; set; }
 
-        [Required]
-        public LoanPaymentStatus CurrentPaymentStatus { get; set; } // The source for the 'Loan Status Distribution' chart
-
-        // Date the loan was officially disbursed/opened
         public DateTime DisbursementDate { get; set; }
 
         public int DaysPastDue { get; set; } = 0;
 
         public DateTime LastStatusUpdate { get; set; }
+
+        // --- Financial Tracking Details (For Customer Scape View) ---
+
+        [Required]
+        public decimal TotalLoanAmount { get; set; }
+
+
+        public decimal TotalPaidPrincipal { get; set; } = 0m;
+
+        public decimal TotalPaidInterest { get; set; } = 0m;
+
+        public decimal PrincipalRemaining { get; set; }
+
+        public DateTime? LastPaymentDate { get; set; }
+
+        public decimal TotalLateFeePaidAmount { get; set; } = 0m;
     }
 }

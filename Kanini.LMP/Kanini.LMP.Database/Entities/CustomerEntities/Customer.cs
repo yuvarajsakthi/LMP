@@ -27,6 +27,8 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         public byte[] ProfileImage { get; set; } = null!;
         public DateTime? UpdatedAt { get; set; }
 
+        public string HomeOwnershipStatus { get; set; } //rent or own or mortage
+
         [NotMapped]
         public int Age => DateTime.Today.Year - DateOfBirth.Year -
                          (DateTime.Today < DateOfBirth.ToDateTime(TimeOnly.MinValue).AddYears(DateTime.Today.Year - DateOfBirth.Year) ? 1 : 0);
