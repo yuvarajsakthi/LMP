@@ -9,5 +9,6 @@ namespace Kanini.LMP.Database.Entities
     public class Notification
     {
         public Guid NotificationId { get; set; } = Guid.NewGuid();
+
     }
 }

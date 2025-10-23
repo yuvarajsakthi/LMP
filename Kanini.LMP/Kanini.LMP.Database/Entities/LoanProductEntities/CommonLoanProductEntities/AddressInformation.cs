@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Kanini.LMP.Database.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities
 {
@@ -15,9 +16,9 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
         public int MobileNumber1 { get; set; } 
         public int MobileNumber2 { get; set;}
 
-        public string StateCode { get; set; }
+        public IndianStates State { get; set; }
 
-        public string ZipCode { get; set; }
+        public string ZipCode { get; set; } = null!;
 
     }
 }

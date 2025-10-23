@@ -1,4 +1,5 @@
 ﻿using Kanini.LMP.Database.Entities.CustomerEntities;
+using Kanini.LMP.Database.Entities.LoanApplicationEntites;
 using Kanini.LMP.Database.Enums;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace Kanini.LMP.Database.Entities.ManagerEntities
         public Guid LoanAccountId { get; set; } = Guid.NewGuid();
 
         // Link to the completed Loan Application (1:1 relationship)
-        [ForeignKey(nameof(LoanApplication))]
+        [ForeignKey(nameof(PersonalLoanApplication))]
         public Guid LoanApplicationId { get; set; }
 
         // Link to the Customer

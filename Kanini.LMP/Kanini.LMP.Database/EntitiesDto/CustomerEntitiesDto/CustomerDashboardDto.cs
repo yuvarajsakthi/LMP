@@ -1,5 +1,5 @@
 ﻿using Kanini.LMP.Database.Entities;
-using Kanini.LMP.Database.Entities.CustomerEntities;
+using Kanini.LMP.Database.Entities.LoanApplicationEntites;
 
 namespace Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto
 {
@@ -7,7 +7,7 @@ namespace Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto
     {
         public string CustomerName { get; set; } = null!;
         public EligibilityScoreDto EligibilityScore { get; set; } = null!;
-        public List<LoanApplication> RecentApplications { get; set; } = [];
+        public List<PersonalLoanApplication> RecentApplications { get; set; } = [];
         public PendingLoanDto PedningLoanAmount { get; set; } = null!;
     }
 }

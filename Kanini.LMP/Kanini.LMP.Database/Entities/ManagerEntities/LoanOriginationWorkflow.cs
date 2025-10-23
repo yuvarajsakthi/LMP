@@ -1,4 +1,4 @@
-﻿using Kanini.LMP.Database.Entities.CustomerEntities;
+﻿using Kanini.LMP.Database.Entities.LoanApplicationEntites;
 using Kanini.LMP.Database.Enums;
 using System;
 using System.Collections.Generic;
@@ -16,17 +16,17 @@ namespace Kanini.LMP.Database.Entities.ManagerEntities
         public Guid WorkflowId { get; set; } = Guid.NewGuid();
 
         // Link to the Loan Application
-        [ForeignKey(nameof(LoanApplication))]
+        [ForeignKey(nameof(PersonalLoanApplication))]
         public Guid LoanApplicationId { get; set; }
 
         [Required]
-        public OriginationStepName StepName { get; set; }
+        public ManagerEnum StepName { get; set; }
 
         /// <summary>
         /// Status of the step: Completed, OnHold, Failed, InProgress.
         /// </summary>
         [Required]
-        public string StepStatus { get; set; } = "InProgress";
+        public StepStatus StepStatus { get; set; } = StepStatus.InProgress;
 
         public DateTime? CompletionDate { get; set; }
 

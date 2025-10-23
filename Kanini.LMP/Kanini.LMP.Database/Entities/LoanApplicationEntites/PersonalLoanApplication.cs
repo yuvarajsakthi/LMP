@@ -1,13 +1,14 @@
-﻿using Kanini.LMP.Database.Entities.LoanProductEntities;
+﻿using Kanini.LMP.Database.Entities.CustomerEntities;
+using Kanini.LMP.Database.Entities.LoanProductEntities;
 using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
 using Kanini.LMP.Database.Entities.LoanProductEntities.PersonalLoanEntities;
 using Kanini.LMP.Database.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Kanini.LMP.Database.Entities.CustomerEntities
+namespace Kanini.LMP.Database.Entities.LoanApplicationEntites
 {
-    public class LoanApplication
+    public class PersonalLoanApplication
     {
         [Key]
         public Guid LoanApplicationId { get; set; } = Guid.NewGuid();
