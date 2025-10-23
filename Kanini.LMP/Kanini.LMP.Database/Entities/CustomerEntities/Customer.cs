@@ -31,7 +31,7 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         public byte[] ProfileImage { get; set; } = null!;
         public DateTime? UpdatedAt { get; set; }
 
-        public string HomeOwnershipStatus { get; set; } //rent or own or mortage
+        public HomeOwnershipStatus? HomeOwnershipStatus { get; set; }
 
         [NotMapped]
         public int Age => DateTime.Today.Year - DateOfBirth.Year -

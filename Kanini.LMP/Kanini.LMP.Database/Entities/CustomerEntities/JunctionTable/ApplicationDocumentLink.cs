@@ -27,7 +27,7 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable
         public DateTime LinkedAt { get; set; } = DateTime.UtcNow;
 
        
-        public LoanApplication LoanApplication { get; set; } = null!;
+        public LoanApplicationBase LoanApplication { get; set; } = null!;
         public DocumentUpload DocumentUpload { get; set; } = null!;
     }
 

@@ -1,9 +1,9 @@
-﻿using Kanini.LMP.Database.Entities.CustomerEntities;
+﻿using Kanini.LMP.Database.Entities.LoanApplicationEntites;
 
 namespace Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto
 {
     public class ViewStatusDto
     {
-        public List<LoanApplication> Applications { get; set; } = [];
+        public List<PersonalLoanApplication> Applications { get; set; } = [];
     }
 }

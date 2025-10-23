@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Kanini.LMP.Database.Enums
 {
-    public enum OriginationStepName
+    public enum ManagerEnum
     {
         LoanApplied,
         Review,
@@ -14,5 +14,14 @@ namespace Kanini.LMP.Database.Enums
         DocumentVerificationII,
         Decision,
         Disbursed
+    }
+
+    public enum StepStatus
+    {
+        Completed, 
+        OnHold, 
+        Failed, 
+        InProgress
+        
     }
 }
