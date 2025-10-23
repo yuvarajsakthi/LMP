@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities
@@ -24,5 +25,13 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
 
         // Navigation property
         public virtual User? User { get; set; }
+
+
+        /// <summary>
+        /// Navigation property to the M:M Join Table (ApplicationDocumentLink).
+        /// Used to see which applications this document is linked to.
+        /// </summary>
+        public ICollection<ApplicationDocumentLink> ApplicationLinks { get; set; } = new List<ApplicationDocumentLink>();
     }
 }
+

@@ -1,4 +1,5 @@
-﻿using Kanini.LMP.Database.Entities.LoanProductEntities;
+﻿using Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable;
+using Kanini.LMP.Database.Entities.LoanProductEntities;
 using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
 using Kanini.LMP.Database.Entities.LoanProductEntities.PersonalLoanEntities;
 using Kanini.LMP.Database.Enums;
@@ -12,8 +13,18 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         [Key]
         public Guid LoanApplicationId { get; set; } = Guid.NewGuid();
 
-        [ForeignKey(nameof(Customer))]
-        public Guid CustomerId { get; set; }
+        //  [ForeignKey(nameof(Customer))] public Guid CustomerId { get; set; }
+
+        // ADDED: Navigation property to the M:M Join Entity
+        public ICollection<LoanApplicant> Applicants { get; set; } = new List<LoanApplicant>();
+
+
+        // ADDED: Navigation property for M:M Document Uploads (LoanApplication <-> DocumentUpload)
+        /// <summary>
+        /// Links the application to the specific files uploaded by the customer.
+        /// </summary>
+        public ICollection<ApplicationDocumentLink> DocumentLinks { get; set; } = new List<ApplicationDocumentLink>();
+
 
         [ForeignKey(nameof(LoanProduct))]
         public string LoanProductType { get; set; } = null!;
