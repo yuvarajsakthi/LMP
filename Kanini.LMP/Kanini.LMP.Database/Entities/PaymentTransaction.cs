@@ -1,6 +1,7 @@
 ﻿using Kanini.LMP.Database.Entities.CustomerEntities;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -10,20 +11,43 @@ namespace Kanini.LMP.Database.Entities
 {
     public class PaymentTransaction
     {
+        [Key]
         public Guid TransactionId { get; set; } = Guid.NewGuid();
+        // Link to the EMI for which this payment was made
+        [Required]
         [ForeignKey(nameof(EMIPlan))]
         public Guid EMIId { get; set; }
+        // Amount paid in this transaction
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Amount { get; set; }
+        // Date of payment
+        [Required]
         public DateTime PaymentDate { get; set; } = DateTime.UtcNow;
-        public string PaymentMethod { get; set; } = "UPI"; // UPI, NetBanking, Card, Cash
+        // Payment method: UPI, NetBanking, Card, Cash
+        [Required]
+        [MaxLength(50)]
+        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.UPI; // UPI, NetBanking, Card, Cash
+        // Optional transaction reference from payment gateway
+        [MaxLength(100)]
         public string? TransactionReference { get; set; }
+        // Status of the payment
+        [Required]
         public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
+        // Timestamps
+        [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
+        // Soft delete flag
+        [Required]
         public bool IsActive { get; set; } = true;
     }
     public enum PaymentStatus
     {
         Pending, Success, Failed, Reversed
+    }
+    public enum PaymentMethod
+    {
+        UPI, NetBanking, Card, Cash
     }
 }

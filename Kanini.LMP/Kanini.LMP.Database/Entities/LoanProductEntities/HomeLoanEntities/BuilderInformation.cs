@@ -8,13 +8,28 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.HomeLoanEntities
         [Key]
         public Guid BuilderInformationId { get; set; } = Guid.NewGuid();
 
+        // FK → Linked User
+        [Required]
         [ForeignKey(nameof(User))]
         public Guid UserId { get; set; }
+        // Builder details
+        [Required]
+        [MaxLength(100)]
 
         public string BuilderName { get; set; } = null!;
+        [Required]
+        [MaxLength(100)]
         public string ProjectName { get; set; } = null!;
+        [Required]
+        [MaxLength(50)]
         public string BuilderRegistrationNo { get; set; } = null!;
+        [Required]
+        [Phone]
+        [MaxLength(15)]
         public string ContactNumber { get; set; } = null!;
+        [Required]
+        [EmailAddress]
+        [MaxLength(100)]
         public string Email { get; set; } = null!;
 
     }

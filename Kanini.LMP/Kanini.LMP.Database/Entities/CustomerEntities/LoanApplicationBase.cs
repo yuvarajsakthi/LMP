@@ -18,24 +18,37 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         // *** NOTE: This ID serves as the Primary Key for ALL inherited applications ***
         [Key]
         public Guid LoanApplicationBaseId { get; set; } = Guid.NewGuid();
+        // FK → LoanProduct (Discriminator for derived loan types)
+        [Required]
 
         [ForeignKey(nameof(LoanProduct))]
         public string LoanProductType { get; set; } = null!; // Discriminator field
 
         // --- Common Nested Details (1:1 relationships) ---
+        [Required]
+      
         public LoanDetails LoanDetails { get; set; } = null!;
+        [Required]
         public PersonalDetails PersonalDetails { get; set; } = null!;
+        [Required]
         public AddressInformation AddressInformation { get; set; } = null!;
+        [Required]
         public FamilyEmergencyDetails FamilyEmergencyDetails { get; set; } = null!;
+        [Required]
         public EmploymentDetails EmploymentDetails { get; set; } = null!;
+        [Required]
         public FinancialInformation FinancialInformation { get; set; } = null!;
+        [Required]
         public Declaration Declaration { get; set; } = null!;
 
         // --- Common Workflow Fields ---
+        [Required]
         public ApplicationStatus Status { get; set; } = ApplicationStatus.Draft;
         public DateOnly SubmissionDate { get; set; }
         public DateOnly? ApprovedDate { get; set; }
+        [MaxLength(500)]
         public string? RejectionReason { get; set; }
+        [Required]
         public bool IsActive { get; set; } = true;
 
         // --- Common M:M Navigation Properties (Joint Account & Documents) ---

@@ -9,15 +9,31 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.VehicleLoanEntities
         [Key]
         public Guid VehicleInformationId { get; set; } = Guid.NewGuid();
 
+        // FK → Linked User
+        [Required]
         [ForeignKey(nameof(User))]
         public Guid UserId { get; set; }
+        // Vehicle characteristics
+        [Required]
 
         public VehicleType VehicleType { get; set; }  // Car, Bike, SUV, etc.
+        [Required]
+        [MaxLength(100)]
         public string Manufacturer { get; set; } = null!;
+        [Required]
+        [MaxLength(100)]
         public string Model { get; set; } = null!;
+        [Required]
+        [MaxLength(100)]
         public string Variant { get; set; } = null!;
+        [Required]
+        [Range(1900, 2100, ErrorMessage = "Enter a valid manufacturing year")]
         public int ManufacturingYear { get; set; }
+        [Required]
         public LoanPurposeVehicle VehicleCondition { get; set; } // New or Used
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(1, double.MaxValue, ErrorMessage = "Ex-showroom price must be greater than zero")]
         public decimal ExShowroomPrice { get; set; }
     }
 

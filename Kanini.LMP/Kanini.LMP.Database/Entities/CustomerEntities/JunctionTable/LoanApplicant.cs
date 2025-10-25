@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Kanini.LMP.Database.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,18 +11,22 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable
 {
     public class LoanApplicant
     {
-       
-        [Key]
+
+
+        // Composite Key Part 1: FK to Loan Application
+        [ForeignKey(nameof(LoanApplication))]
         public Guid LoanApplicationId { get; set; }
 
-        [Key]
+        // Composite Key Part 2: FK to Customer
+        [ForeignKey(nameof(Customer))]
         public Guid CustomerId { get; set; }
 
         // --- Specific M:M Data ---
-        public string ApplicantRole { get; set; } = "Primary"; // e.g., Primary, Co-Borrower, Guarantor
+        [Required]
+        public ApplicantRole ApplicantRole { get; set; } = ApplicantRole.Primary; 
         public DateTime AddedDate { get; set; } = DateTime.UtcNow;
 
-       
+        // Navigation Properties
         public LoanApplicationBase LoanApplication { get; set; } = null!;
         public Customer Customer { get; set; } = null!;
     }

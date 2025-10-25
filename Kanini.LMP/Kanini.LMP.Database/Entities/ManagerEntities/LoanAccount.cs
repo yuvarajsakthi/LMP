@@ -38,15 +38,19 @@ namespace Kanini.LMP.Database.Entities.ManagerEntities
 
            
             [Required]
+            [Column(TypeName = "decimal(18,2)")]
             public decimal TotalLoanAmount { get; set; }
+            [Column(TypeName = "decimal(18,2)")]
 
             public decimal TotalPaidPrincipal { get; set; } = 0m;
-
+            [Column(TypeName = "decimal(18,2)")]
             public decimal TotalPaidInterest { get; set; } = 0m;
+            [Column(TypeName = "decimal(18,2)")]
 
             public decimal PrincipalRemaining { get; set; }
 
             public DateTime? LastPaymentDate { get; set; }
+            [Column(TypeName = "decimal(18,2)")]
 
             public decimal TotalLateFeePaidAmount { get; set; } = 0m;
         }

@@ -68,5 +68,11 @@
         Overdue,
         Closed
     }
+    public enum ApplicantRole
+    {
+        Primary,
+        CoBorrower,
+        Guarantor
+    }
 
 }
