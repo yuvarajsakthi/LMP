@@ -15,12 +15,25 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.HomeLoanEntities
         [Key]
         public Guid HomeLoanDetailsId { get; set; } = Guid.NewGuid();
 
+        // FK → Linked Loan Application
+        [Required]
         [ForeignKey(nameof(PersonalLoanApplication))]
         public Guid LoanApplicationId { get; set; }
+        // Financial details
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(1, double.MaxValue, ErrorMessage = "Property cost must be greater than zero")]
 
         public decimal PropertyCost { get; set; }
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0, double.MaxValue, ErrorMessage = "Down payment cannot be negative")]
         public decimal DownPayment { get; set; }
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(1, double.MaxValue, ErrorMessage = "Requested loan amount must be greater than zero")]
         public decimal RequestedLoanAmount { get; set; }
+
         public int TenureMonths { get; set; }
         public decimal? InterestRate { get; set; }
         public DateTime AppliedDate { get; set; }

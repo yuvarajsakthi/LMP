@@ -8,22 +8,25 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
     {
         [Key]
         public Guid DocumentId { get; set; } = Guid.NewGuid();
-
+        // FK → User who uploaded the document
         [ForeignKey(nameof(User))]
         public Guid UserId { get; set; }
-
+        // Document metadata
         [Required]
         [MaxLength(255)]
         public string DocumentName { get; set; } = string.Empty;
 
+
         [MaxLength(100)]
         public string? DocumentType { get; set; }
+        // Upload timestamp
+        [Required]
         public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
-
+        // Actual document binary data
         [Column(TypeName = "varbinary(max)")]
         public byte[]? DocumentData { get; set; }
 
-        // Navigation property
+        // Navigation: User who uploaded the document
         public virtual User? User { get; set; }
 
 

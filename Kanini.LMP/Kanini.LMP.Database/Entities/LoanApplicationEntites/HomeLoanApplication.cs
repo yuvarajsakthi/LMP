@@ -13,8 +13,11 @@ namespace Kanini.LMP.Database.Entities.LoanApplicationEntites
          
         
             // Product-specific details for Home Loans:
+            [Required]
             public BuilderInformation BuilderInformation { get; set; } = null!;
+            [Required]
             public HomeLoanDetails HomeLoanDetails { get; set; } = null!;
+            [Required]
             public PropertyDetails PropertyDetails { get; set; } = null!;
 
             // NOTE: DocumentUpload in the original HomeLoan model is now handled by the DocumentLinks collection in the Base class.

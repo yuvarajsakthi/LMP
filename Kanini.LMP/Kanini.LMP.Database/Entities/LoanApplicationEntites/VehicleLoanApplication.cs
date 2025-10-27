@@ -12,8 +12,11 @@ namespace Kanini.LMP.Database.Entities.LoanApplicationEntites
     public class VehicleLoanApplication : LoanApplicationBase
     {
         // Product-specific details for Vehicle Loans:
+        [Required]
         public DealerInformation DealerInformation { get; set; } = null!;
+        [Required]
         public VehicleLoanDetails VehicleLoanDetails { get; set; } = null!;
+        [Required]
         public VehicleInformation VehicleInformation { get; set; } = null!;
     }
 }

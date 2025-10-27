@@ -22,14 +22,19 @@ namespace Kanini.LMP.Database.Entities
         [Required]
         [DisplayName("Password")]
         public string PasswordHash { get; set; } = null!;
-        
+
+        // Role of the user (Admin, Manager, Customer)
+
         [Required]
         public UserEnums Roles { get; set; }
-        
+
+        // Account status (Active, Inactive, Locked)
+        [Required]
+
         public UserStatus Status { get; set; }
-        
+
+        // Audit fields
         public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
-        
         public DateTime? UpdatedAt { get;set; }
     }
 }
