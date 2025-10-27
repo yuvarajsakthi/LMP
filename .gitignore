@@ -29,7 +29,10 @@ x86/
 bld/
 [Bb]in/
 [Oo]bj/
+<<<<<<< HEAD
 [Oo]ut/
+=======
+>>>>>>> 2c09c18b0115ddbb41661c1039854213234f4f3a
 [Ll]og/
 [Ll]ogs/
 
@@ -361,5 +364,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+<<<<<<< HEAD
 .gemini/
 gha-creds-*.json
+=======
+>>>>>>> 2c09c18b0115ddbb41661c1039854213234f4f3a
