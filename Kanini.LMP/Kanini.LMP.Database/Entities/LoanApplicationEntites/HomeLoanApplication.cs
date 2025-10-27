@@ -8,29 +8,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Kanini.LMP.Database.Entities.LoanApplicationEntites
 {
-    public class HomeLoanApplication
+    public class HomeLoanApplication: LoanApplicationBase
     {
-        [Key]
-        public Guid HomeLoanApplicationId { get; set; } = Guid.NewGuid();
+         
+        
+            // Product-specific details for Home Loans:
+            public BuilderInformation BuilderInformation { get; set; } = null!;
+            public HomeLoanDetails HomeLoanDetails { get; set; } = null!;
+            public PropertyDetails PropertyDetails { get; set; } = null!;
 
-        [ForeignKey(nameof(Customer))]
-        public Guid CustomerId { get; set; }
-
-        [ForeignKey(nameof(LoanProduct))]
-        public string LoanProductType { get; set; } = null!;
-        public LoanDetails LoanDetails { get; set; } = null!;
-        public PersonalDetails PersonalDetails { get; set; } = null!;
-        public AddressInformation AddressInformation { get; set; } = null!;
-        public FamilyEmergencyDetails FamilyEmergencyDetails { get; set; } = null!;
-        public DocumentUpload DocumentUpload { get; set; } = null!;
-        public BuilderInformation BuilderInformation { get; set; } = null!;
-        public HomeLoanDetails HomeLoanDetails { get; set; } = null!;
-        public PropertyDetails PropertyDetails { get; set; } = null!;
-        public Declaration Declaration { get; set; } = null!;
-        public ApplicationStatus Status { get; set; } = ApplicationStatus.Draft;
-        public DateOnly SubmissionDate { get; set; }
-        public DateOnly? ApprovedDate { get; set; }
-        public string? RejectionReason { get; set; }
-        public bool IsActive { get; set; } = true;
+            // NOTE: DocumentUpload in the original HomeLoan model is now handled by the DocumentLinks collection in the Base class.
+        }
     }
-}
+

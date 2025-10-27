@@ -1,4 +1,5 @@
-﻿using Kanini.LMP.Database.Entities.LoanApplicationEntites;
+﻿using Kanini.LMP.Database.Entities.CustomerEntities;
+using Kanini.LMP.Database.Entities.LoanApplicationEntites;
 using Kanini.LMP.Database.Enums;
 using System;
 using System.Collections.Generic;
@@ -10,23 +11,24 @@ using System.Threading.Tasks;
 
 namespace Kanini.LMP.Database.Entities.ManagerEntities
 {
-    internal class LoanOriginationWorkflow
+    public class LoanOriginationWorkflow
     {
         [Key]
         public Guid WorkflowId { get; set; } = Guid.NewGuid();
 
-        // Link to the Loan Application
-        [ForeignKey(nameof(PersonalLoanApplication))]
-        public Guid LoanApplicationId { get; set; }
+        // LINK CHANGE: Reference the base class ID, not a specific product ID.
+        // This ensures this workflow tracker works for HomeLoanApplication, PersonalLoanApplication, etc.
+        [ForeignKey(nameof(LoanApplicationBase))]
+        public Guid LoanApplicationBaseId { get; set; } // Renamed from LoanApplicationId
 
         [Required]
-        public ManagerEnum StepName { get; set; }
+        public ManagerEnum StepName { get; set; } // Assuming ManagerEnum is defined elsewhere
 
         /// <summary>
         /// Status of the step: Completed, OnHold, Failed, InProgress.
         /// </summary>
         [Required]
-        public StepStatus StepStatus { get; set; } = StepStatus.InProgress;
+        public StepStatus StepStatus { get; set; } = StepStatus.InProgress; // Assuming StepStatus enum is defined elsewhere
 
         public DateTime? CompletionDate { get; set; }
 
@@ -34,4 +36,5 @@ namespace Kanini.LMP.Database.Entities.ManagerEntities
 
         public string? ManagerNotes { get; set; }
     }
+
 }

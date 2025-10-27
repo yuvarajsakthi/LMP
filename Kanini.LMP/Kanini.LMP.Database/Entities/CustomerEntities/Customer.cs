@@ -1,4 +1,5 @@
-﻿using Kanini.LMP.Database.Enums;
+﻿using Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable;
+using Kanini.LMP.Database.Enums;
 using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -13,6 +14,9 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
 
         [ForeignKey(nameof(User))]
         public Guid UserId { get; set; }
+
+        // ADDED: Navigation property to the M:M Join Entity
+        public ICollection<LoanApplicant> Applications { get; set; } = new List<LoanApplicant>();
 
         public DateOnly DateOfBirth { get; set; }
 

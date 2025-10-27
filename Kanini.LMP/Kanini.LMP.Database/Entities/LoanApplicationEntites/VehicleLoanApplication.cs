@@ -9,28 +9,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Kanini.LMP.Database.Entities.LoanApplicationEntites
 {
-    public class VehicleLoanApplication
+    public class VehicleLoanApplication : LoanApplicationBase
     {
-        [Key]
-        public Guid LoanApplicationId { get; set; } = Guid.NewGuid();
-
-        [ForeignKey(nameof(Customer))]
-        public Guid CustomerId { get; set; }
-
-        [ForeignKey(nameof(LoanProduct))]
-        public string LoanProductType { get; set; } = null!;
-        public LoanDetails LoanDetails { get; set; } = null!;
-        public PersonalDetails PersonalDetails { get; set; } = null!;
-        public AddressInformation AddressInformation { get; set; } = null!;
-        public FamilyEmergencyDetails FamilyEmergencyDetails { get; set; } = null!;
+        // Product-specific details for Vehicle Loans:
         public DealerInformation DealerInformation { get; set; } = null!;
         public VehicleLoanDetails VehicleLoanDetails { get; set; } = null!;
         public VehicleInformation VehicleInformation { get; set; } = null!;
-        public Declaration Declaration { get; set; } = null!;
-        public ApplicationStatus Status { get; set; } = ApplicationStatus.Draft;
-        public DateOnly SubmissionDate { get; set; }
-        public DateOnly? ApprovedDate { get; set; }
-        public string? RejectionReason { get; set; }
-        public bool IsActive { get; set; } = true;
     }
 }

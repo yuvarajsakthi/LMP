@@ -11,44 +11,44 @@ using System.Threading.Tasks;
 
 namespace Kanini.LMP.Database.Entities.ManagerEntities
 {
-    internal class LoanAccount
+    public class LoanAccount
     {
-        [Key]
-        public Guid LoanAccountId { get; set; } = Guid.NewGuid();
+       
+            [Key]
+            public Guid LoanAccountId { get; set; } = Guid.NewGuid();
 
-        // Link to the completed Loan Application (1:1 relationship)
-        [ForeignKey(nameof(PersonalLoanApplication))]
-        public Guid LoanApplicationId { get; set; }
+            // LINK CHANGE: Reference the base class ID, not a specific product ID.
+            // This allows a Home Loan, Personal Loan, or Vehicle Loan to link here.
+            [ForeignKey(nameof(LoanApplicationBase))]
+            public Guid LoanApplicationBaseId { get; set; } // Renamed from LoanApplicationId
 
-        // Link to the Customer
-        [ForeignKey(nameof(Customer))]
-        public Guid CustomerId { get; set; }
+            // Link to the Customer (Note: This is now optional/redundant if you rely on the M:M LoanApplicant table)
+            [ForeignKey(nameof(Customer))]
+            public Guid CustomerId { get; set; }
 
-        // --- Core Servicing Status ---
+         
+            [Required]
+            public LoanPaymentStatus CurrentPaymentStatus { get; set; }
 
-        [Required]
-        public LoanPaymentStatus CurrentPaymentStatus { get; set; }
+            public DateTime DisbursementDate { get; set; }
 
-        public DateTime DisbursementDate { get; set; }
+            public int DaysPastDue { get; set; } = 0;
 
-        public int DaysPastDue { get; set; } = 0;
+            public DateTime LastStatusUpdate { get; set; }
 
-        public DateTime LastStatusUpdate { get; set; }
+           
+            [Required]
+            public decimal TotalLoanAmount { get; set; }
 
-        // --- Financial Tracking Details (For Customer Scape View) ---
+            public decimal TotalPaidPrincipal { get; set; } = 0m;
 
-        [Required]
-        public decimal TotalLoanAmount { get; set; }
+            public decimal TotalPaidInterest { get; set; } = 0m;
 
+            public decimal PrincipalRemaining { get; set; }
 
-        public decimal TotalPaidPrincipal { get; set; } = 0m;
+            public DateTime? LastPaymentDate { get; set; }
 
-        public decimal TotalPaidInterest { get; set; } = 0m;
-
-        public decimal PrincipalRemaining { get; set; }
-
-        public DateTime? LastPaymentDate { get; set; }
-
-        public decimal TotalLateFeePaidAmount { get; set; } = 0m;
+            public decimal TotalLateFeePaidAmount { get; set; } = 0m;
+        }
     }
-}
+
