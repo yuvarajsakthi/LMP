@@ -33,7 +33,7 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.VehicleLoanEntities
         public LoanPurposeVehicle VehicleCondition { get; set; } // New or Used
         [Required]
         [Column(TypeName = "decimal(18,2)")]
-        [Range(1, double.MaxValue, ErrorMessage = "Ex-showroom price must be greater than zero")]
+        [Range(0, double.MaxValue, ErrorMessage = "Ex-showroom price must be greater than zero")]
         public decimal ExShowroomPrice { get; set; }
     }
 

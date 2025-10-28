@@ -33,6 +33,7 @@ namespace Kanini.LMP.Database.Entities.ManagerEntities
         public DateTime? CompletionDate { get; set; }
 
         public Guid? ManagerId { get; set; } // Who completed the step
+        [MaxLength(1000)]
 
         public string? ManagerNotes { get; set; }
     }
