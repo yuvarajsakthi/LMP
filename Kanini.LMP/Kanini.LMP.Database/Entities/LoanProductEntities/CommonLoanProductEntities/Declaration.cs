@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Kanini.LMP.Database.Entities.CustomerEntities;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities
@@ -7,6 +8,10 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
     {
         [Key]
         public Guid DeclarationId { get; set; } = Guid.NewGuid();
+
+        [ForeignKey(nameof(LoanApplicationBase))]
+        public Guid LoanApplicationBaseId { get; set; }
+
         // Name of the declaration
         [Required]
         [MaxLength(100)]

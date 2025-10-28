@@ -16,8 +16,8 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable
     public class ApplicationDocumentLink
     {
         // Composite Key Part 1 – FK to LoanApplication
-        [ForeignKey(nameof(LoanApplication))]
-        public Guid LoanApplicationId { get; set; }
+        [ForeignKey(nameof(LoanApplicationBase))]
+        public Guid LoanApplicationBaseId { get; set; }
 
         // Composite Key Part 2 – FK to Document
         [ForeignKey(nameof(DocumentUpload))]
@@ -30,7 +30,7 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable
         public DateTime LinkedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation Properties
-        public LoanApplicationBase LoanApplication { get; set; } = null!;
+        public LoanApplicationBase LoanApplicationBase { get; set; } = null!;
         public DocumentUpload DocumentUpload { get; set; } = null!;
     }
 

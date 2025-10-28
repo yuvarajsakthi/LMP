@@ -1,4 +1,5 @@
 ﻿using Kanini.LMP.Database.Entities.CustomerEntities;
+using Kanini.LMP.Database.Entities.ManagerEntities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -41,6 +42,10 @@ namespace Kanini.LMP.Database.Entities
         // Soft delete flag
         [Required]
         public bool IsActive { get; set; } = true;
+
+        [Required]
+        [ForeignKey(nameof(LoanAccount))]
+        public Guid LoanAccountId { get; set; }
     }
     public enum PaymentStatus
     {
