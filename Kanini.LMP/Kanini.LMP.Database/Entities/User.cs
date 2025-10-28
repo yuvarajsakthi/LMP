@@ -11,7 +11,7 @@ namespace Kanini.LMP.Database.Entities
         public Guid UserId { get; set; } = Guid.NewGuid();
 
         [Required, MaxLength(100)]
-        [DisplayName("First Name")]
+        [DisplayName("Full Name")]
         public string FullName { get; set; } = null!;
 
         [DisplayName("Email")]
