@@ -1,4 +1,5 @@
 ﻿using Kanini.LMP.Database.Entities.LoanApplicationEntites;
+using Kanini.LMP.Database.Entities.ManagerEntities;
 using Kanini.LMP.Database.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -13,6 +14,10 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         [Required]
         [ForeignKey(nameof(PersonalLoanApplication))]
         public Guid LoanAppicationBaseId { get; set; }
+
+        [ForeignKey(nameof(LoanAccount))]
+        public Guid LoanAccountId { get; set; }
+
         // Principal Loan Amount
         [Required]
         [Range(1, double.MaxValue, ErrorMessage = "Principle amount must be greater than zero")]

@@ -1,4 +1,5 @@
-﻿using Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable;
+﻿using Kanini.LMP.Database.Entities.CustomerEntities;
+using Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -8,6 +9,10 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
     {
         [Key]
         public Guid DocumentId { get; set; } = Guid.NewGuid();
+
+        [ForeignKey(nameof(LoanApplicationBase))]
+        public Guid LoanApplicationBaseId { get; set; }
+
         // FK → User who uploaded the document
         [ForeignKey(nameof(User))]
         public Guid UserId { get; set; }

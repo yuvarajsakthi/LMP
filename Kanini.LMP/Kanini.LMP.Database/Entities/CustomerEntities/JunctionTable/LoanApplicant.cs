@@ -14,8 +14,8 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable
 
 
         // Composite Key Part 1: FK to Loan Application
-        [ForeignKey(nameof(LoanApplication))]
-        public Guid LoanApplicationId { get; set; }
+        [ForeignKey(nameof(LoanApplicationBase))]
+        public Guid LoanApplicationBaseId { get; set; }
 
         // Composite Key Part 2: FK to Customer
         [ForeignKey(nameof(Customer))]
@@ -27,7 +27,7 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable
         public DateTime AddedDate { get; set; } = DateTime.UtcNow;
 
         // Navigation Properties
-        public LoanApplicationBase LoanApplication { get; set; } = null!;
+        public LoanApplicationBase LoanApplicationBase { get; set; } = null!;
         public Customer Customer { get; set; } = null!;
     }
 }

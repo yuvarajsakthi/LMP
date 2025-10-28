@@ -1,4 +1,5 @@
-﻿using Kanini.LMP.Database.Enums;
+﻿using Kanini.LMP.Database.Entities.CustomerEntities;
+using Kanini.LMP.Database.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -7,7 +8,11 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
     public class AddressInformation
     {
         [Key]
-        public Guid AddressInformationId {  get; set; } = Guid.NewGuid();
+        public Guid AddressInformationId { get; set; } = Guid.NewGuid();
+
+        [ForeignKey(nameof(LoanApplicationBase))]
+        public Guid LoanApplicationBaseId { get; set; }
+
         // FK to User
         [ForeignKey(nameof(User))]
         public Guid UserId { get; set; }
