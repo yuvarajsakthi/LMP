@@ -33,10 +33,17 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.HomeLoanEntities
         [Column(TypeName = "decimal(18,2)")]
         [Range(1, double.MaxValue, ErrorMessage = "Requested loan amount must be greater than zero")]
         public decimal RequestedLoanAmount { get; set; }
-
+        [Required]
+        [Range(1, 360, ErrorMessage = "Tenure must be between 1 and 360 months")]
         public int TenureMonths { get; set; }
+        // Optional interest rate
+        [Column(TypeName = "decimal(5,2)")]
         public decimal? InterestRate { get; set; }
+        // Date of loan application
+        [Required]
         public DateTime AppliedDate { get; set; }
+        // Purpose of the home loan
+        [Required]
         public LoanPurposeHome LoanPurpose { get; set; } 
 
     }
