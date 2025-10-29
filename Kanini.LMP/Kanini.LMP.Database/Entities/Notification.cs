@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Kanini.LMP.Database.Entities
 {
@@ -25,7 +20,7 @@ namespace Kanini.LMP.Database.Entities
         public bool IsRead { get; set; } = false;
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public virtual User User { get; set; } = null!;
+        public User? User { get; set; }
 
     }
 }
