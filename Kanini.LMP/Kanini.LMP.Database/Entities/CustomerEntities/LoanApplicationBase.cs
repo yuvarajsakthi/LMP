@@ -17,7 +17,7 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
     {
         // *** NOTE: This ID serves as the Primary Key for ALL inherited applications ***
         [Key]
-        public Guid LoanApplicationBaseId { get; set; } = Guid.NewGuid();
+        public int LoanApplicationBaseId { get; set; }
         // FK → LoanProduct (Discriminator for derived loan types)
         [Required]
 

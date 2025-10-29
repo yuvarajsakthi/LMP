@@ -9,14 +9,14 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
     public class EMIPlan
     {
         [Key]
-        public Guid EMIId { get; set; } = Guid.NewGuid();
+        public int EMIId { get; set; }
         // FK → Linked Personal Loan Application
         [Required]
         [ForeignKey(nameof(PersonalLoanApplication))]
-        public Guid LoanAppicationBaseId { get; set; }
+        public int LoanApplicationBaseId { get; set; }
 
         [ForeignKey(nameof(LoanAccount))]
-        public Guid LoanAccountId { get; set; }
+        public int LoanAccountId { get; set; }
 
         // Principal Loan Amount
         [Required]
@@ -40,7 +40,7 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         // Total Interest Paid Across Entire Loan
         [Required]
         [Column(TypeName = "decimal(18,2)")]
-        public decimal TotalInerestPaid { get; set; }
+        public decimal TotalInterestPaid { get; set; }
         // Total Amount to Repay (Principal + Interest)
         [Required]
         [Column(TypeName = "decimal(18,2)")]

@@ -17,11 +17,11 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable
     {
         // Composite Key Part 1 – FK to LoanApplication
         [ForeignKey(nameof(LoanApplicationBase))]
-        public Guid LoanApplicationBaseId { get; set; }
+        public int LoanApplicationBaseId { get; set; }
 
         // Composite Key Part 2 – FK to Document
         [ForeignKey(nameof(DocumentUpload))]
-        public Guid DocumentId { get; set; }
+        public int DocumentId { get; set; }
 
         // Additional M:M Data
         [Required]

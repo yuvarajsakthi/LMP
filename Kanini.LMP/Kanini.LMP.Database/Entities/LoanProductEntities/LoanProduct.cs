@@ -5,7 +5,7 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities
     public class LoanProduct
     {
         [Key]
-        public Guid LoanProductId { get; set; } = Guid.NewGuid(); // Primary Key
+        public int LoanProductId { get; set; } // Primary Key
         [Required]
         [MaxLength(100)]
         public string LoanProductName { get; set; } = null!;// Name of the loan product

@@ -10,11 +10,11 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
     public class Customer
     {
         [Key]
-        public Guid CustomerId { get; set; } = Guid.NewGuid();
+        public int CustomerId { get; set; }
 
         [Required]
         [ForeignKey(nameof(User))]
-        public Guid UserId { get; set; }
+        public int UserId { get; set; }
         // ADDED: Navigation property to the M:M Join Entity
         public ICollection<LoanApplicant> Applications { get; set; } = new List<LoanApplicant>();
         [Required]

@@ -15,16 +15,16 @@ namespace Kanini.LMP.Database.Entities.ManagerEntities
     {
        
             [Key]
-            public Guid LoanAccountId { get; set; } = Guid.NewGuid();
+            public int LoanAccountId { get; set; }
 
             // LINK CHANGE: Reference the base class ID, not a specific product ID.
             // This allows a Home Loan, Personal Loan, or Vehicle Loan to link here.
             [ForeignKey(nameof(LoanApplicationBase))]
-            public Guid LoanApplicationBaseId { get; set; } // Renamed from LoanApplicationId
+            public int LoanApplicationBaseId { get; set; } // Renamed from LoanApplicationId
 
             // Link to the Customer (Note: This is now optional/redundant if you rely on the M:M LoanApplicant table)
             [ForeignKey(nameof(Customer))]
-            public Guid CustomerId { get; set; }
+            public int CustomerId { get; set; }
 
          
             [Required]

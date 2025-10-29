@@ -13,11 +13,11 @@ namespace Kanini.LMP.Database.Entities
     public class PaymentTransaction
     {
         [Key]
-        public Guid TransactionId { get; set; } = Guid.NewGuid();
+        public int TransactionId { get; set; }
         // Link to the EMI for which this payment was made
         [Required]
         [ForeignKey(nameof(EMIPlan))]
-        public Guid EMIId { get; set; }
+        public int EMIId { get; set; }
         // Amount paid in this transaction
         [Required]
         [Column(TypeName = "decimal(18,2)")]
@@ -45,7 +45,7 @@ namespace Kanini.LMP.Database.Entities
 
         [Required]
         [ForeignKey(nameof(LoanAccount))]
-        public Guid LoanAccountId { get; set; }
+        public int LoanAccountId { get; set; }
     }
     public enum PaymentStatus
     {

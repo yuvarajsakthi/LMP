@@ -18,7 +18,7 @@ namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.CustomerScape
 
 
         // Application Details (From LoanApplication and LoanDetails)
-        public Guid LoanApplicationId { get; set; }
+        public int LoanApplicationId { get; set; }
         public string LoanProductType { get; set; } = null!;
         public decimal LoanAmountRequested { get; set; }
         public decimal InterestRate { get; set; }
@@ -26,7 +26,7 @@ namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.CustomerScape
         public int LoanTermMonths { get; set; } // TenureMonths
 
         // Servicing Details (From your LoanAccount model)
-        public Guid? LoanAccountId { get; set; } // Null if not yet approved/disbursed
+        public int? LoanAccountId { get; set; } // Null if not yet approved/disbursed
         public decimal TotalPaidAmount { get; set; }
         public decimal TotalPaidPrincipal { get; set; }
         public decimal TotalPaidInterest { get; set; }

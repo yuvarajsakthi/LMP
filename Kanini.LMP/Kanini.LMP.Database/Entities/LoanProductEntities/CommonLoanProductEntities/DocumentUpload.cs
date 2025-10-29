@@ -8,14 +8,14 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
     public class DocumentUpload
     {
         [Key]
-        public Guid DocumentId { get; set; } = Guid.NewGuid();
+        public int DocumentId { get; set; }
 
         [ForeignKey(nameof(LoanApplicationBase))]
-        public Guid LoanApplicationBaseId { get; set; }
+        public int LoanApplicationBaseId { get; set; }
 
         // FK → User who uploaded the document
         [ForeignKey(nameof(User))]
-        public Guid UserId { get; set; }
+        public int UserId { get; set; }
         // Document metadata
         [Required]
         [MaxLength(255)]

@@ -8,15 +8,15 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.HomeLoanEntities
     public class PropertyDetails
     {
         [Key]
-        public Guid PropertyDetailsId { get; set; } = Guid.NewGuid();
+        public int PropertyDetailsId { get; set; }
 
         [ForeignKey(nameof(LoanApplicationBase))]
-        public Guid LoanApplicationBaseId { get; set; }
+        public int LoanApplicationBaseId { get; set; }
 
         // FK → Linked User
         [Required]
         [ForeignKey(nameof(User))]
-        public Guid UserId { get; set; }
+        public int UserId { get; set; }
         // Property characteristics
         [Required]
         public PropertyType PropertyType { get; set; }

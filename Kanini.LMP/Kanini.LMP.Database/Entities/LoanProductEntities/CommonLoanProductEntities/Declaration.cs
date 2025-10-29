@@ -7,10 +7,10 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
     public class Declaration
     {
         [Key]
-        public Guid DeclarationId { get; set; } = Guid.NewGuid();
+        public int DeclarationId { get; set; }
 
         [ForeignKey(nameof(LoanApplicationBase))]
-        public Guid LoanApplicationBaseId { get; set; }
+        public int LoanApplicationBaseId { get; set; }
 
         // Name of the declaration
         [Required]

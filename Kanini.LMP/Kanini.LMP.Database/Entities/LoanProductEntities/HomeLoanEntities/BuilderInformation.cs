@@ -7,15 +7,15 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.HomeLoanEntities
     public class BuilderInformation
     {
         [Key]
-        public Guid BuilderInformationId { get; set; } = Guid.NewGuid();
+        public int BuilderInformationId { get; set; } 
 
         [ForeignKey(nameof(LoanApplicationBase))]
-        public Guid LoanApplicationBaseId { get; set; }
+        public int LoanApplicationBaseId { get; set; }
 
         // FK → Linked User
         [Required]
         [ForeignKey(nameof(User))]
-        public Guid UserId { get; set; }
+        public int UserId { get; set; }
         // Builder details
         [Required]
         [MaxLength(100)]

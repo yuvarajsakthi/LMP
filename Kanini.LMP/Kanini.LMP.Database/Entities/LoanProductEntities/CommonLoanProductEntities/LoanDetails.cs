@@ -9,15 +9,15 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
     public class LoanDetails
     {
         [Key]
-        public Guid LoanDetailsId { get; set; } = Guid.NewGuid();
+        public int LoanDetailsId { get; set; }
 
         [ForeignKey(nameof(LoanApplicationBase))]
-        public Guid LoanApplicationBaseId { get; set; }
+        public int LoanApplicationBaseId { get; set; }
 
         // FK → Linked Loan Application
         [Required]
         [ForeignKey(nameof(PersonalLoanApplication))]
-        public Guid LoanApplicationId { get; set; }
+        public int LoanApplicationId { get; set; }
         // Requested loan amount
         [Required]
         [Column(TypeName = "decimal(18,2)")]

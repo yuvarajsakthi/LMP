@@ -8,14 +8,14 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
     public class AddressInformation
     {
         [Key]
-        public Guid AddressInformationId { get; set; } = Guid.NewGuid();
+        public int AddressInformationId { get; set; }
 
         [ForeignKey(nameof(LoanApplicationBase))]
-        public Guid LoanApplicationBaseId { get; set; }
+        public int LoanApplicationBaseId { get; set; }
 
         // FK to User
         [ForeignKey(nameof(User))]
-        public Guid UserId { get; set; }
+        public int UserId { get; set; }
         // Residential and permanent addresses
         [Required]
         [MaxLength(250)]

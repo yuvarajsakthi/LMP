@@ -14,12 +14,12 @@ namespace Kanini.LMP.Database.Entities.ManagerEntities
     public class LoanOriginationWorkflow
     {
         [Key]
-        public Guid WorkflowId { get; set; } = Guid.NewGuid();
+        public int WorkflowId { get; set; }
 
         // LINK CHANGE: Reference the base class ID, not a specific product ID.
         // This ensures this workflow tracker works for HomeLoanApplication, PersonalLoanApplication, etc.
         [ForeignKey(nameof(LoanApplicationBase))]
-        public Guid LoanApplicationBaseId { get; set; } // Renamed from LoanApplicationId
+        public int LoanApplicationBaseId { get; set; } // Renamed from LoanApplicationId
 
         [Required]
         public ManagerEnum StepName { get; set; } // Assuming ManagerEnum is defined elsewhere
@@ -32,7 +32,7 @@ namespace Kanini.LMP.Database.Entities.ManagerEntities
 
         public DateTime? CompletionDate { get; set; }
 
-        public Guid? ManagerId { get; set; } // Who completed the step
+        public int? ManagerId { get; set; } // Who completed the step
         [MaxLength(1000)]
 
         public string? ManagerNotes { get; set; }

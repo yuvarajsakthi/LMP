@@ -6,11 +6,11 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.PersonalLoanEntities
     public class EmploymentDetails
     {
         [Key]
-        public Guid EmploymentDetailsId { get; set; } = Guid.NewGuid();
+        public int EmploymentDetailsId { get; set; }
         // FK → Linked User
         [Required]
         [ForeignKey(nameof(User))]
-        public Guid UserId { get; set; }
+        public int UserId { get; set; }
         // Employment information
         [Required]
         [MaxLength(150)]

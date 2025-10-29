@@ -14,15 +14,15 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.HomeLoanEntities
     public class HomeLoanDetails
     {
         [Key]
-        public Guid HomeLoanDetailsId { get; set; } = Guid.NewGuid();
+        public int HomeLoanDetailsId { get; set; }
 
         [ForeignKey(nameof(LoanApplicationBase))]
-        public Guid LoanApplicationBaseId { get; set; }
+        public int LoanApplicationBaseId { get; set; }
 
         // FK → Linked Loan Application
         [Required]
         [ForeignKey(nameof(PersonalLoanApplication))]
-        public Guid LoanApplicationId { get; set; }
+        public int LoanApplicationId { get; set; }
         // Financial details
         [Required]
         [Column(TypeName = "decimal(18,2)")]

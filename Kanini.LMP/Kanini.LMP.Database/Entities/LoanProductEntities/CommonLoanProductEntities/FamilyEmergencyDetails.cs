@@ -7,15 +7,15 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
     public class FamilyEmergencyDetails
     {
         [Key]
-        public Guid FamilyEmergencyDetailsId { get; set; } = Guid.NewGuid();
+        public int FamilyEmergencyDetailsId { get; set; }
 
         [ForeignKey(nameof(LoanApplicationBase))]
-        public Guid LoanApplicationBaseId { get; set; }
+        public int LoanApplicationBaseId { get; set; }
 
         // FK to User
         [Required]
         [ForeignKey(nameof(User))]
-        public Guid UserId { get; set; }
+        public int UserId { get; set; }
         // Emergency contact information
         [Required]
         [MaxLength(100)]

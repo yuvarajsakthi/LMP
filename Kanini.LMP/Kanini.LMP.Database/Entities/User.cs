@@ -8,7 +8,7 @@ namespace Kanini.LMP.Database.Entities
     public class User
     {
         [Key]
-        public Guid UserId { get; set; } = Guid.NewGuid();
+        public int UserId { get; set; }
 
         [Required, MaxLength(100)]
         [DisplayName("Full Name")]

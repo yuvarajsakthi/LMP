@@ -14,7 +14,7 @@ namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.CustomerScape
         /// </summary>
 
 
-        public Guid CustomerId { get; set; }
+        public int CustomerId { get; set; }
         public string FullName { get; set; } = null!;
         public string Occupation { get; set; } = null!;
         public byte[] ProfileImage { get; set; } = null!; 

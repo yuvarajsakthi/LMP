@@ -17,7 +17,7 @@ namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.AppliedLoans
 
 
         // --- 1. Top-Level Application Identifiers & Status ---
-        public Guid LoanApplicationId { get; set; }
+        public int LoanApplicationId { get; set; }
         public string ApplicationNumber { get; set; } = null!;
         public string LoanProductType { get; set; } = null!;
         public ApplicationStatus CurrentStatus { get; set; } // From the LoanApplication model

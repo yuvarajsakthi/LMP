@@ -11,10 +11,10 @@ namespace Kanini.LMP.Database.Entities
     public class Notification
     {
         [Key]
-        public Guid NotificationId { get; set; } = Guid.NewGuid();
+        public int NotificationId { get; set; }
         [Required]
         [ForeignKey(nameof(User))]
-        public Guid UserId { get; set; } 
+        public int UserId { get; set; } 
         [Required]
         [MaxLength(100)]
         public string Title { get; set; } = null!;

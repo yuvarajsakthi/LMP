@@ -8,7 +8,7 @@ namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.AppliedLoans
 {
     internal class LoanRevisionInputDto
     {
-        public Guid LoanApplicationId { get; set; }
+        public int LoanApplicationId { get; set; }
         public decimal NewApprovedAmount { get; set; }
         public int NewTenureMonths { get; set; }
     }

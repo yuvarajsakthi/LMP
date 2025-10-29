@@ -8,15 +8,15 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.VehicleLoanEntities
     public class VehicleInformation
     {
         [Key]
-        public Guid VehicleInformationId { get; set; } = Guid.NewGuid();
+        public int VehicleInformationId { get; set; }
 
         [ForeignKey(nameof(LoanApplicationBase))]
-        public Guid LoanApplicationBaseId { get; set; }
+        public int LoanApplicationBaseId { get; set; }
 
         // FK → Linked User
         [Required]
         [ForeignKey(nameof(User))]
-        public Guid UserId { get; set; }
+        public int UserId { get; set; }
         // Vehicle characteristics
         [Required]
 

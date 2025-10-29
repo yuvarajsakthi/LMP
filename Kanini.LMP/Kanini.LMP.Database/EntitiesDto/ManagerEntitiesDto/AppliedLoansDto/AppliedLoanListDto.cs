@@ -10,10 +10,10 @@ namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.AppliedLoans
     public class AppliedLoanListDto
     {
      
-        public Guid ApplicationId { get; set; }
+        public int ApplicationId { get; set; }
 
        
-        public Guid CustomerId { get; set; }
+        public int CustomerId { get; set; }
 
       
         public string CustomerFullName { get; set; } = null!;
