@@ -12,29 +12,19 @@ namespace Kanini.LMP.Database.Entities
     {
         [Key]
         public Guid NotificationId { get; set; } = Guid.NewGuid();
-
-        // --- Recipient and Linkage ---
         [Required]
         [ForeignKey(nameof(User))]
-        public Guid UserId { get; set; } // FK to the recipient (User)
-
-        // --- Content ---
+        public Guid UserId { get; set; } 
         [Required]
         [MaxLength(100)]
         public string Title { get; set; } = null!;
-
         [Required]
         [MaxLength(500)]
         public string Message { get; set; } = null!;
-
-        // --- Status and Timestamps ---
         [Required]
-        public bool IsRead { get; set; } = false; // Whether the user has viewed it
-
+        public bool IsRead { get; set; } = false;
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation Property
         public virtual User User { get; set; } = null!;
 
     }
