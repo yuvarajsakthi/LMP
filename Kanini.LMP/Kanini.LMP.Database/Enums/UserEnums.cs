@@ -2,10 +2,8 @@
 {
     public enum UserEnums
     {
-        Admin,
-        Manager,
-        Customer
-        
+        Customer,
+        Manager
     }
 
     public enum UserStatus
