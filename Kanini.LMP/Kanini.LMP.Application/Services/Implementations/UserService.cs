@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kanini.LMP.Data.Repositories.Implementations.CustomerImplementations
+namespace Kanini.LMP.Application.Services.Implementations
 {
-    internal class EMIPlanRepository
+    internal class UserService
     {
     }
 }
