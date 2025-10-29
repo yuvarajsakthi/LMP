@@ -11,7 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Repositories\" />
+    <Folder Include="Repositories\Implementations\" />
+    <Folder Include="Repositories\Interfaces\LoanProductInterfaces\HomeLoanInterfaces\" />
   </ItemGroup>
 
   <ItemGroup>

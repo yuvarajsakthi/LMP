@@ -26,7 +26,6 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
 
         // --- Common Nested Details (1:1 relationships) ---
         [Required]
-      
         public LoanDetails LoanDetails { get; set; } = null!;
         [Required]
         public PersonalDetails PersonalDetails { get; set; } = null!;
