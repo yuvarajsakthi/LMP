@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kanini.LMP.Database.EntitiesDto.LoanApplicationBasicDto
+namespace Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.PersonalLoanApplication
 {
     public class PersonalLoanApplicationDTO
     {
