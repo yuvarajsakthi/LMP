@@ -18,6 +18,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kanini.LMP.Application\Kanini.LMP.Application.csproj" />
+    <ProjectReference Include="..\Kanini.LMP.Database\Kanini.LMP.Database.csproj" />
+    <ProjectReference Include="..\Kanini.LMP.Data\Kanini.LMP.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>
