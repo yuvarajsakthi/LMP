@@ -1,4 +1,5 @@
-﻿using Kanini.LMP.Database.Entities.LoanApplicationEntites;
+﻿using Kanini.LMP.Database.Entities.CustomerEntities;
+using Kanini.LMP.Database.Entities.LoanApplicationEntites;
 using Kanini.LMP.Database.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -9,6 +10,9 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.VehicleLoanEntities
     {
         [Key]
         public Guid VehicleLoanDetailsId { get; set; } = Guid.NewGuid();
+
+        [ForeignKey(nameof(LoanApplicationBase))]
+        public Guid LoanApplicationBaseId { get; set; }
 
         // FK → Linked Loan Application
         [Required]
