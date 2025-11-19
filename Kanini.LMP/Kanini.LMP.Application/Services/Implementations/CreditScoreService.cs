@@ -4,28 +4,22 @@ using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.EntitiesDtos.CreditDtos;
 using Kanini.LMP.Database.Enums;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Configuration;
-using System.Text.Json;
+
+
 
 namespace Kanini.LMP.Application.Services.Implementations
 {
     public class CreditScoreService : ICreditScoreService
     {
         private readonly ILMPRepository<Customer, int> _customerRepository;
-        private readonly HttpClient _httpClient;
         private readonly IMemoryCache _cache;
-        private readonly IConfiguration _configuration;
 
         public CreditScoreService(
             ILMPRepository<Customer, int> customerRepository,
-            HttpClient httpClient,
-            IMemoryCache cache,
-            IConfiguration configuration)
+            IMemoryCache cache)
         {
             _customerRepository = customerRepository;
-            _httpClient = httpClient;
             _cache = cache;
-            _configuration = configuration;
         }
 
         public async Task<CreditScoreDto> GetCreditScoreAsync(int customerId)
@@ -81,31 +75,9 @@ namespace Kanini.LMP.Application.Services.Implementations
 
         private async Task<CreditScoreDto> FetchCreditScoreFromCIBIL(Customer customer, string? pan = null)
         {
-            try
-            {
-                // CIBIL API through SurePass
-                var cibilResponse = await CallSurePassAPI(pan ?? GenerateMockPAN());
-                if (cibilResponse != null && cibilResponse.Success)
-                {
-                    return new CreditScoreDto
-                    {
-                        CustomerId = customer.CustomerId,
-                        PAN = pan ?? GenerateMockPAN(),
-                        Bureau = CreditBureau.CIBIL,
-                        Score = cibilResponse.CreditScore,
-                        ScoreRange = GetScoreRange(cibilResponse.CreditScore),
-                        FetchedAt = DateTime.UtcNow,
-                        ReportSummary = cibilResponse.Summary ?? GenerateReportSummary(cibilResponse.CreditScore, GetScoreRange(cibilResponse.CreditScore)),
-                        CreditHistory = ParseCreditHistory(cibilResponse.CreditHistory)
-                    };
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"CIBIL API Error: {ex.Message}");
-            }
+            // Using mock data for demonstration (no API key required)
+            await Task.Delay(500); // Simulate API call delay
 
-            // Fallback to mock data if API fails
             var score = GenerateMockCreditScore(customer);
             var scoreRange = GetScoreRange(score);
 
@@ -124,21 +96,157 @@ namespace Kanini.LMP.Application.Services.Implementations
 
         private int GenerateMockCreditScore(Customer customer)
         {
-            // Generate realistic score based on customer data
-            var baseScore = 650;
+            var score = 300; // Start with minimum score
+            var random = new Random(customer.CustomerId); // Consistent randomness per customer
 
-            // Income factor
-            if (customer.AnnualIncome > 1000000) baseScore += 50;
-            else if (customer.AnnualIncome > 500000) baseScore += 25;
+            // 1. Income Factor (25% weight) - 0 to 200 points
+            var incomeScore = CalculateIncomeScore(customer.AnnualIncome);
+            score += incomeScore;
 
-            // Age factor
-            if (customer.Age > 30) baseScore += 25;
+            // 2. Age/Experience Factor (15% weight) - 0 to 120 points
+            var ageScore = CalculateAgeScore(customer.Age);
+            score += ageScore;
 
-            // Add some randomness but keep it realistic
-            var random = new Random(customer.CustomerId);
-            var variation = random.Next(-50, 100);
+            // 3. Occupation Stability (15% weight) - 0 to 120 points
+            var occupationScore = CalculateOccupationScore(customer.Occupation);
+            score += occupationScore;
 
-            return Math.Max(300, Math.Min(850, baseScore + variation));
+            // 4. Home Ownership (10% weight) - 0 to 80 points
+            var homeScore = CalculateHomeOwnershipScore(customer.HomeOwnershipStatus);
+            score += homeScore;
+
+            // 5. Gender Factor (5% weight) - 0 to 40 points (statistical risk assessment)
+            var genderScore = CalculateGenderScore(customer.Gender);
+            score += genderScore;
+
+            // 6. Existing Credit Score (if available) (20% weight) - 0 to 160 points
+            var existingScore = CalculateExistingCreditScore(customer.CreditScore);
+            score += existingScore;
+
+            // 7. Account Age Factor (10% weight) - 0 to 80 points
+            var accountAgeScore = CalculateAccountAgeScore(customer.UpdatedAt);
+            score += accountAgeScore;
+
+            // Apply small random variation (-20 to +20)
+            var variation = random.Next(-20, 21);
+            score += variation;
+
+            // Ensure score is within valid range
+            return Math.Max(300, Math.Min(850, score));
+        }
+
+        private int CalculateIncomeScore(decimal income)
+        {
+            return income switch
+            {
+                >= 2000000 => 200, // 20L+ = Excellent
+                >= 1500000 => 180, // 15L+ = Very Good
+                >= 1000000 => 160, // 10L+ = Good
+                >= 800000 => 140,  // 8L+ = Above Average
+                >= 600000 => 120,  // 6L+ = Average
+                >= 400000 => 100,  // 4L+ = Below Average
+                >= 250000 => 80,   // 2.5L+ = Low
+                >= 150000 => 60,   // 1.5L+ = Very Low
+                _ => 40            // Below 1.5L = Poor
+            };
+        }
+
+        private int CalculateAgeScore(int age)
+        {
+            return age switch
+            {
+                >= 45 => 120,      // Peak earning years
+                >= 35 => 110,      // Established career
+                >= 30 => 100,      // Career growth
+                >= 25 => 85,       // Early career
+                >= 21 => 70,       // Entry level
+                _ => 50            // Very young
+            };
+        }
+
+        private int CalculateOccupationScore(string occupation)
+        {
+            var occupationLower = occupation.ToLower();
+
+            // High stability professions
+            if (occupationLower.Contains("government") || occupationLower.Contains("civil service") ||
+                occupationLower.Contains("teacher") || occupationLower.Contains("professor") ||
+                occupationLower.Contains("doctor") || occupationLower.Contains("engineer"))
+                return 120;
+
+            // Medium-high stability
+            if (occupationLower.Contains("manager") || occupationLower.Contains("analyst") ||
+                occupationLower.Contains("consultant") || occupationLower.Contains("accountant") ||
+                occupationLower.Contains("lawyer") || occupationLower.Contains("banker"))
+                return 100;
+
+            // Medium stability
+            if (occupationLower.Contains("sales") || occupationLower.Contains("marketing") ||
+                occupationLower.Contains("technician") || occupationLower.Contains("supervisor"))
+                return 85;
+
+            // Lower stability
+            if (occupationLower.Contains("freelance") || occupationLower.Contains("contractor") ||
+                occupationLower.Contains("driver") || occupationLower.Contains("retail"))
+                return 65;
+
+            // Default for other occupations
+            return 75;
+        }
+
+        private int CalculateHomeOwnershipScore(HomeOwnershipStatus? homeStatus)
+        {
+            return homeStatus switch
+            {
+                HomeOwnershipStatus.Owned => 80,      // Own home = Excellent
+                HomeOwnershipStatus.Mortage => 65,     // Mortgage = Good
+                HomeOwnershipStatus.Rented => 45,      // Rented = Average
+                _ => 40                                // Unknown = Below Average
+            };
+        }
+
+        private int CalculateGenderScore(Gender gender)
+        {
+            // Statistical risk assessment (not discriminatory, based on historical data)
+            return gender switch
+            {
+                Gender.Female => 40,  // Statistically lower default rates
+                Gender.Male => 35,    // Standard assessment
+                _ => 35
+            };
+        }
+
+        private int CalculateExistingCreditScore(decimal existingScore)
+        {
+            if (existingScore == 0) return 80; // No previous credit = neutral
+
+            return existingScore switch
+            {
+                >= 800 => 160,  // Excellent existing score
+                >= 750 => 140,  // Very good existing score
+                >= 700 => 120,  // Good existing score
+                >= 650 => 100,  // Fair existing score
+                >= 600 => 80,   // Below average existing score
+                >= 550 => 60,   // Poor existing score
+                _ => 40         // Very poor existing score
+            };
+        }
+
+        private int CalculateAccountAgeScore(DateTime? updatedAt)
+        {
+            if (!updatedAt.HasValue) return 40; // New account
+
+            var accountAge = DateTime.UtcNow - updatedAt.Value;
+            var monthsOld = (int)accountAge.TotalDays / 30;
+
+            return monthsOld switch
+            {
+                >= 24 => 80,   // 2+ years = Excellent
+                >= 12 => 70,   // 1+ year = Good
+                >= 6 => 60,    // 6+ months = Average
+                >= 3 => 50,    // 3+ months = Below Average
+                _ => 40        // New account = Poor
+            };
         }
 
         private CreditScoreRange GetScoreRange(int score)
@@ -155,127 +263,125 @@ namespace Kanini.LMP.Application.Services.Implementations
 
         private string GenerateReportSummary(int score, CreditScoreRange range)
         {
-            return range switch
+            var factors = new List<string>();
+
+            // Add specific improvement suggestions based on score range
+            var suggestions = range switch
             {
-                CreditScoreRange.Excellent => $"Excellent credit score of {score}. You qualify for the best interest rates.",
-                CreditScoreRange.VeryGood => $"Very good credit score of {score}. You qualify for competitive rates.",
-                CreditScoreRange.Good => $"Good credit score of {score}. You qualify for most loan products.",
-                CreditScoreRange.Fair => $"Fair credit score of {score}. Some loan products may have higher rates.",
-                _ => $"Credit score of {score} needs improvement. Consider building credit history."
+                CreditScoreRange.Excellent => "Maintain current financial habits. You qualify for premium loan products with the lowest interest rates.",
+                CreditScoreRange.VeryGood => "Strong credit profile. You qualify for most loan products with competitive rates.",
+                CreditScoreRange.Good => "Good credit standing. Consider increasing income or improving payment history for better rates.",
+                CreditScoreRange.Fair => "Room for improvement. Focus on timely payments and reducing existing debt obligations.",
+                _ => "Credit score needs significant improvement. Consider debt consolidation and establishing regular payment patterns."
             };
+
+            return $"Credit Score: {score}/850 ({range}). {suggestions}";
         }
 
         private List<CreditHistoryItem> GenerateMockCreditHistory(int score)
         {
             var history = new List<CreditHistoryItem>();
+            var random = new Random(score); // Consistent history per score
 
-            // Generate realistic credit history based on score
-            if (score >= 650)
+            // Generate credit history based on score ranges
+            if (score >= 300)
             {
+                // Everyone gets at least one credit card (even if closed/poor history)
+                var cardLimit = score switch
+                {
+                    >= 800 => random.Next(500000, 1000000),
+                    >= 750 => random.Next(300000, 500000),
+                    >= 700 => random.Next(200000, 300000),
+                    >= 650 => random.Next(100000, 200000),
+                    >= 600 => random.Next(50000, 100000),
+                    _ => random.Next(25000, 50000)
+                };
+
+                var outstanding = (decimal)(cardLimit * (score >= 700 ? 0.1 : score >= 600 ? 0.3 : 0.7));
+
                 history.Add(new CreditHistoryItem
                 {
                     AccountType = "Credit Card",
-                    Institution = "HDFC Bank",
-                    CreditLimit = 200000,
-                    OutstandingAmount = 15000,
-                    Status = CreditStatus.Active,
-                    OpenedDate = DateTime.UtcNow.AddYears(-2),
-                    PaymentHistory = score >= 750 ? 95 : 85
+                    Institution = GetRandomBank(random),
+                    CreditLimit = cardLimit,
+                    OutstandingAmount = outstanding,
+                    Status = score >= 600 ? CreditStatus.Active : CreditStatus.Closed,
+                    OpenedDate = DateTime.UtcNow.AddYears(-random.Next(1, 5)),
+                    PaymentHistory = Math.Min(99, Math.Max(60, score / 10 + random.Next(-5, 6)))
                 });
             }
 
-            if (score >= 700)
+            // Add personal loan for higher scores
+            if (score >= 650)
             {
+                var loanAmount = score switch
+                {
+                    >= 800 => random.Next(1000000, 2000000),
+                    >= 750 => random.Next(500000, 1000000),
+                    >= 700 => random.Next(300000, 500000),
+                    _ => random.Next(200000, 300000)
+                };
+
+                var outstanding = (decimal)(loanAmount * random.NextDouble() * 0.6); // 0-60% outstanding
+
                 history.Add(new CreditHistoryItem
                 {
                     AccountType = "Personal Loan",
-                    Institution = "ICICI Bank",
-                    CreditLimit = 500000,
-                    OutstandingAmount = 125000,
+                    Institution = GetRandomBank(random),
+                    CreditLimit = loanAmount,
+                    OutstandingAmount = outstanding,
                     Status = CreditStatus.Active,
-                    OpenedDate = DateTime.UtcNow.AddYears(-1),
-                    PaymentHistory = score >= 750 ? 98 : 90
+                    OpenedDate = DateTime.UtcNow.AddYears(-random.Next(1, 3)),
+                    PaymentHistory = Math.Min(99, Math.Max(75, score / 10 + random.Next(-3, 4)))
                 });
             }
 
-            return history;
+            // Add home loan for excellent scores
+            if (score >= 750)
+            {
+                var homeLoanAmount = random.Next(2000000, 5000000);
+                var outstanding = (decimal)(homeLoanAmount * (0.4 + random.NextDouble() * 0.5)); // 40-90% outstanding
+
+                history.Add(new CreditHistoryItem
+                {
+                    AccountType = "Home Loan",
+                    Institution = GetRandomBank(random),
+                    CreditLimit = homeLoanAmount,
+                    OutstandingAmount = outstanding,
+                    Status = CreditStatus.Active,
+                    OpenedDate = DateTime.UtcNow.AddYears(-random.Next(2, 8)),
+                    PaymentHistory = Math.Min(99, Math.Max(85, score / 10 + random.Next(-2, 3)))
+                });
+            }
+
+            // Add vehicle loan for good scores
+            if (score >= 700 && random.Next(0, 2) == 0) // 50% chance
+            {
+                var vehicleLoanAmount = random.Next(300000, 1200000);
+                var outstanding = (decimal)(vehicleLoanAmount * random.NextDouble() * 0.8); // 0-80% outstanding
+
+                history.Add(new CreditHistoryItem
+                {
+                    AccountType = "Vehicle Loan",
+                    Institution = GetRandomBank(random),
+                    CreditLimit = vehicleLoanAmount,
+                    OutstandingAmount = outstanding,
+                    Status = outstanding > 0 ? CreditStatus.Active : CreditStatus.Closed,
+                    OpenedDate = DateTime.UtcNow.AddYears(-random.Next(1, 4)),
+                    PaymentHistory = Math.Min(99, Math.Max(80, score / 10 + random.Next(-2, 3)))
+                });
+            }
+
+            return history.OrderByDescending(h => h.OpenedDate).ToList();
         }
 
-        private async Task<SurePassResponse?> CallSurePassAPI(string pan)
+        private string GetRandomBank(Random random)
         {
-            try
-            {
-                var request = new
-                {
-                    id_number = pan,
-                    consent = "Y",
-                    consent_text = "I hereby declare my consent agreement for fetching my information via CIBIL"
-                };
-
-                var apiKey = _configuration["SurePass:ApiKey"];
-                var baseUrl = _configuration["SurePass:BaseUrl"];
-                var endpoint = _configuration["SurePass:CreditReportEndpoint"];
-
-                _httpClient.DefaultRequestHeaders.Clear();
-                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
-                _httpClient.DefaultRequestHeaders.Add("Content-Type", "application/json");
-
-                var response = await _httpClient.PostAsync(
-                    $"{baseUrl}{endpoint}",
-                    new StringContent(JsonSerializer.Serialize(request), System.Text.Encoding.UTF8, "application/json")
-                );
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonResponse = await response.Content.ReadAsStringAsync();
-                    var apiResult = JsonSerializer.Deserialize<SurePassApiResponse>(jsonResponse);
-
-                    return new SurePassResponse
-                    {
-                        Success = apiResult?.success ?? false,
-                        CreditScore = apiResult?.data?.credit_score ?? 650,
-                        Summary = apiResult?.data?.summary,
-                        CreditHistory = apiResult?.data?.credit_accounts ?? new List<dynamic>()
-                    };
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"SurePass API call failed: {ex.Message}");
-            }
-
-            return null;
+            var banks = new[] { "HDFC Bank", "ICICI Bank", "SBI", "Axis Bank", "Kotak Mahindra", "IndusInd Bank", "Yes Bank", "IDFC First Bank" };
+            return banks[random.Next(banks.Length)];
         }
 
-        private List<CreditHistoryItem> ParseCreditHistory(List<dynamic> apiHistory)
-        {
-            var history = new List<CreditHistoryItem>();
 
-            foreach (var item in apiHistory.Take(5)) // Limit to 5 items
-            {
-                try
-                {
-                    var historyItem = JsonSerializer.Deserialize<JsonElement>(item.ToString() ?? "{}");
-
-                    history.Add(new CreditHistoryItem
-                    {
-                        AccountType = historyItem.GetProperty("account_type").GetString() ?? "Unknown",
-                        Institution = historyItem.GetProperty("institution").GetString() ?? "Unknown",
-                        CreditLimit = historyItem.GetProperty("credit_limit").GetDecimal(),
-                        OutstandingAmount = historyItem.GetProperty("outstanding").GetDecimal(),
-                        Status = CreditStatus.Active,
-                        OpenedDate = DateTime.UtcNow.AddYears(-2),
-                        PaymentHistory = historyItem.GetProperty("payment_history").GetInt32()
-                    });
-                }
-                catch
-                {
-                    // Skip invalid items
-                }
-            }
-
-            return history.Any() ? history : GenerateMockCreditHistory(650);
-        }
 
         private string GenerateMockPAN()
         {
@@ -286,26 +392,6 @@ namespace Kanini.LMP.Application.Services.Implementations
             return $"{letters[random.Next(letters.Length)]}{letters[random.Next(letters.Length)]}{letters[random.Next(letters.Length)]}{letters[random.Next(letters.Length)]}{letters[random.Next(letters.Length)]}{digits[random.Next(digits.Length)]}{digits[random.Next(digits.Length)]}{digits[random.Next(digits.Length)]}{digits[random.Next(digits.Length)]}{letters[random.Next(letters.Length)]}";
         }
 
-        // SurePass API Response Models
-        private class SurePassResponse
-        {
-            public bool Success { get; set; }
-            public int CreditScore { get; set; }
-            public string? Summary { get; set; }
-            public List<dynamic> CreditHistory { get; set; } = new();
-        }
 
-        private class SurePassApiResponse
-        {
-            public bool success { get; set; }
-            public SurePassData? data { get; set; }
-        }
-
-        private class SurePassData
-        {
-            public int credit_score { get; set; }
-            public string? summary { get; set; }
-            public List<dynamic>? credit_accounts { get; set; }
-        }
     }
 }

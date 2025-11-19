@@ -13,46 +13,50 @@ namespace Kanini.LMP.Database.Entities.ManagerEntities
 {
     public class LoanAccount
     {
-       
-            [Key]
-            public int LoanAccountId { get; set; }
 
-            // LINK CHANGE: Reference the base class ID, not a specific product ID.
-            // This allows a Home Loan, Personal Loan, or Vehicle Loan to link here.
-            [ForeignKey(nameof(LoanApplicationBase))]
-            public int LoanApplicationBaseId { get; set; } // Renamed from LoanApplicationId
+        [Key]
+        public int LoanAccountId { get; set; }
 
-            // Link to the Customer (Note: This is now optional/redundant if you rely on the M:M LoanApplicant table)
-            [ForeignKey(nameof(Customer))]
-            public int CustomerId { get; set; }
+        // LINK CHANGE: Reference the base class ID, not a specific product ID.
+        // This allows a Home Loan, Personal Loan, or Vehicle Loan to link here.
+        [ForeignKey(nameof(LoanApplicationBase))]
+        public int LoanApplicationBaseId { get; set; } // Renamed from LoanApplicationId
 
-         
-            [Required]
-            public LoanPaymentStatus CurrentPaymentStatus { get; set; }
+        // Link to the Customer (Note: This is now optional/redundant if you rely on the M:M LoanApplicant table)
+        [ForeignKey(nameof(Customer))]
+        public int CustomerId { get; set; }
 
-            public DateTime DisbursementDate { get; set; }
 
-            public int DaysPastDue { get; set; } = 0;
+        [Required]
+        public LoanPaymentStatus CurrentPaymentStatus { get; set; }
 
-            public DateTime LastStatusUpdate { get; set; }
+        public DateTime DisbursementDate { get; set; }
 
-           
-            [Required]
-            [Column(TypeName = "decimal(18,2)")]
-            public decimal TotalLoanAmount { get; set; }
-            [Column(TypeName = "decimal(18,2)")]
+        public int DaysPastDue { get; set; } = 0;
 
-            public decimal TotalPaidPrincipal { get; set; } = 0m;
-            [Column(TypeName = "decimal(18,2)")]
-            public decimal TotalPaidInterest { get; set; } = 0m;
-            [Column(TypeName = "decimal(18,2)")]
+        public DateTime LastStatusUpdate { get; set; }
 
-            public decimal PrincipalRemaining { get; set; }
 
-            public DateTime? LastPaymentDate { get; set; }
-            [Column(TypeName = "decimal(18,2)")]
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal TotalLoanAmount { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
 
-            public decimal TotalLateFeePaidAmount { get; set; } = 0m;
-        }
+        public decimal TotalPaidPrincipal { get; set; } = 0m;
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal TotalPaidInterest { get; set; } = 0m;
+        [Column(TypeName = "decimal(18,2)")]
+
+        public decimal PrincipalRemaining { get; set; }
+
+        public DateTime? LastPaymentDate { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
+
+        public decimal TotalLateFeePaidAmount { get; set; } = 0m;
+
+        // Razorpay disbursement tracking
+        [MaxLength(100)]
+        public string? DisbursementTransactionId { get; set; } // Razorpay transaction ID when money sent to customer
     }
+}
 
