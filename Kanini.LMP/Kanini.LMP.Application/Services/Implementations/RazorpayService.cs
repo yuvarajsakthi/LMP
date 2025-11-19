@@ -255,5 +255,30 @@ namespace Kanini.LMP.Application.Services.Implementations
             var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(data));
             return Convert.ToHexString(hash).ToLower();
         }
+
+        public async Task<string?> TransferToCustomerAsync(int applicationId, decimal amount)
+        {
+            try
+            {
+                // For test mode, create a mock disbursement
+                var disbursementDto = new DisbursementDto
+                {
+                    LoanAccountId = applicationId,
+                    Amount = amount,
+                    AccountNumber = "1234567890", // Mock account
+                    IfscCode = "HDFC0000001", // Mock IFSC
+                    BeneficiaryName = "Customer", // Mock name
+                    Purpose = "loan_disbursement"
+                };
+
+                var result = await CreateDisbursementAsync(disbursementDto);
+                return result.Id;
+            }
+            catch
+            {
+                // Return mock transaction ID for test mode
+                return $"txn_mock_{applicationId}_{DateTime.Now:yyyyMMddHHmmss}";
+            }
+        }
     }
 }

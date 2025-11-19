@@ -84,4 +84,41 @@
         Closed
     }
 
+    public enum DocumentType
+    {
+        IdentityProof,
+        AddressProof,
+        IncomeProof,
+        BankStatement,
+        PropertyDocuments,
+        VehicleDocuments,
+        Other
+    }
+
+    //public enum CreditBureau
+    //{
+    //    CIBIL,
+    //    Experian,
+    //    Equifax,
+    //    CRIF
+    //}
+
+    //public enum CreditScoreRange
+    //{
+    //    Poor = 300,
+    //    Fair = 550,
+    //    Good = 650,
+    //    VeryGood = 750,
+    //    Excellent = 800
+    //}
+
+    //public enum CreditStatus
+    //{
+    //    Active,
+    //    Closed,
+    //    Settled,
+    //    WrittenOff,
+    //    Overdue
+    //}
+
 }
