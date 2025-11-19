@@ -29,7 +29,7 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         public string PhoneNumber { get; set; } = null!;
         [Required]
         [MaxLength(50)]
-        public string Occupation {  get; set; } = null!;
+        public string Occupation { get; set; } = null!;
         [Required]
         [Range(0, double.MaxValue)]
         [Column(TypeName = "decimal(18,2)")]
@@ -37,7 +37,7 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         [Required]
         [Range(0, 900)]
         [Column(TypeName = "decimal(5,2)")]
-        public decimal CreditScore { get; set; }
+        public decimal CreditScore { get; set; } = 0; // Will be updated with real CIBIL data
 
         [Required]
         public byte[] ProfileImage { get; set; } = null!;

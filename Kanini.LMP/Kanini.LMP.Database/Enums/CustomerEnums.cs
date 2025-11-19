@@ -19,7 +19,8 @@
         Submitted,
         Pending,
         Rejected,
-        Approved
+        Approved,
+        Disbursed
     }
 
     public enum IndianStates

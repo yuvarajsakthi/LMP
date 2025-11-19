@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.CustomerScape
 {
-    internal class CustomerLoanSummaryDto
+    public class CustomerLoanSummaryDto
     {
 
         /// <summary>

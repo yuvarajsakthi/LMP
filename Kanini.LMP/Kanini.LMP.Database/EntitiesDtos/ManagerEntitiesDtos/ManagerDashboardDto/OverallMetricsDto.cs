@@ -1,6 +1,6 @@
 ﻿namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.ManagerDashboard
 {
-    internal class OverallMetricsDto
+    public class OverallMetricsDto
     {
         public int TotalApplications { get; set; }
         public decimal AppSuccessRate { get; set; }  // (Total Approved / Total Submitted)

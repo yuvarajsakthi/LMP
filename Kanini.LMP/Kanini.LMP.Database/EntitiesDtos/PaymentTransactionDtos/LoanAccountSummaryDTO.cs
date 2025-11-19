@@ -17,6 +17,6 @@ namespace Kanini.LMP.Database.EntitiesDto.PaymentTransaction
         public int TotalEMIs { get; set; }
         public int PaidEMIs { get; set; }
         public int PendingEMIs => TotalEMIs - PaidEMIs;
-        public List<EMIDetailsDTO> EMISchedule { get; set; } = new();
+        //public List<EMIDetailsDTO> EMISchedule { get; set; } = new();
     }
 }

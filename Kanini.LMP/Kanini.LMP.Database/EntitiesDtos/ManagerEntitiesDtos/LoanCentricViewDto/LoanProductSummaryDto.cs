@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.LoanCentricView
 {
-    internal class LoanProductSummaryDto
+    public class LoanProductSummaryDto
     {
         public string LoanProductType { get; set; } 
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.LoanAnalystics
 {
-    internal class LoanStatusDistributionDto
+    public class LoanStatusDistributionDto
     {
         /// <summary>
         /// DTO for the 'Loan Status Distribution' chart (Bar with percentages).

@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Kanini.LMP.Data.Repositories.Interfaces;
-using Kanini.LMP.Database;
 using System.Linq.Expressions;
 using System.Reflection;
+using Kanini.LMP.Data.Data;
 
 namespace Kanini.LMP.Data.Repositories.Implementations
 {
