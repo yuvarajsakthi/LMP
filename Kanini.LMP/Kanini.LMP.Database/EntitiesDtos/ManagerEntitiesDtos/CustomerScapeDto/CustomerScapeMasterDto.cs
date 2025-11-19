@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.CustomerScape
 {
-    internal class CustomerScapeMasterDto
+    public class CustomerScapeMasterDto
     {
         /// <summary>
         /// The main DTO returned by the API call when the manager searches for a Customer ID.

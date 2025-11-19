@@ -1,4 +1,3 @@
-using Kanini.LMP.Database;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -9,15 +8,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Kanini.LMP.Data.Data;
+using Kanini.LMP.Data.Repositories.Interfaces;
+using Kanini.LMP.Data.Repositories.Implementations;
+using Kanini.LMP.Application.Services.Interfaces;
+using Kanini.LMP.Application.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 // Clear default .NET logging
 builder.Logging.ClearProviders();
@@ -57,8 +56,31 @@ builder.Services.AddControllers()
     });
 
 
-// AutoMapper configuration
-//builder.Services.AddAutoMapper(typeof(MappingProfile));
+// Repository registrations
+builder.Services.AddScoped(typeof(ILMPRepository<,>), typeof(LMPRepositoy<,>));
+
+// Add Memory Cache for credit score caching
+builder.Services.AddMemoryCache();
+
+// Service registrations
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUser, UserService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IEligibilityService, EligibilityService>();
+builder.Services.AddScoped<ILoanApplicationService, LoanApplicationService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IEmiCalculatorService, EmiCalculatorService>();
+builder.Services.AddScoped<IManagerWorkflowService, ManagerWorkflowService>();
+builder.Services.AddScoped<IManagerAnalyticsService, ManagerAnalyticsService>();
+builder.Services.AddHttpClient<IRazorpayService, RazorpayService>();
+builder.Services.AddScoped<IRazorpayService, RazorpayService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IPdfService, PdfService>();
+builder.Services.AddScoped<IKYCService, KYCService>();
+builder.Services.AddScoped<IDocumentService, DocumentService>();
+builder.Services.AddScoped<ICreditScoreService, CreditScoreService>();
+builder.Services.AddHostedService<EMINotificationBackgroundService>();
 
 // JWT Authentication 
 var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);
@@ -83,7 +105,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "LMP", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "LMP API", Version = "v1" });
+    c.CustomSchemaIds(type => type.FullName);
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -117,10 +140,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:")
+        policy.AllowAnyOrigin()
               .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();
+              .AllowAnyHeader();
     });
 });
 

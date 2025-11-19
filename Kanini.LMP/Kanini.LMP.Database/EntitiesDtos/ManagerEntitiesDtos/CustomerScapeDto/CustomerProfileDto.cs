@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.CustomerScape
 {
-    internal class CustomerProfileDto
+    public class CustomerProfileDto
     {
         /// <summary>
         /// DTO representing the static profile and core demographic information 
