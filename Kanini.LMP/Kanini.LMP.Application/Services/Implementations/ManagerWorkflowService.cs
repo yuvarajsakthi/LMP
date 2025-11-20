@@ -255,24 +255,28 @@ namespace Kanini.LMP.Application.Services.Implementations
             {
                 await UpdateWorkflowStepAsync(applicationId, ManagerEnum.Disbursed, StepStatus.InProgress, $"Disbursement initiated: {disbursedAmount}", managerId);
 
-                // Use Razorpay to transfer money to customer (like reverse EMI payment)
-                var razorpayTransactionId = await _razorpayService.TransferToCustomerAsync(applicationId, disbursedAmount);
+                // Get application and customer details
+                var application = await _applicationRepository.GetByIdAsync(applicationId);
+                var applicantCustomer = application.Applicants.FirstOrDefault()?.Customer;
+                var user = applicantCustomer != null ? await _userRepository.GetByIdAsync(applicantCustomer.UserId) : null;
+                var customerName = user?.FullName ?? "Customer";
+
+                // Use Razorpay to transfer money to customer
+                var razorpayTransactionId = await _razorpayService.TransferToCustomerAsync(applicationId, disbursedAmount, customerName);
 
                 if (!string.IsNullOrEmpty(razorpayTransactionId))
                 {
                     // Update application status
-                    var application = await _applicationRepository.GetByIdAsync(applicationId);
                     application.Status = ApplicationStatus.Disbursed;
                     await _applicationRepository.UpdateAsync(application);
 
                     // Create loan account with Razorpay transaction ID
-                    var customer = application.Applicants.FirstOrDefault()?.Customer;
-                    if (customer != null)
+                    if (applicantCustomer != null)
                     {
                         var loanAccount = new LoanAccount
                         {
                             LoanApplicationBaseId = applicationId,
-                            CustomerId = customer.CustomerId,
+                            CustomerId = applicantCustomer.CustomerId,
                             CurrentPaymentStatus = LoanPaymentStatus.Active,
                             DisbursementDate = DateTime.UtcNow,
                             TotalLoanAmount = disbursedAmount,
@@ -286,9 +290,9 @@ namespace Kanini.LMP.Application.Services.Implementations
                     await UpdateWorkflowStepAsync(applicationId, ManagerEnum.Disbursed, StepStatus.Completed, $"Disbursed ₹{disbursedAmount} via Razorpay: {razorpayTransactionId}", managerId);
 
                     // Notify customer
-                    if (customer != null)
+                    if (applicantCustomer != null)
                     {
-                        await _notificationService.NotifyLoanDisbursedAsync(customer.UserId, managerId, disbursedAmount, applicationId);
+                        await _notificationService.NotifyLoanDisbursedAsync(applicantCustomer.UserId, managerId, disbursedAmount, applicationId);
                     }
 
                     return true;

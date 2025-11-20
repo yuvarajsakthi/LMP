@@ -256,18 +256,20 @@ namespace Kanini.LMP.Application.Services.Implementations
             return Convert.ToHexString(hash).ToLower();
         }
 
-        public async Task<string?> TransferToCustomerAsync(int applicationId, decimal amount)
+        public async Task<string?> TransferToCustomerAsync(int applicationId, decimal amount, string customerName)
         {
             try
             {
-                // For test mode, create a mock disbursement
+                // Generate unique mock details per application
+                var random = new Random(applicationId); // Consistent per application
+
                 var disbursementDto = new DisbursementDto
                 {
                     LoanAccountId = applicationId,
                     Amount = amount,
-                    AccountNumber = "1234567890", // Mock account
-                    IfscCode = "HDFC0000001", // Mock IFSC
-                    BeneficiaryName = "Customer", // Mock name
+                    AccountNumber = $"{random.Next(100000000, 999999999)}0", // Unique 10-digit account
+                    IfscCode = GetRandomIFSC(random), // Different banks
+                    BeneficiaryName = customerName, // Real customer name
                     Purpose = "loan_disbursement"
                 };
 
@@ -276,9 +278,15 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
             catch
             {
-                // Return mock transaction ID for test mode
+                // Return unique mock transaction ID
                 return $"txn_mock_{applicationId}_{DateTime.Now:yyyyMMddHHmmss}";
             }
+        }
+
+        private string GetRandomIFSC(Random random)
+        {
+            var banks = new[] { "HDFC0000001", "ICIC0000001", "SBIN0000001", "AXIS0000001", "KKBK0000001" };
+            return banks[random.Next(banks.Length)];
         }
     }
 }

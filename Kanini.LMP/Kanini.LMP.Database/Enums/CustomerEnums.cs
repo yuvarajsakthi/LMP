@@ -84,16 +84,16 @@
         Closed
     }
 
-    public enum DocumentType
-    {
-        IdentityProof,
-        AddressProof,
-        IncomeProof,
-        BankStatement,
-        PropertyDocuments,
-        VehicleDocuments,
-        Other
-    }
+    //public enum DocumentType
+    //{
+    //    IdentityProof,
+    //    AddressProof,
+    //    IncomeProof,
+    //    BankStatement,
+    //    PropertyDocuments,
+    //    VehicleDocuments,
+    //    Other
+    //}
 
     //public enum CreditBureau
     //{
