@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.AppliedLoans
 {
-    internal class LoanApprovalDetailDto
+    public class LoanApprovalDetailDto
     {
         /// <summary>
         /// Master DTO that provides all data necessary for the manager to approve, 

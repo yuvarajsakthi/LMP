@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.LoanCentricView
 {
-    internal class LoanProductAnalysisDto
+    public class LoanProductAnalysisDto
     {
         /// <summary>
         /// DTO to populate the 9 metric cards on the detail analysis page.

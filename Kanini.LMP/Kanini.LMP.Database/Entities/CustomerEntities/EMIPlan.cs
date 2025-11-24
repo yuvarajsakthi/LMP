@@ -12,10 +12,8 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         public int EMIId { get; set; }
         // FK → Linked Personal Loan Application
         [Required]
-        [ForeignKey(nameof(PersonalLoanApplication))]
         public int LoanApplicationBaseId { get; set; }
 
-        [ForeignKey(nameof(LoanAccount))]
         public int LoanAccountId { get; set; }
 
         // Principal Loan Amount
@@ -51,5 +49,6 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         // Indicates whether the repayment is fully completed
         [Required]
         public bool IsCompleted { get; set; }
+
     }
 }

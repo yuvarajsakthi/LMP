@@ -9,7 +9,7 @@ namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.ManagerDashboardDto
 {
     public class LoanOriginationWorkflowDTO
     {
-        public int WorkflowId { get; set; } = int.Newint();
+        public int WorkflowId { get; set; }
 
         [Required(ErrorMessage = "Loan Application Base ID is required.")]
         public int LoanApplicationBaseId { get; set; }
@@ -28,4 +28,4 @@ namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.ManagerDashboardDto
         public string? ManagerNotes { get; set; }
     }
 }
-}
+

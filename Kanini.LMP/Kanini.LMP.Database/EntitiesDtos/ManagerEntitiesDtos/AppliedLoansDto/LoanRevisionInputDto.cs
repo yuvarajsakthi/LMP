@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.AppliedLoans
 {
-    internal class LoanRevisionInputDto
+    public class LoanRevisionInputDto
     {
         public int LoanApplicationId { get; set; }
         public decimal NewApprovedAmount { get; set; }
