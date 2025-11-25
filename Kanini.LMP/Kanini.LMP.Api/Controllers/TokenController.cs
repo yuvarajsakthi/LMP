@@ -24,22 +24,29 @@ namespace Kanini.LMP.Api.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDto)
         {
-            if (loginDto == null || string.IsNullOrEmpty(loginDto.Username) || string.IsNullOrEmpty(loginDto.Password))
-                return BadRequest("Username and password are required");
-
-            var token = await _tokenService.AuthenticateAsync(loginDto.Username, loginDto.Password);
-
-            if (token == null)
-                return Unauthorized("Invalid credentials");
-
-            var user = await _userService.GetByUsernameAsync(loginDto.Username);
-
-            return Ok(new
+            try
             {
-                token,
-                username = user.FullName,
-                role = user.Roles.ToString()
-            });
+                if (loginDto == null || string.IsNullOrEmpty(loginDto.Username) || string.IsNullOrEmpty(loginDto.Password))
+                    return BadRequest(new { message = "Username and password are required" });
+
+                var token = await _tokenService.AuthenticateAsync(loginDto.Username, loginDto.Password);
+
+                if (token == null)
+                    return Unauthorized(new { message = "Invalid credentials" });
+
+                var user = await _userService.GetByUsernameAsync(loginDto.Username);
+
+                return Ok(new
+                {
+                    token,
+                    username = user.FullName,
+                    role = user.Roles.ToString()
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Failed to process login", error = ex.Message });
+            }
         }
 
         [HttpPost("register")]

@@ -1,62 +1,117 @@
-﻿using Kanini.LMP.Application.Services.Interfaces;
-using Kanini.LMP.Data.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using Kanini.LMP.Application.Constants;
+using Kanini.LMP.Application.Services.Interfaces;
+using Kanini.LMP.Data.Repositories.Interfaces;
+using Kanini.LMP.Database.Entities;
+using Kanini.LMP.Database.Entities.CustomerEntities;
+using Kanini.LMP.Database.Entities.ManagerEntities;
+using Microsoft.Extensions.Logging;
 using System.Text;
 
 namespace Kanini.LMP.Application.Services.Implementations
 {
     public class PdfService : IPdfService
     {
-        private readonly LmpDbContext _context;
+        private readonly IPdfRepository _pdfRepository;
+        private readonly ILogger<PdfService> _logger;
 
-        public PdfService(LmpDbContext context)
+        public PdfService(IPdfRepository pdfRepository, ILogger<PdfService> logger)
         {
-            _context = context;
+            _pdfRepository = pdfRepository;
+            _logger = logger;
         }
 
         public async Task<byte[]> GenerateLoanApplicationPdfAsync(int applicationId)
         {
-            // Get application details
-            var application = await _context.LoanApplicationBases
-                .Include(app => app.LoanDetails)
-                .FirstOrDefaultAsync(app => app.LoanApplicationBaseId == applicationId);
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingPdfGeneration, "Loan Application", applicationId);
 
-            if (application == null)
-                throw new ArgumentException("Application not found");
+                var application = await _pdfRepository.GetLoanApplicationWithDetailsAsync(applicationId);
 
-            var loanDetails = application.LoanDetails;
+                if (application == null)
+                {
+                    _logger.LogWarning(ApplicationConstants.Messages.PdfDataNotFound, "Application", applicationId);
+                    throw new ArgumentException(string.Format(ApplicationConstants.ErrorMessages.LoanApplicationNotFound, applicationId));
+                }
 
-            // Generate simple PDF content
-            var pdfContent = GenerateApplicationPdfContent(application, loanDetails);
+                var loanDetails = application.LoanDetails;
+                var pdfContent = GenerateApplicationPdfContent(application, loanDetails);
 
-            return Encoding.UTF8.GetBytes(pdfContent);
+                _logger.LogInformation(ApplicationConstants.Messages.PdfGenerationCompleted, "Loan Application", applicationId);
+                return Encoding.UTF8.GetBytes(pdfContent);
+            }
+            catch (ArgumentException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.PdfGenerationFailed, "Loan Application", applicationId);
+                throw new Exception(ApplicationConstants.ErrorMessages.PdfGenerationFailed);
+            }
         }
 
         public async Task<byte[]> GeneratePaymentReceiptPdfAsync(int transactionId)
         {
-            var transaction = await _context.PaymentTransactions
-                .FirstOrDefaultAsync(pt => pt.TransactionId == transactionId);
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingPdfGeneration, "Payment Receipt", transactionId);
 
-            if (transaction == null)
-                throw new ArgumentException("Transaction not found");
+                var transaction = await _pdfRepository.GetPaymentTransactionAsync(transactionId);
 
-            var receiptContent = GeneratePaymentReceiptContent(transaction);
-            return Encoding.UTF8.GetBytes(receiptContent);
+                if (transaction == null)
+                {
+                    _logger.LogWarning(ApplicationConstants.Messages.PdfDataNotFound, "Transaction", transactionId);
+                    throw new ArgumentException(ApplicationConstants.ErrorMessages.PaymentNotFound);
+                }
+
+                var receiptContent = GeneratePaymentReceiptContent(transaction);
+
+                _logger.LogInformation(ApplicationConstants.Messages.PdfGenerationCompleted, "Payment Receipt", transactionId);
+                return Encoding.UTF8.GetBytes(receiptContent);
+            }
+            catch (ArgumentException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.PdfGenerationFailed, "Payment Receipt", transactionId);
+                throw new Exception(ApplicationConstants.ErrorMessages.PdfGenerationFailed);
+            }
         }
 
         public async Task<byte[]> GenerateEMISchedulePdfAsync(int loanAccountId)
         {
-            var loanAccount = await _context.LoanAccounts
-                .FirstOrDefaultAsync(la => la.LoanAccountId == loanAccountId);
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingPdfGeneration, "EMI Schedule", loanAccountId);
 
-            if (loanAccount == null)
-                throw new ArgumentException("Loan account not found");
+                var loanAccount = await _pdfRepository.GetLoanAccountAsync(loanAccountId);
 
-            var scheduleContent = GenerateEMIScheduleContent(loanAccount);
-            return Encoding.UTF8.GetBytes(scheduleContent);
+                if (loanAccount == null)
+                {
+                    _logger.LogWarning(ApplicationConstants.Messages.PdfDataNotFound, "Loan Account", loanAccountId);
+                    throw new ArgumentException(ApplicationConstants.ErrorMessages.LoanAccountNotFound);
+                }
+
+                var scheduleContent = GenerateEMIScheduleContent(loanAccount);
+
+                _logger.LogInformation(ApplicationConstants.Messages.PdfGenerationCompleted, "EMI Schedule", loanAccountId);
+                return Encoding.UTF8.GetBytes(scheduleContent);
+            }
+            catch (ArgumentException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.PdfGenerationFailed, "EMI Schedule", loanAccountId);
+                throw new Exception(ApplicationConstants.ErrorMessages.PdfGenerationFailed);
+            }
         }
 
-        private string GenerateApplicationPdfContent(dynamic application, dynamic loanDetails)
+        private string GenerateApplicationPdfContent(LoanApplicationBase application, dynamic loanDetails)
         {
             return $@"
 LOAN APPLICATION DOCUMENT
@@ -85,7 +140,7 @@ This is a system-generated document.
 ";
         }
 
-        private string GeneratePaymentReceiptContent(dynamic transaction)
+        private string GeneratePaymentReceiptContent(PaymentTransaction transaction)
         {
             return $@"
 PAYMENT RECEIPT
@@ -105,7 +160,7 @@ Generated on: {DateTime.Now:dd MMM yyyy HH:mm}
 ";
         }
 
-        private string GenerateEMIScheduleContent(dynamic loanAccount)
+        private string GenerateEMIScheduleContent(LoanAccount loanAccount)
         {
             return $@"
 EMI SCHEDULE

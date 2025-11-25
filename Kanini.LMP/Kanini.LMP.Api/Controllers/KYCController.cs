@@ -1,103 +1,220 @@
-﻿using Kanini.LMP.Application.Services.Interfaces;
+﻿using Kanini.LMP.Application.Constants;
+using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Database.EntitiesDto.KYC;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 
 namespace Kanini.LMP.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route(ApplicationConstants.Routes.KYCController)]
     [ApiController]
     [Authorize]
     public class KYCController : ControllerBase
     {
         private readonly IKYCService _kycService;
+        private readonly ILogger<KYCController> _logger;
 
-        public KYCController(IKYCService kycService)
+        public KYCController(IKYCService kycService, ILogger<KYCController> logger)
         {
             _kycService = kycService;
+            _logger = logger;
         }
 
         // Customer endpoints
-        [HttpPost("submit-document")]
+        [HttpPost(ApplicationConstants.Routes.SubmitDocument)]
         public async Task<ActionResult> SubmitKYCDocument([FromBody] KYCSubmissionDto kycDto)
         {
-            var result = await _kycService.SubmitKYCDocumentAsync(kycDto);
-            if (result)
-                return Ok(new { success = true, message = "KYC document submitted successfully" });
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCSubmission, kycDto.CustomerId);
 
-            return BadRequest(new { success = false, message = "Failed to submit KYC document" });
+                var result = await _kycService.SubmitKYCDocumentAsync(kycDto);
+                if (result)
+                {
+                    _logger.LogInformation(ApplicationConstants.Messages.KYCSubmissionCompleted, kycDto.CustomerId);
+                    return Ok(new { success = true, message = ApplicationConstants.ErrorMessages.KYCSubmissionSuccess });
+                }
+
+                _logger.LogWarning(ApplicationConstants.ErrorMessages.KYCSubmissionFailed);
+                return BadRequest(new { success = false, message = ApplicationConstants.ErrorMessages.KYCSubmissionFailed });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.KYCSubmissionFailed);
+                return BadRequest(new { success = false, message = ApplicationConstants.ErrorMessages.KYCSubmissionFailed });
+            }
         }
 
-        [HttpGet("status/{customerId}")]
+        [HttpGet(ApplicationConstants.Routes.Status)]
         public async Task<ActionResult<KYCStatusDto>> GetKYCStatus(int customerId)
         {
-            var status = await _kycService.GetCustomerKYCStatusAsync(customerId);
-            return Ok(status);
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCStatusRetrieval, customerId);
+
+                var status = await _kycService.GetCustomerKYCStatusAsync(customerId);
+
+                _logger.LogInformation(ApplicationConstants.Messages.KYCStatusRetrievalCompleted, customerId);
+                return Ok(status);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.KYCStatusRetrievalFailed, customerId);
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.KYCStatusRetrievalFailed });
+            }
         }
 
-        [HttpGet("my-status")]
+        [HttpGet(ApplicationConstants.Routes.MyStatus)]
         public async Task<ActionResult<KYCStatusDto>> GetMyKYCStatus()
         {
-            var userId = GetCurrentUserId();
-            var status = await _kycService.GetCustomerKYCStatusAsync(userId);
-            return Ok(status);
+            try
+            {
+                var userId = GetCurrentUserId();
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCStatusRetrieval, userId);
+
+                var status = await _kycService.GetCustomerKYCStatusAsync(userId);
+
+                _logger.LogInformation(ApplicationConstants.Messages.KYCStatusRetrievalCompleted, userId);
+                return Ok(status);
+            }
+            catch (Exception ex)
+            {
+                var userId = GetCurrentUserId();
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.KYCStatusRetrievalFailed, userId);
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.KYCStatusRetrievalFailed });
+            }
         }
 
-        [HttpGet("is-completed/{customerId}")]
+        [HttpGet(ApplicationConstants.Routes.IsCompleted)]
         public async Task<ActionResult<bool>> IsKYCCompleted(int customerId)
         {
-            var isCompleted = await _kycService.IsKYCCompletedAsync(customerId);
-            return Ok(new { isCompleted });
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCStatusRetrieval, customerId);
+
+                var isCompleted = await _kycService.IsKYCCompletedAsync(customerId);
+
+                _logger.LogInformation(ApplicationConstants.Messages.KYCStatusRetrievalCompleted, customerId);
+                return Ok(new { isCompleted });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.KYCStatusRetrievalFailed, customerId);
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.KYCStatusRetrievalFailed });
+            }
         }
 
         // Manager endpoints
-        [HttpGet("pending-documents")]
+        [HttpGet(ApplicationConstants.Routes.PendingDocuments)]
         public async Task<ActionResult<IEnumerable<KYCVerificationDto>>> GetPendingKYCDocuments()
         {
-            var documents = await _kycService.GetPendingKYCDocumentsAsync();
-            return Ok(documents);
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingPendingKYCRetrieval);
+
+                var documents = await _kycService.GetPendingKYCDocumentsAsync();
+
+                _logger.LogInformation(ApplicationConstants.Messages.PendingKYCRetrievalCompleted, documents.Count());
+                return Ok(documents);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.PendingKYCRetrievalFailed);
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.PendingKYCRetrievalFailed });
+            }
         }
 
-        [HttpGet("document/{documentId}")]
+        [HttpGet(ApplicationConstants.Routes.Document)]
         public async Task<ActionResult<KYCVerificationDto>> GetKYCDocumentDetails(int documentId)
         {
             try
             {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCStatusRetrieval, documentId);
+
                 var document = await _kycService.GetKYCDocumentDetailsAsync(documentId);
+
+                _logger.LogInformation(ApplicationConstants.Messages.KYCStatusRetrievalCompleted, documentId);
                 return Ok(document);
             }
-            catch (ArgumentException ex)
+            catch (ArgumentException)
             {
-                return NotFound(new { message = ex.Message });
+                _logger.LogWarning(ApplicationConstants.ErrorMessages.KYCDocumentNotFound, documentId);
+                return NotFound(new { message = ApplicationConstants.ErrorMessages.KYCDocumentNotFound });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.KYCStatusRetrievalFailed, documentId);
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.KYCStatusRetrievalFailed });
             }
         }
 
-        [HttpPost("verify")]
+        [HttpPost(ApplicationConstants.Routes.Verify)]
         public async Task<ActionResult> VerifyKYCDocument([FromBody] KYCVerificationRequestDto verificationDto)
         {
-            var result = await _kycService.VerifyKYCDocumentAsync(verificationDto);
-            if (result)
-                return Ok(new { success = true, message = "KYC document verified successfully" });
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCVerification, verificationDto.DocumentId);
 
-            return BadRequest(new { success = false, message = "Failed to verify KYC document" });
+                var result = await _kycService.VerifyKYCDocumentAsync(verificationDto);
+                if (result)
+                {
+                    _logger.LogInformation(ApplicationConstants.Messages.KYCVerificationCompleted, verificationDto.DocumentId);
+                    return Ok(new { success = true, message = ApplicationConstants.ErrorMessages.KYCVerificationSuccess });
+                }
+
+                _logger.LogWarning(ApplicationConstants.ErrorMessages.KYCVerificationFailed, verificationDto.DocumentId);
+                return BadRequest(new { success = false, message = ApplicationConstants.ErrorMessages.KYCVerificationFailed });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.KYCVerificationFailed, verificationDto.DocumentId);
+                return BadRequest(new { success = false, message = ApplicationConstants.ErrorMessages.KYCVerificationFailed });
+            }
         }
 
-        [HttpPost("reject")]
+        [HttpPost(ApplicationConstants.Routes.Reject)]
         public async Task<ActionResult> RejectKYCDocument([FromBody] KYCVerificationRequestDto rejectionDto)
         {
-            var result = await _kycService.RejectKYCDocumentAsync(rejectionDto);
-            if (result)
-                return Ok(new { success = true, message = "KYC document rejected" });
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCRejection, rejectionDto.DocumentId);
 
-            return BadRequest(new { success = false, message = "Failed to reject KYC document" });
+                var result = await _kycService.RejectKYCDocumentAsync(rejectionDto);
+                if (result)
+                {
+                    _logger.LogInformation(ApplicationConstants.Messages.KYCRejectionCompleted, rejectionDto.DocumentId);
+                    return Ok(new { success = true, message = ApplicationConstants.ErrorMessages.KYCRejectionSuccess });
+                }
+
+                _logger.LogWarning(ApplicationConstants.ErrorMessages.KYCRejectionFailed, rejectionDto.DocumentId);
+                return BadRequest(new { success = false, message = ApplicationConstants.ErrorMessages.KYCRejectionFailed });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.KYCRejectionFailed, rejectionDto.DocumentId);
+                return BadRequest(new { success = false, message = ApplicationConstants.ErrorMessages.KYCRejectionFailed });
+            }
         }
 
-        [HttpGet("score/{customerId}")]
+        [HttpGet(ApplicationConstants.Routes.Score)]
         public async Task<ActionResult<decimal>> GetKYCScore(int customerId)
         {
-            var score = await _kycService.CalculateKYCScoreAsync(customerId);
-            return Ok(new { score });
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCScoreCalculation, customerId);
+
+                var score = await _kycService.CalculateKYCScoreAsync(customerId);
+
+                _logger.LogInformation(ApplicationConstants.Messages.KYCScoreCalculationCompleted, customerId, score);
+                return Ok(new { score });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.KYCScoreCalculationFailed, customerId);
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.KYCScoreCalculationFailed });
+            }
         }
 
         private int GetCurrentUserId()

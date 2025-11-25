@@ -1,47 +1,69 @@
-﻿using Kanini.LMP.Application.Services.Interfaces;
-using Kanini.LMP.Data.Repositories.Interfaces;
+﻿using AutoMapper;
+using Kanini.LMP.Application.Constants;
+using Kanini.LMP.Application.Services.Interfaces;
+using Kanini.LMP.Data.UnitOfWork;
 using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto;
 using Kanini.LMP.Database.EntitiesDtos.CreditDtos;
 using Kanini.LMP.Database.Enums;
+using Microsoft.Extensions.Logging;
 
 namespace Kanini.LMP.Application.Services.Implementations
 {
     public class EligibilityService : IEligibilityService
     {
-        private readonly ILMPRepository<Customer, int> _customerRepository;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+        private readonly ILogger<EligibilityService> _logger;
 
-        public EligibilityService(ILMPRepository<Customer, int> customerRepository)
+        public EligibilityService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<EligibilityService> logger)
         {
-            _customerRepository = customerRepository;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<EligibilityScoreDto> CalculateEligibilityAsync(int customerId, int loanProductId)
         {
-            // Find customer by UserId (not CustomerId)
-            var customer = await _customerRepository.GetAsync(c => c.UserId == customerId);
-            if (customer == null) throw new ArgumentException("Customer not found");
-
-            // Use stored credit score (mock or updated from profile)
-            var creditScore = customer.CreditScore;
-
-            var monthlyIncome = customer.AnnualIncome / 12;
-            var eligibilityScore = CalculateScore(customer, loanProductId, (int)creditScore);
-            var status = DetermineStatus(eligibilityScore, loanProductId);
-
-            return new EligibilityScoreDto
+            try
             {
-                CustomerId = customer.CustomerId,
-                LoanProductId = loanProductId,
-                CreditScore = (int)creditScore,
-                MonthlyIncome = monthlyIncome,
-                ExistingEMIAmount = 0, // Default - can be enhanced
-                DebtToIncomeRatio = 0, // Default - can be enhanced
-                EmploymentType = customer.Occupation,
-                EligibilityScore = eligibilityScore,
-                EligibilityStatus = status,
-                CalculatedOn = DateTime.UtcNow
-            };
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingEligibilityCalculation, customerId, loanProductId);
+
+                // Find customer by UserId (not CustomerId)
+                var customer = await _unitOfWork.Customers.GetAsync(c => c.UserId == customerId);
+                if (customer == null)
+                {
+                    _logger.LogWarning(ApplicationConstants.ErrorMessages.CustomerNotFound, customerId);
+                    throw new ArgumentException(ApplicationConstants.ErrorMessages.CustomerNotFound);
+                }
+
+                // Use stored credit score (mock or updated from profile)
+                var creditScore = customer.CreditScore;
+
+                var monthlyIncome = customer.AnnualIncome / 12;
+                var eligibilityScore = CalculateScore(customer, loanProductId, (int)creditScore);
+                var status = DetermineStatus(eligibilityScore, loanProductId);
+
+                _logger.LogInformation(ApplicationConstants.Messages.EligibilityCalculationCompleted, customerId, eligibilityScore);
+                return new EligibilityScoreDto
+                {
+                    CustomerId = customer.CustomerId,
+                    LoanProductId = loanProductId,
+                    CreditScore = (int)creditScore,
+                    MonthlyIncome = monthlyIncome,
+                    ExistingEMIAmount = 0, // Default - can be enhanced
+                    DebtToIncomeRatio = 0, // Default - can be enhanced
+                    EmploymentType = customer.Occupation,
+                    EligibilityScore = eligibilityScore,
+                    EligibilityStatus = status,
+                    CalculatedOn = DateTime.UtcNow
+                };
+            }
+            catch (Exception ex) when (!(ex is ArgumentException))
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.EligibilityCalculationFailed, customerId);
+                throw new Exception(ApplicationConstants.ErrorMessages.EligibilityCalculationFailed);
+            }
         }
 
         public async Task<bool> IsEligibleForLoanAsync(int customerId, int loanProductId = 0)
@@ -76,31 +98,60 @@ namespace Kanini.LMP.Application.Services.Implementations
 
         public async Task UpdateCustomerProfileAsync(int userId, EligibilityProfileRequest request)
         {
-            var customer = await _customerRepository.GetAsync(c => c.UserId == userId);
-            if (customer == null) throw new ArgumentException("Customer not found");
-
-            // For new users, update basic profile info
-            if (!request.IsExistingBorrower)
+            try
             {
-                customer.AnnualIncome = request.AnnualIncome ?? customer.AnnualIncome;
-                customer.Occupation = request.Occupation ?? customer.Occupation;
-                customer.HomeOwnershipStatus = request.HomeOwnershipStatus ?? customer.HomeOwnershipStatus;
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingCustomerProfileUpdate, userId);
+
+                using (var transaction = await _unitOfWork.BeginTransactionAsync())
+                {
+                    try
+                    {
+                        var customer = await _unitOfWork.Customers.GetAsync(c => c.UserId == userId);
+                        if (customer == null)
+                        {
+                            _logger.LogWarning(ApplicationConstants.ErrorMessages.CustomerNotFound, userId);
+                            throw new ArgumentException(ApplicationConstants.ErrorMessages.CustomerNotFound);
+                        }
+
+                        // For new users, update basic profile info
+                        if (!request.IsExistingBorrower)
+                        {
+                            customer.AnnualIncome = request.AnnualIncome ?? customer.AnnualIncome;
+                            customer.Occupation = request.Occupation ?? customer.Occupation;
+                            customer.HomeOwnershipStatus = request.HomeOwnershipStatus ?? customer.HomeOwnershipStatus;
+                        }
+                        // For existing users, only update if new values provided
+                        else
+                        {
+                            if (request.AnnualIncome.HasValue) customer.AnnualIncome = request.AnnualIncome.Value;
+                            if (!string.IsNullOrEmpty(request.Occupation)) customer.Occupation = request.Occupation;
+                            if (request.HomeOwnershipStatus.HasValue) customer.HomeOwnershipStatus = request.HomeOwnershipStatus.Value;
+                        }
+
+                        customer.UpdatedAt = DateTime.UtcNow;
+
+                        // Create merged request with existing customer data for score calculation
+                        var mergedRequest = CreateMergedRequest(customer, request);
+                        customer.CreditScore = CalculateMockCreditScore(mergedRequest);
+
+                        await _unitOfWork.Customers.UpdateAsync(customer);
+                        await _unitOfWork.SaveChangesAsync();
+                        await transaction.CommitAsync();
+
+                        _logger.LogInformation(ApplicationConstants.Messages.CustomerProfileUpdatedSuccessfully, userId);
+                    }
+                    catch (Exception)
+                    {
+                        await transaction.RollbackAsync();
+                        throw;
+                    }
+                }
             }
-            // For existing users, only update if new values provided
-            else
+            catch (Exception ex) when (!(ex is ArgumentException))
             {
-                if (request.AnnualIncome.HasValue) customer.AnnualIncome = request.AnnualIncome.Value;
-                if (!string.IsNullOrEmpty(request.Occupation)) customer.Occupation = request.Occupation;
-                if (request.HomeOwnershipStatus.HasValue) customer.HomeOwnershipStatus = request.HomeOwnershipStatus.Value;
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.CustomerProfileUpdateFailed, userId);
+                throw new Exception(ApplicationConstants.ErrorMessages.CustomerProfileUpdateFailed);
             }
-
-            customer.UpdatedAt = DateTime.UtcNow;
-
-            // Create merged request with existing customer data for score calculation
-            var mergedRequest = CreateMergedRequest(customer, request);
-            customer.CreditScore = CalculateMockCreditScore(mergedRequest);
-
-            await _customerRepository.UpdateAsync(customer);
         }
 
         private EligibilityProfileRequest CreateMergedRequest(Customer customer, EligibilityProfileRequest request)

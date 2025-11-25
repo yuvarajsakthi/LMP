@@ -1,32 +1,38 @@
-﻿using Kanini.LMP.Application.Services.Interfaces;
+﻿using Kanini.LMP.Application.Constants;
+using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto;
 using Kanini.LMP.Database.EntitiesDtos.CreditDtos;
 using Kanini.LMP.Database.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 
 namespace Kanini.LMP.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route(ApplicationConstants.Routes.EligibilityController)]
     [ApiController]
     [Authorize]
     public class EligibilityController : ControllerBase
     {
         private readonly IEligibilityService _eligibilityService;
+        private readonly ILogger<EligibilityController> _logger;
 
-        public EligibilityController(IEligibilityService eligibilityService)
+        public EligibilityController(IEligibilityService eligibilityService, ILogger<EligibilityController> logger)
         {
             _eligibilityService = eligibilityService;
+            _logger = logger;
         }
 
 
 
-        [HttpPost("check")]
+        [HttpPost(ApplicationConstants.Routes.Check)]
         public async Task<ActionResult> CheckEligibility([FromBody] EligibilityProfileRequest request)
         {
             try
             {
+                _logger.LogInformation(ApplicationConstants.Messages.EligibilityCheckRequested, request.IsExistingBorrower);
+
                 // Validate required fields based on user type
                 if (!request.IsExistingBorrower)
                 {
@@ -34,7 +40,8 @@ namespace Kanini.LMP.Api.Controllers
                         !request.AnnualIncome.HasValue || string.IsNullOrEmpty(request.Occupation) ||
                         !request.HomeOwnershipStatus.HasValue)
                     {
-                        return BadRequest("For new users, PAN, Age, Annual Income, Occupation, and Home Ownership Status are required.");
+                        _logger.LogWarning(ApplicationConstants.ErrorMessages.EligibilityValidationFailed);
+                        return BadRequest(new { message = ApplicationConstants.ErrorMessages.EligibilityValidationFailed });
                     }
                 }
 
@@ -47,15 +54,19 @@ namespace Kanini.LMP.Api.Controllers
                 var eligibility = await _eligibilityService.CalculateEligibilityAsync(userId, 0);
                 var eligibleProductIds = await _eligibilityService.GetEligibleProductsAsync(userId);
 
-                return Ok(BuildEligibilityResponse(eligibility, eligibleProductIds, request.IsExistingBorrower));
+                var response = BuildEligibilityResponse(eligibility, eligibleProductIds, request.IsExistingBorrower);
+                _logger.LogInformation(ApplicationConstants.Messages.EligibilityCheckCompleted, userId, eligibility.EligibilityScore);
+                return Ok(response);
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogWarning(ex, ApplicationConstants.ErrorMessages.EligibilityCheckFailed);
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.EligibilityCheckFailed);
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.EligibilityCheckFailed });
             }
         }
 
