@@ -93,6 +93,45 @@ namespace Kanini.LMP.Api.Controllers
             });
         }
 
+        // Stored Procedure Endpoints
+        [HttpGet("loan-performance-sp")]
+        public async Task<ActionResult<LoanPerformanceReportDto>> GetLoanPerformanceReportViaSP(
+            [FromQuery] DateTime? fromDate = null,
+            [FromQuery] DateTime? toDate = null)
+        {
+            var from = fromDate ?? DateTime.UtcNow.AddMonths(-3);
+            var to = toDate ?? DateTime.UtcNow;
+
+            var report = await _analyticsService.GetLoanPerformanceReportViaSPAsync(from, to);
+            return Ok(report);
+        }
+
+        [HttpGet("risk-assessment-sp")]
+        public async Task<ActionResult<RiskAssessmentReportDto>> GetRiskAssessmentReportViaSP(
+            [FromQuery] DateTime? fromDate = null,
+            [FromQuery] DateTime? toDate = null)
+        {
+            var from = fromDate ?? DateTime.UtcNow.AddMonths(-1);
+            var to = toDate ?? DateTime.UtcNow;
+
+            var report = await _analyticsService.GetRiskAssessmentReportViaSPAsync(from, to);
+            return Ok(report);
+        }
+
+        [HttpGet("compliance-sp")]
+        public async Task<ActionResult<ComplianceReportDto>> GetComplianceReportViaSP()
+        {
+            var report = await _analyticsService.GetComplianceReportViaSPAsync();
+            return Ok(report);
+        }
+
+        [HttpGet("customer-analytics-sp")]
+        public async Task<ActionResult> GetCustomerAnalyticsDashboardViaSP()
+        {
+            var analytics = await _analyticsService.GetCustomerAnalyticsViaSPAsync();
+            return Ok(analytics);
+        }
+
         // Export Reports (Future enhancement)
         [HttpGet("export/{reportType}")]
         public async Task<ActionResult> ExportReport(string reportType,

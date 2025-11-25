@@ -14,6 +14,17 @@ namespace Kanini.LMP.Application.Services.Interfaces
         Task<IEnumerable<ApplicationStatusSummaryDto>> GetApplicationStatusSummaryAsync();
         Task<IEnumerable<ApplicationTrendDto>> GetApplicationTrendsAsync();
         Task<IEnumerable<ApplicationTypePerformanceDto>> GetApplicationTypePerformanceAsync();
+        Task<IEnumerable<ApplicationTypePerformanceDto>> GetApplicationTypePerformanceViaSPAsync();
+        Task<IEnumerable<ApplicationStatusSummaryDto>> GetApplicationStatusSummaryViaSPAsync();
+        Task<IEnumerable<ApplicationTrendDto>> GetApplicationTrendsViaSPAsync();
+        Task<OverallMetricsDto> GetOverallMetricsViaSPAsync();
+        Task<NewApplicationsSummaryDto> GetNewApplicationsSummaryViaSPAsync();
+
+        // Reports Stored Procedures
+        Task<LoanPerformanceReportDto> GetLoanPerformanceReportViaSPAsync(DateTime fromDate, DateTime toDate);
+        Task<RiskAssessmentReportDto> GetRiskAssessmentReportViaSPAsync(DateTime fromDate, DateTime toDate);
+        Task<ComplianceReportDto> GetComplianceReportViaSPAsync();
+        Task<object> GetCustomerAnalyticsViaSPAsync();
         Task<NewApplicationsSummaryDto> GetNewApplicationsSummaryAsync();
 
         // 2. Applied Loans

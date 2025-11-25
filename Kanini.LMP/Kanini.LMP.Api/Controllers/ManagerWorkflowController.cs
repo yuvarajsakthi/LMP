@@ -1,4 +1,5 @@
-﻿using Kanini.LMP.Application.Services.Interfaces;
+﻿using Kanini.LMP.Application.Constants;
+using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.AppliedLoans;
 using Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.ManagerDashboardDto.Manager.NewFolderBasicDto;
 using Kanini.LMP.Database.Enums;
@@ -7,89 +8,191 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kanini.LMP.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route(ApplicationConstants.Routes.ManagerWorkflowController)]
     [ApiController]
     [Authorize]
     public class ManagerWorkflowController : ControllerBase
     {
         private readonly IManagerWorkflowService _managerWorkflowService;
+        private readonly ILogger<ManagerWorkflowController> _logger;
 
-        public ManagerWorkflowController(IManagerWorkflowService managerWorkflowService)
+        public ManagerWorkflowController(IManagerWorkflowService managerWorkflowService, ILogger<ManagerWorkflowController> logger)
         {
             _managerWorkflowService = managerWorkflowService;
+            _logger = logger;
         }
 
-        [HttpGet("pending-applications")]
+        [HttpGet(ApplicationConstants.Routes.PendingApplications)]
         public async Task<ActionResult<IEnumerable<AppliedLoanListDto>>> GetPendingApplications()
         {
-            var applications = await _managerWorkflowService.GetPendingApplicationsAsync();
-            return Ok(applications);
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingPendingApplications);
+                var applications = await _managerWorkflowService.GetPendingApplicationsAsync();
+                _logger.LogInformation(ApplicationConstants.Messages.PendingApplicationsCompleted);
+                return Ok(applications);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.PendingApplicationsFailed);
+                return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
+            }
         }
 
-        [HttpGet("application/{applicationId}")]
+        [HttpGet(ApplicationConstants.Routes.Application)]
         public async Task<ActionResult<LoanApprovalDetailDto>> GetApplicationDetails(int applicationId)
         {
-            var details = await _managerWorkflowService.GetApplicationDetailsAsync(applicationId);
-            return Ok(details);
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingApplicationDetails, applicationId);
+                var details = await _managerWorkflowService.GetApplicationDetailsAsync(applicationId);
+                _logger.LogInformation(ApplicationConstants.Messages.ApplicationDetailsCompleted, applicationId);
+                return Ok(details);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.ApplicationDetailsFailed, applicationId);
+                return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
+            }
         }
 
-        [HttpPost("start-workflow/{applicationId}/{managerId}")]
+        [HttpPost(ApplicationConstants.Routes.StartWorkflow)]
         public async Task<ActionResult<LoanOriginationWorkflowDTO>> StartWorkflow(int applicationId, int managerId)
         {
-            var workflow = await _managerWorkflowService.StartWorkflowAsync(applicationId, managerId);
-            return Ok(workflow);
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingWorkflowStart, applicationId, managerId);
+                var workflow = await _managerWorkflowService.StartWorkflowAsync(applicationId, managerId);
+                _logger.LogInformation(ApplicationConstants.Messages.WorkflowStartCompleted, applicationId);
+                return Ok(workflow);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.WorkflowStartFailed, applicationId);
+                return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
+            }
         }
 
-        [HttpPut("update-step/{applicationId}")]
+        [HttpPut(ApplicationConstants.Routes.UpdateStep)]
         public async Task<ActionResult<LoanOriginationWorkflowDTO>> UpdateWorkflowStep(
             int applicationId,
             [FromBody] UpdateStepRequest request)
         {
-            var workflow = await _managerWorkflowService.UpdateWorkflowStepAsync(
-                applicationId, request.StepName, request.Status, request.Notes, request.ManagerId);
-            return Ok(workflow);
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingWorkflowStepUpdate, applicationId);
+                var workflow = await _managerWorkflowService.UpdateWorkflowStepAsync(
+                    applicationId, request.StepName, request.Status, request.Notes, request.ManagerId);
+                _logger.LogInformation(ApplicationConstants.Messages.WorkflowStepUpdateCompleted, applicationId);
+                return Ok(workflow);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.WorkflowStepUpdateFailed, applicationId);
+                return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
+            }
         }
 
-        [HttpGet("workflow-status/{applicationId}")]
+        [HttpGet(ApplicationConstants.Routes.WorkflowStatus)]
         public async Task<ActionResult<IEnumerable<WorkflowStepDto>>> GetWorkflowStatus(int applicationId)
         {
-            var status = await _managerWorkflowService.GetWorkflowStatusAsync(applicationId);
-            return Ok(status);
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingWorkflowStatus, applicationId);
+                var status = await _managerWorkflowService.GetWorkflowStatusAsync(applicationId);
+                _logger.LogInformation(ApplicationConstants.Messages.WorkflowStatusCompleted, applicationId);
+                return Ok(status);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.WorkflowStatusFailed, applicationId);
+                return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
+            }
         }
 
-        [HttpPost("verify-documents/{applicationId}/{managerId}")]
+        [HttpPost(ApplicationConstants.Routes.VerifyDocuments)]
         public async Task<ActionResult> VerifyDocuments(int applicationId, int managerId, [FromBody] string verificationNotes)
         {
-            var result = await _managerWorkflowService.VerifyDocumentsAsync(applicationId, managerId, verificationNotes);
-            return Ok(new { Success = result, Message = "Documents verified successfully" });
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingDocumentVerification, applicationId);
+                var result = await _managerWorkflowService.VerifyDocumentsAsync(applicationId, managerId, verificationNotes);
+                _logger.LogInformation(ApplicationConstants.Messages.DocumentVerificationCompleted, applicationId);
+                return Ok(new { Success = result, Message = ApplicationConstants.ErrorMessages.DocumentsVerifiedSuccessfully });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.DocumentVerificationFailed, applicationId);
+                return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
+            }
         }
 
-        [HttpPost("approve/{applicationId}/{managerId}")]
+        [HttpPost(ApplicationConstants.Routes.Approve)]
         public async Task<ActionResult> ApproveApplication(int applicationId, int managerId, [FromBody] string approvalNotes)
         {
-            var result = await _managerWorkflowService.ApproveApplicationAsync(applicationId, managerId, approvalNotes);
-            return Ok(new { Success = result, Message = "Application approved successfully" });
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingApplicationApproval, applicationId);
+                var result = await _managerWorkflowService.ApproveApplicationAsync(applicationId, managerId, approvalNotes);
+                _logger.LogInformation(ApplicationConstants.Messages.ApplicationApprovalCompleted, applicationId);
+                return Ok(new { Success = result, Message = ApplicationConstants.ErrorMessages.ApplicationApprovedSuccessfully });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.ApplicationApprovalFailed, applicationId);
+                return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
+            }
         }
 
-        [HttpPost("reject/{applicationId}/{managerId}")]
+        [HttpPost(ApplicationConstants.Routes.WorkflowReject)]
         public async Task<ActionResult> RejectApplication(int applicationId, int managerId, [FromBody] string rejectionReason)
         {
-            var result = await _managerWorkflowService.RejectApplicationAsync(applicationId, managerId, rejectionReason);
-            return Ok(new { Success = result, Message = "Application rejected" });
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingApplicationRejection, applicationId);
+                var result = await _managerWorkflowService.RejectApplicationAsync(applicationId, managerId, rejectionReason);
+                _logger.LogInformation(ApplicationConstants.Messages.ApplicationRejectionCompleted, applicationId);
+                return Ok(new { Success = result, Message = ApplicationConstants.ErrorMessages.ApplicationRejected });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.ApplicationRejectionFailed, applicationId);
+                return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
+            }
         }
 
-        [HttpPost("revise/{applicationId}/{managerId}")]
+        [HttpPost(ApplicationConstants.Routes.Revise)]
         public async Task<ActionResult> ReviseApplication(int applicationId, int managerId, [FromBody] LoanRevisionInputDto revisionData)
         {
-            var result = await _managerWorkflowService.ReviseApplicationAsync(applicationId, revisionData, managerId);
-            return Ok(new { Success = result, Message = "Application revised successfully" });
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingApplicationRevision, applicationId);
+                var result = await _managerWorkflowService.ReviseApplicationAsync(applicationId, revisionData, managerId);
+                _logger.LogInformation(ApplicationConstants.Messages.ApplicationRevisionCompleted, applicationId);
+                return Ok(new { Success = result, Message = ApplicationConstants.ErrorMessages.ApplicationRevisedSuccessfully });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.ApplicationRevisionFailed, applicationId);
+                return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
+            }
         }
 
-        [HttpPost("disburse/{applicationId}/{managerId}")]
+        [HttpPost(ApplicationConstants.Routes.Disburse)]
         public async Task<ActionResult> DisburseApplication(int applicationId, int managerId, [FromBody] decimal disbursedAmount)
         {
-            var result = await _managerWorkflowService.DisburseApplicationAsync(applicationId, managerId, disbursedAmount);
-            return Ok(new { Success = result, Message = "Loan disbursed successfully" });
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingApplicationDisbursement, applicationId);
+                var result = await _managerWorkflowService.DisburseApplicationAsync(applicationId, managerId, disbursedAmount);
+                _logger.LogInformation(ApplicationConstants.Messages.ApplicationDisbursementCompleted, applicationId);
+                return Ok(new { Success = result, Message = ApplicationConstants.ErrorMessages.LoanDisbursedSuccessfully });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.ApplicationDisbursementFailed, applicationId);
+                return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
+            }
         }
     }
 

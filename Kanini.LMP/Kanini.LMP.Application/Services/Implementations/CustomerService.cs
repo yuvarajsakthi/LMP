@@ -1,104 +1,174 @@
-﻿using Kanini.LMP.Application.Services.Interfaces;
-using Kanini.LMP.Data.Repositories.Interfaces;
+﻿using AutoMapper;
+using Kanini.LMP.Application.Constants;
+using Kanini.LMP.Application.Services.Interfaces;
+using Kanini.LMP.Data.UnitOfWork;
 using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto.CustomerBasicDto.Customer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Kanini.LMP.Application.Services.Implementations
 {
     public class CustomerService : ICustomerService
     {
-        private readonly ILMPRepository<Customer, int> _customerRepository;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+        private readonly ILogger<CustomerService> _logger;
 
-        public CustomerService(ILMPRepository<Customer, int> customerRepository)
+        public CustomerService(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            ILogger<CustomerService> logger)
         {
-            _customerRepository = customerRepository;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<CustomerDto> Add(CustomerDto entity)
         {
-            var customer = new Customer
+            try
             {
-                UserId = entity.UserId,
-                DateOfBirth = entity.DateOfBirth,
-                Gender = entity.Gender,
-                PhoneNumber = entity.PhoneNumber,
-                Occupation = entity.Occupation,
-                AnnualIncome = entity.AnnualIncome,
-                CreditScore = entity.CreditScore,
-                HomeOwnershipStatus = entity.HomeOwnershipStatus,
-                ProfileImage = new byte[] { 0x00 }, // Default empty image
-                UpdatedAt = DateTime.UtcNow
-            };
+                _logger.LogInformation("Adding new customer for user ID: {UserId}", entity.UserId);
 
-            var created = await _customerRepository.AddAsync(customer);
-            return MapToDto(created);
+                var customer = _mapper.Map<Customer>(entity);
+                customer.ProfileImage = new byte[] { 0x00 }; // Default empty image
+                customer.UpdatedAt = DateTime.UtcNow;
+
+                var created = await _unitOfWork.Customers.AddAsync(customer);
+                await _unitOfWork.SaveChangesAsync();
+
+                _logger.LogInformation("Customer created successfully with ID: {CustomerId}", created.CustomerId);
+                return _mapper.Map<CustomerDto>(created);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding customer for user ID: {UserId}", entity.UserId);
+                throw new InvalidOperationException("Failed to create customer profile", ex);
+            }
         }
 
         public async Task Delete(int id)
         {
-            await _customerRepository.DeleteAsync(id);
+            try
+            {
+                _logger.LogInformation("Deleting customer with ID: {CustomerId}", id);
+
+                var customer = await _unitOfWork.Customers.GetByIdAsync(id);
+                if (customer == null)
+                {
+                    _logger.LogWarning("Customer with ID {CustomerId} not found for deletion", id);
+                    throw new KeyNotFoundException(ApplicationConstants.ErrorMessages.CustomerNotFound);
+                }
+
+                await _unitOfWork.Customers.DeleteAsync(id);
+                await _unitOfWork.SaveChangesAsync();
+
+                _logger.LogInformation("Customer deleted successfully with ID: {CustomerId}", id);
+            }
+            catch (Exception ex) when (!(ex is KeyNotFoundException))
+            {
+                _logger.LogError(ex, "Error deleting customer with ID: {CustomerId}", id);
+                throw new InvalidOperationException("Failed to delete customer", ex);
+            }
         }
 
         public async Task<IReadOnlyList<CustomerDto>> GetAll()
         {
-            var customers = await _customerRepository.GetAllAsync();
-            return customers.Select(MapToDto).ToList();
+            try
+            {
+                _logger.LogInformation("Retrieving all customers");
+
+                var customers = await _unitOfWork.Customers.GetAllAsync();
+                var customerDtos = _mapper.Map<List<CustomerDto>>(customers);
+
+                _logger.LogInformation("Retrieved {Count} customers", customerDtos.Count);
+                return customerDtos;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving all customers");
+                throw new InvalidOperationException("Failed to retrieve customers", ex);
+            }
         }
 
         public async Task<CustomerDto?> GetById(int id)
         {
-            var customer = await _customerRepository.GetByIdAsync(id);
-            return customer != null ? MapToDto(customer) : null;
+            try
+            {
+                _logger.LogInformation("Retrieving customer with ID: {CustomerId}", id);
+
+                var customer = await _unitOfWork.Customers.GetByIdAsync(id);
+                if (customer == null)
+                {
+                    _logger.LogWarning("Customer with ID {CustomerId} not found", id);
+                    return null;
+                }
+
+                var customerDto = _mapper.Map<CustomerDto>(customer);
+                _logger.LogInformation("Customer retrieved successfully with ID: {CustomerId}", id);
+                return customerDto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving customer with ID: {CustomerId}", id);
+                throw new InvalidOperationException("Failed to retrieve customer", ex);
+            }
         }
 
         public async Task<CustomerDto> Update(CustomerDto entity)
         {
-            var customer = new Customer
+            try
             {
-                CustomerId = entity.CustomerId,
-                UserId = entity.UserId,
-                DateOfBirth = entity.DateOfBirth,
-                Gender = entity.Gender,
-                PhoneNumber = entity.PhoneNumber,
-                Occupation = entity.Occupation,
-                AnnualIncome = entity.AnnualIncome,
-                CreditScore = entity.CreditScore,
-                HomeOwnershipStatus = entity.HomeOwnershipStatus,
-                UpdatedAt = DateTime.UtcNow
-            };
+                _logger.LogInformation("Updating customer with ID: {CustomerId}", entity.CustomerId);
 
-            var updated = await _customerRepository.UpdateAsync(customer);
-            return MapToDto(updated);
+                var existingCustomer = await _unitOfWork.Customers.GetByIdAsync(entity.CustomerId);
+                if (existingCustomer == null)
+                {
+                    _logger.LogWarning("Customer with ID {CustomerId} not found for update", entity.CustomerId);
+                    throw new KeyNotFoundException(ApplicationConstants.ErrorMessages.CustomerNotFound);
+                }
+
+                var customer = _mapper.Map<Customer>(entity);
+                customer.UpdatedAt = DateTime.UtcNow;
+                customer.ProfileImage = existingCustomer.ProfileImage; // Preserve existing image
+
+                var updated = await _unitOfWork.Customers.UpdateAsync(customer);
+                await _unitOfWork.SaveChangesAsync();
+
+                _logger.LogInformation("Customer updated successfully with ID: {CustomerId}", entity.CustomerId);
+                return _mapper.Map<CustomerDto>(updated);
+            }
+            catch (Exception ex) when (!(ex is KeyNotFoundException))
+            {
+                _logger.LogError(ex, "Error updating customer with ID: {CustomerId}", entity.CustomerId);
+                throw new InvalidOperationException("Failed to update customer", ex);
+            }
         }
 
         public async Task<CustomerDto?> GetByUserIdAsync(int userId)
         {
-            var customer = await _customerRepository.GetAsync(c => c.UserId == userId);
-            return customer != null ? MapToDto(customer) : null;
+            try
+            {
+                _logger.LogInformation("Retrieving customer by user ID: {UserId}", userId);
+
+                var customer = await _unitOfWork.Customers.GetAsync(c => c.UserId == userId);
+                if (customer == null)
+                {
+                    _logger.LogWarning("Customer with user ID {UserId} not found", userId);
+                    return null;
+                }
+
+                var customerDto = _mapper.Map<CustomerDto>(customer);
+                _logger.LogInformation("Customer retrieved successfully by user ID: {UserId}", userId);
+                return customerDto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving customer by user ID: {UserId}", userId);
+                throw new InvalidOperationException("Failed to retrieve customer by user ID", ex);
+            }
         }
 
-        private CustomerDto MapToDto(Customer customer)
-        {
-            return new CustomerDto
-            {
-                CustomerId = customer.CustomerId,
-                UserId = customer.UserId,
-                DateOfBirth = customer.DateOfBirth,
-                Gender = customer.Gender,
-                PhoneNumber = customer.PhoneNumber,
-                Occupation = customer.Occupation,
-                AnnualIncome = customer.AnnualIncome,
-                CreditScore = customer.CreditScore,
-                HomeOwnershipStatus = customer.HomeOwnershipStatus,
-                UpdatedAt = customer.UpdatedAt,
-                Age = customer.Age
-            };
-        }
+
     }
 }
-

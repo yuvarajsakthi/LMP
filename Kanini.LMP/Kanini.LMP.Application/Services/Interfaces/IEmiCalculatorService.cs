@@ -19,5 +19,7 @@ namespace Kanini.LMP.Application.Services.Interfaces
         Task<EMIRestructureResultDto> CalculateEMIRestructureAsync(EMIRestructureDto restructureDto);
         Task<EMIPlanDTO> ApplyEMIRestructureAsync(EMIRestructureDto restructureDto);
         Task<object> GetCompleteEMIDetailsAsync(int emiId);
+        Task<EMIPlanDTO> CalculateEmiViaSPAsync(decimal principalAmount, decimal interestRate, int termMonths);
+        Task<IEnumerable<EMIScheduleDto>> GenerateEMIScheduleViaSPAsync(int emiId);
     }
 }

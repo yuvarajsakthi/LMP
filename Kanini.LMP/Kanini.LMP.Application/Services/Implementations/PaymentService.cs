@@ -102,5 +102,30 @@ namespace Kanini.LMP.Application.Services.Implementations
                 IsCompleted = emi.IsCompleted
             };
         }
+
+        public async Task<PaymentAnalyticsResult> GetPaymentsByDateRangeViaSPAsync(DateTime fromDate, DateTime toDate)
+        {
+            // Mock implementation - replace with actual SP call
+            var payments = await _paymentRepository.GetAllAsync(p => p.PaymentDate >= fromDate && p.PaymentDate <= toDate);
+            var paymentsList = payments.ToList();
+
+            return new PaymentAnalyticsResult
+            {
+                TotalAmount = paymentsList.Sum(p => p.Amount),
+                Count = paymentsList.Count,
+                AverageAmount = paymentsList.Any() ? paymentsList.Average(p => p.Amount) : 0,
+                OnTimeAmount = paymentsList.Where(p => p.Status == EntityPaymentStatus.Success).Sum(p => p.Amount),
+                LateAmount = paymentsList.Where(p => p.Status == EntityPaymentStatus.Failed).Sum(p => p.Amount),
+                PrepaymentAmount = paymentsList.Where(p => p.PaymentMethod == EntityPaymentMethod.Cash).Sum(p => p.Amount),
+                CollectionRate = paymentsList.Any() ? (decimal)paymentsList.Count(p => p.Status == EntityPaymentStatus.Success) / paymentsList.Count * 100 : 0
+            };
+        }
+
+        public async Task<IEnumerable<PaymentTransactionDTO>> GetPaymentHistoryViaSPAsync(int loanAccountId)
+        {
+            // Mock implementation - replace with actual SP call
+            var payments = await _paymentRepository.GetAllAsync(p => p.LoanAccountId == loanAccountId);
+            return payments.Select(MapToDto).OrderByDescending(p => p.PaymentDate);
+        }
     }
 }

@@ -1,63 +1,107 @@
-﻿using Kanini.LMP.Application.Services.Interfaces;
+﻿using Kanini.LMP.Application.Constants;
+using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.PersonalLoanApplication;
 using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.HomeLoanApplication;
 using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.VehicleLoanApplication;
 using Kanini.LMP.Database.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Kanini.LMP.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route(ApplicationConstants.Routes.LoanApplicationController)]
     [ApiController]
     [Authorize]
     public class LoanApplicationController : ControllerBase
     {
         private readonly ILoanApplicationService _loanApplicationService;
+        private readonly ILogger<LoanApplicationController> _logger;
 
-        public LoanApplicationController(ILoanApplicationService loanApplicationService)
+        public LoanApplicationController(ILoanApplicationService loanApplicationService, ILogger<LoanApplicationController> logger)
         {
             _loanApplicationService = loanApplicationService;
+            _logger = logger;
         }
 
-        [HttpGet("personal")]
+        [HttpGet(ApplicationConstants.Routes.Personal)]
         public async Task<ActionResult<IReadOnlyList<PersonalLoanApplicationDTO>>> GetAllPersonalLoans()
         {
-            var loans = await _loanApplicationService.GetAllPersonalLoansAsync();
-            return Ok(loans);
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingLoanRetrieval, "all personal loans");
+
+                var loans = await _loanApplicationService.GetAllPersonalLoansAsync();
+
+                _logger.LogInformation(ApplicationConstants.Messages.LoanRetrievalCompleted, loans.Count);
+                return Ok(loans);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.LoanRetrievalFailed, "all personal loans");
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.LoanRetrievalFailed });
+            }
         }
 
-        [HttpGet("personal/{id}")]
+        [HttpGet(ApplicationConstants.Routes.PersonalById)]
         public async Task<ActionResult<PersonalLoanApplicationDTO>> GetPersonalLoan(int id)
         {
-            var loan = await _loanApplicationService.GetPersonalLoanByIdAsync(id);
-            if (loan == null) return NotFound();
-            return Ok(loan);
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingLoanRetrieval, id);
+
+                var loan = await _loanApplicationService.GetPersonalLoanByIdAsync(id);
+                if (loan == null)
+                {
+                    _logger.LogWarning(ApplicationConstants.ErrorMessages.LoanApplicationNotFound, id);
+                    return NotFound(new { message = ApplicationConstants.ErrorMessages.LoanApplicationNotFound });
+                }
+
+                _logger.LogInformation(ApplicationConstants.Messages.LoanRetrievalCompleted, id);
+                return Ok(loan);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.LoanRetrievalFailed, id);
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.LoanRetrievalFailed });
+            }
         }
 
-        [HttpGet("personal/status/{status}")]
+        [HttpGet(ApplicationConstants.Routes.PersonalByStatus)]
         public async Task<ActionResult<IReadOnlyList<PersonalLoanApplicationDTO>>> GetLoansByStatus(ApplicationStatus status)
         {
-            var loans = await _loanApplicationService.GetLoansByStatusAsync(status);
-            return Ok(loans);
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingLoanRetrieval, $"loans with status {status}");
+
+                var loans = await _loanApplicationService.GetLoansByStatusAsync(status);
+
+                _logger.LogInformation(ApplicationConstants.Messages.LoanRetrievalCompleted, loans.Count);
+                return Ok(loans);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.LoanRetrievalFailed, $"status {status}");
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.LoanRetrievalFailed });
+            }
         }
 
-        [HttpPost("personal/{customerId}/submit")]
+        [HttpPost(ApplicationConstants.Routes.PersonalSubmit)]
         public async Task<ActionResult> SubmitCompletePersonalLoan(int customerId, PersonalLoanApplicationCreateDTO dto)
         {
             try
             {
-                // Create application with all details
-                var created = await _loanApplicationService.CreatePersonalLoanAsync(dto, customerId);
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingPersonalLoanCreation, customerId);
 
-                // Update status to Submitted
+                var created = await _loanApplicationService.CreatePersonalLoanAsync(dto, customerId);
                 var submitted = await _loanApplicationService.UpdateLoanStatusAsync(created.LoanApplicationBaseId, ApplicationStatus.Submitted);
 
+                _logger.LogInformation(ApplicationConstants.Messages.PersonalLoanCreationCompleted, submitted.LoanApplicationBaseId);
                 return Ok(new
                 {
                     ApplicationId = submitted.LoanApplicationBaseId,
                     Status = submitted.Status,
-                    Message = "Loan application submitted successfully. You will be notified about the status.",
+                    Message = ApplicationConstants.Messages.LoanApplicationSubmittedSuccessfully,
                     NextSteps = new[]
                     {
                         "Upload required documents using /api/Document/upload endpoint",
@@ -68,44 +112,87 @@ namespace Kanini.LMP.Api.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogWarning(ex, ApplicationConstants.ErrorMessages.IneligibleForLoan);
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.IneligibleForLoan });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.PersonalLoanCreationFailed, customerId);
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.PersonalLoanCreationFailed });
             }
         }
 
-        [HttpPut("personal/{id}/status")]
+        [HttpPut(ApplicationConstants.Routes.PersonalUpdateStatus)]
         public async Task<ActionResult<PersonalLoanApplicationDTO>> UpdateLoanStatus(int id, [FromBody] ApplicationStatus status)
         {
-            var updated = await _loanApplicationService.UpdateLoanStatusAsync(id, status);
-            return Ok(updated);
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingLoanStatusUpdate, id, status);
+
+                var updated = await _loanApplicationService.UpdateLoanStatusAsync(id, status);
+
+                _logger.LogInformation(ApplicationConstants.Messages.LoanStatusUpdateCompleted, id);
+                return Ok(updated);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, ApplicationConstants.ErrorMessages.LoanApplicationNotFound, id);
+                return NotFound(new { message = ApplicationConstants.ErrorMessages.LoanApplicationNotFound });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.LoanStatusUpdateFailed, id);
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.LoanStatusUpdateFailed });
+            }
         }
 
         // Home Loan Endpoints
-        [HttpPost("home/{customerId}")]
+        [HttpPost(ApplicationConstants.Routes.Home)]
         public async Task<ActionResult<HomeLoanApplicationDTO>> CreateHomeLoan(int customerId, HomeLoanApplicationCreateDTO dto)
         {
             try
             {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingHomeLoanCreation, customerId);
+
                 var created = await _loanApplicationService.CreateHomeLoanAsync(dto, customerId);
+
+                _logger.LogInformation(ApplicationConstants.Messages.HomeLoanCreationCompleted, created.LoanApplicationBaseId);
                 return Ok(created);
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogWarning(ex, ApplicationConstants.ErrorMessages.IneligibleForLoan);
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.IneligibleForLoan });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.HomeLoanCreationFailed, customerId);
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.HomeLoanCreationFailed });
             }
         }
 
         // Vehicle Loan Endpoints
-        [HttpPost("vehicle/{customerId}")]
+        [HttpPost(ApplicationConstants.Routes.Vehicle)]
         public async Task<ActionResult<VehicleLoanApplicationDTO>> CreateVehicleLoan(int customerId, VehicleLoanApplicationCreateDTO dto)
         {
             try
             {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingVehicleLoanCreation, customerId);
+
                 var created = await _loanApplicationService.CreateVehicleLoanAsync(dto, customerId);
+
+                _logger.LogInformation(ApplicationConstants.Messages.VehicleLoanCreationCompleted, created.LoanApplicationBaseId);
                 return Ok(created);
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogWarning(ex, ApplicationConstants.ErrorMessages.IneligibleForLoan);
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.IneligibleForLoan });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.VehicleLoanCreationFailed, customerId);
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.VehicleLoanCreationFailed });
             }
         }
     }
