@@ -15,8 +15,6 @@ using Kanini.LMP.Data.UnitOfWork;
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Application.Services.Implementations;
 using Kanini.LMP.Application.Mappings;
-using AutoMapper;
-using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,8 +67,8 @@ builder.Services.AddScoped<IManagerAnalyticsRepository, ManagerAnalyticsReposito
 builder.Services.AddScoped<IPdfRepository, PdfRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-// AutoMapper - Skip for now due to version issues
-// TODO: Configure AutoMapper properly after updating package
+// AutoMapper - Use extension method registration
+builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
 
 // Add Memory Cache for credit score caching
 builder.Services.AddMemoryCache();
@@ -95,7 +93,6 @@ builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<ISMSService, SMSService>();
 builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
 builder.Services.AddScoped<IEnhancedNotificationService, EnhancedNotificationService>();
-builder.Services.AddScoped<ICreditScoreService, CreditScoreService>();
 builder.Services.AddHostedService<EMINotificationBackgroundService>();
 
 // JWT Authentication 
