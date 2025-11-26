@@ -21,6 +21,8 @@
         Rejected,
         Approved,
         Disbursed
+        Approved,
+        Disbursed
     }
 
     public enum IndianStates

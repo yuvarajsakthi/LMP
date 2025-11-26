@@ -7,6 +7,15 @@ using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.EntitiesDto;
 using Kanini.LMP.Database.EntitiesDtos.Authentication;
 using Kanini.LMP.Database.Enums;
+using Kanini.LMP.Application.Constants;
+using Kanini.LMP.Application.Services.Implementations;
+using Kanini.LMP.Application.Services.Interfaces;
+using Kanini.LMP.Data.Repositories.Interfaces;
+using Kanini.LMP.Database.Entities;
+using Kanini.LMP.Database.Entities.CustomerEntities;
+using Kanini.LMP.Database.EntitiesDto;
+using Kanini.LMP.Database.EntitiesDtos.Authentication;
+using Kanini.LMP.Database.Enums;
 
 namespace Kanini.LMP.Application.Services.Implementations
 {
