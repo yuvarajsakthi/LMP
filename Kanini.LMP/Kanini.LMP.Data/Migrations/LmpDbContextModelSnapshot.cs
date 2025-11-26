@@ -1056,6 +1056,10 @@ namespace Kanini.LMP.Data.Migrations
                     b.Property<DateTime>("DisbursementDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("DisbursementTransactionId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<DateTime?>("LastPaymentDate")
                         .HasColumnType("datetime2");
 

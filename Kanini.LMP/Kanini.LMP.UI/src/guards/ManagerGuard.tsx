@@ -4,14 +4,18 @@ import { USER_ROLES, ROUTES } from '../config';
 import type { GuardProps, User } from '../types';
 
 const ManagerGuard = ({ children }: GuardProps) => {
-  const auth = useAuthUser();
-  const user = auth as User | null;
+  try {
+    const auth = useAuthUser();
+    const user = auth as User | null;
 
-  if (!user || user.role?.toLowerCase() !== USER_ROLES.MANAGER) {
-    return <Navigate to={ROUTES.UNAUTHORIZED} replace />;
+    if (!user || user.role?.toLowerCase() !== USER_ROLES.MANAGER.toLowerCase()) {
+      return <Navigate to={ROUTES.UNAUTHORIZED} replace />;
+    }
+
+    return <>{children}</>;
+  } catch (error) {
+    return <Navigate to={ROUTES.LOGIN} replace />;
   }
-
-  return <>{children}</>;
 };
 
 export default ManagerGuard;

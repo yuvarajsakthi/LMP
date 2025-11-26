@@ -316,7 +316,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                             TotalLoanAmount = disbursedAmount,
                             PrincipalRemaining = disbursedAmount,
                             LastStatusUpdate = DateTime.UtcNow,
-                            DisbursementTransactionId = razorpayTransactionId
+                            // DisbursementTransactionId = razorpayTransactionId
                         };
                         await _unitOfWork.LoanAccounts.AddAsync(loanAccount);
                     }

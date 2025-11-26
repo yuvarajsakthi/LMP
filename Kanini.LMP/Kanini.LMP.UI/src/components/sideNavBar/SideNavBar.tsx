@@ -12,7 +12,11 @@ const SideNavBar = () => {
     const [selectedKey, setSelectedKey] = useState('');
 
     const toggleCollapsed = () => {
-        setCollapsed(collapsed);
+        try {
+            setCollapsed(!collapsed);
+        } catch (error) {
+            console.error('Failed to toggle sidebar:', error);
+        }
     };
 
     const navigate = useNavigate();
@@ -21,26 +25,18 @@ const SideNavBar = () => {
     const handleClick = (e: any) => {
         setSelectedKey(e.key);
         
-        // Navigate based on menu item
-        switch(e.key) {
-            case '1':
-                navigate(ROUTES.CUSTOMER_DASHBOARD);
-                break;
-            case '2':
-                navigate('/apply-loan');
-                break;
-            case '3':
-                navigate('/view-status');
-                break;
-            case '4':
-                navigate('/emi-calculator');
-                break;
-            case '5':
-                navigate('/faq');
-                break;
-            case '6':
-                navigate('/settings');
-                break;
+        const routes = {
+            '1': ROUTES.CUSTOMER_DASHBOARD,
+            '2': '/apply-loan',
+            '3': '/view-status',
+            '4': '/emi-calculator',
+            '5': '/faq',
+            '6': '/settings'
+        };
+        
+        const route = routes[e.key as keyof typeof routes];
+        if (route) {
+            navigate(route);
         }
     };
 

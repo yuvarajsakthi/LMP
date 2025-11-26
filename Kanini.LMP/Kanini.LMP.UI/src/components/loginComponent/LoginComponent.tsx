@@ -1,18 +1,20 @@
 import { useState } from "react";
 import { Typography, Input, Button, message } from "antd";
-import group from "../../assets/images/LoanAcceleratorLogo.svg";
-import axiosInstance from "../../api/axiosInstance";
+import { useDispatch, useSelector } from 'react-redux';
+import { LoanAcceleratorLogo } from "../../assets";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import LoginComponentCss from "./LoginComponent.module.css";
-import { jwtDecode } from "jwt-decode";
 import { useAuth } from "../../context";
-import type { LoginCredentials, LoginResponse, DecodedToken, InputChangeEvent } from "../../types";
-import { USER_ROLES, ERROR_MESSAGES, SUCCESS_MESSAGES, ROUTES, API_ENDPOINTS } from "../../config";
-import { loginSchema } from "../../utils/validationSchemas";
-import { authMiddleware } from "../../middleware";
+import type { LoginCredentials, InputChangeEvent } from "../../types";
+import { USER_ROLES, ERROR_MESSAGES, SUCCESS_MESSAGES, ROUTES } from "../../config";
+import { validateField } from "../../utils";
+import { loginUser } from "../../store/slices/authSlice";
+import type { RootState, AppDispatch } from "../../store";
 const { Title } = Typography;
 
 const Login = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { isLoading } = useSelector((state: RootState) => state.auth);
   const { setToken } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -20,64 +22,58 @@ const Login = () => {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
-  const validateField = async (field: string, value: string) => {
-    try {
-      await loginSchema.validateAt(field, { [field]: value });
-      return "";
-    } catch (error: any) {
-      return error.message;
-    }
-  };
+
 
   const handleEmailChange = async (e: InputChangeEvent) => {
     const emailValue = e.target.value;
     setEmail(emailValue);
-    const error = await validateField('email', emailValue);
+    const error = await validateField('email', emailValue, 'login');
     setEmailError(error);
   };
 
   const handlePasswordChange = async (e: InputChangeEvent) => {
     const passwordValue = e.target.value;
     setPassword(passwordValue);
-    const error = await validateField('password', passwordValue);
+    const error = await validateField('password', passwordValue, 'login');
     setPasswordError(error);
   };
   const handleSubmit = async () => {
-    if (emailError) {
-      message.error(ERROR_MESSAGES.INVALID_EMAIL);
+    if (emailError || passwordError) {
+      message.error(emailError || passwordError);
       return;
     }
-    if (passwordError) {
-      message.error(ERROR_MESSAGES.INVALID_PASSWORD);
+
+    if (!email || !password) {
+      message.error('Email and password are required');
       return;
     }
+    
+    const loginData: LoginCredentials = {
+      username: email,
+      password: password,
+    };
+    
     try {
-      const loginData: LoginCredentials = {
-        emailId: email,
-        password: password,
-      };
-      const response = await axiosInstance.post<LoginResponse>(API_ENDPOINTS.USER_LOGIN, loginData);
-      const encodedToken = response.data.token;
-      authMiddleware.setToken(encodedToken);
-      const decodedToken: DecodedToken = jwtDecode(encodedToken);
-      const userRole = decodedToken.role;
-      setToken(decodedToken);
-      if (userRole?.toLowerCase() === USER_ROLES.MANAGER) {
+      const result = await dispatch(loginUser(loginData)).unwrap();
+      setToken(result.user);
+      
+      const userRole = result.user.role;
+      if (userRole?.toLowerCase() === USER_ROLES.MANAGER.toLowerCase()) {
         message.success(SUCCESS_MESSAGES.LOGIN_MANAGER);
         navigate(ROUTES.APPLIED_LOAN);
-      } else if (userRole?.toLowerCase() === USER_ROLES.CUSTOMER) {
+      } else if (userRole?.toLowerCase() === USER_ROLES.CUSTOMER.toLowerCase()) {
         navigate(ROUTES.CUSTOMER_DASHBOARD);
         message.success(SUCCESS_MESSAGES.LOGIN_CUSTOMER);
       }
-    } catch (error) {
-      message.error(ERROR_MESSAGES.LOGIN_FAILED);
+    } catch (error: any) {
+      message.error(error);
     }
   };
 
   return (
     <div className={LoginComponentCss.loginContainer}>
       <div className={LoginComponentCss.header}>
-        <img src={group} alt="Loan Accelerator" className={LoginComponentCss.logo} />
+        <img src={LoanAcceleratorLogo} alt="Loan Accelerator" className={LoginComponentCss.logo} />
         <h2 className={LoginComponentCss.brandName}>
           <span className={LoginComponentCss.brandHighlight}>Loan</span> Accelerator
         </h2>
@@ -99,6 +95,9 @@ const Login = () => {
             status={emailError ? "error" : ""}
             placeholder="name@email.com"
           />
+          {emailError && (
+            <div className={LoginComponentCss.errorMessage}>{emailError}</div>
+          )}
         </div>
 
         <div className={LoginComponentCss.inputGroup}>
@@ -111,6 +110,9 @@ const Login = () => {
             status={passwordError ? "error" : ""}
             placeholder="at least 8 characters"
           />
+          {passwordError && (
+            <div className={LoginComponentCss.errorMessage}>{passwordError}</div>
+          )}
         </div>
 
         <RouterLink to={ROUTES.FORGOT_PASSWORD} className={LoginComponentCss.forgotPasswordLink}>
@@ -121,6 +123,7 @@ const Login = () => {
           type="primary"
           className={LoginComponentCss.submitButton}
           onClick={handleSubmit}
+          loading={isLoading}
         >
           SIGN IN
         </Button>

@@ -1,17 +1,22 @@
 import { jwtDecode } from 'jwt-decode';
 import type { DecodedToken } from '../types';
+import { secureStorage } from '../utils/secureStorage';
 
 export const authMiddleware = {
   getToken: (): string | null => {
-    return localStorage.getItem('token');
+    return secureStorage.getToken();
   },
 
   setToken: (token: string): void => {
-    localStorage.setItem('token', token);
+    if (!token || typeof token !== 'string' || !/^[A-Za-z0-9._-]+$/.test(token)) {
+      throw new Error('Invalid token format');
+    }
+    const sanitizedToken = token.replace(/[^A-Za-z0-9._-]/g, '');
+    secureStorage.setToken(sanitizedToken);
   },
 
   removeToken: (): void => {
-    localStorage.removeItem('token');
+    secureStorage.removeToken();
   },
 
   isAuthenticated: (): boolean => {
