@@ -3,6 +3,7 @@ using Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.LoanAnalystics;
 using Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.LoanCentricView;
 using Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.CustomerScape;
 using Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.AppliedLoans;
+using Kanini.LMP.Database.EntitiesDtos.ManagerEntitiesDtos;
 
 namespace Kanini.LMP.Application.Services.Interfaces
 {
@@ -13,6 +14,17 @@ namespace Kanini.LMP.Application.Services.Interfaces
         Task<IEnumerable<ApplicationStatusSummaryDto>> GetApplicationStatusSummaryAsync();
         Task<IEnumerable<ApplicationTrendDto>> GetApplicationTrendsAsync();
         Task<IEnumerable<ApplicationTypePerformanceDto>> GetApplicationTypePerformanceAsync();
+        Task<IEnumerable<ApplicationTypePerformanceDto>> GetApplicationTypePerformanceViaSPAsync();
+        Task<IEnumerable<ApplicationStatusSummaryDto>> GetApplicationStatusSummaryViaSPAsync();
+        Task<IEnumerable<ApplicationTrendDto>> GetApplicationTrendsViaSPAsync();
+        Task<OverallMetricsDto> GetOverallMetricsViaSPAsync();
+        Task<NewApplicationsSummaryDto> GetNewApplicationsSummaryViaSPAsync();
+
+        // Reports Stored Procedures
+        Task<LoanPerformanceReportDto> GetLoanPerformanceReportViaSPAsync(DateTime fromDate, DateTime toDate);
+        Task<RiskAssessmentReportDto> GetRiskAssessmentReportViaSPAsync(DateTime fromDate, DateTime toDate);
+        Task<ComplianceReportDto> GetComplianceReportViaSPAsync();
+        Task<object> GetCustomerAnalyticsViaSPAsync();
         Task<NewApplicationsSummaryDto> GetNewApplicationsSummaryAsync();
 
         // 2. Applied Loans
@@ -34,5 +46,14 @@ namespace Kanini.LMP.Application.Services.Interfaces
         // 5. Loan Centric View
         Task<IEnumerable<LoanProductSummaryDto>> GetLoanProductSummaryAsync();
         Task<LoanProductAnalysisDto> GetLoanProductAnalysisAsync(string loanProductType);
+
+        // 6. Risk Assessment Reports
+        Task<RiskAssessmentReportDto> GetRiskAssessmentReportAsync(DateTime fromDate, DateTime toDate);
+
+        // 7. Compliance Reports
+        Task<ComplianceReportDto> GetComplianceReportAsync();
+
+        // 8. Loan Performance Reports
+        Task<LoanPerformanceReportDto> GetLoanPerformanceReportAsync(DateTime fromDate, DateTime toDate);
     }
 }

@@ -21,6 +21,8 @@
         Rejected,
         Approved,
         Disbursed
+        Approved,
+        Disbursed
     }
 
     public enum IndianStates
@@ -84,16 +86,16 @@
         Closed
     }
 
-    public enum DocumentType
-    {
-        IdentityProof,
-        AddressProof,
-        IncomeProof,
-        BankStatement,
-        PropertyDocuments,
-        VehicleDocuments,
-        Other
-    }
+    //public enum DocumentType
+    //{
+    //    IdentityProof,
+    //    AddressProof,
+    //    IncomeProof,
+    //    BankStatement,
+    //    PropertyDocuments,
+    //    VehicleDocuments,
+    //    Other
+    //}
 
     //public enum CreditBureau
     //{

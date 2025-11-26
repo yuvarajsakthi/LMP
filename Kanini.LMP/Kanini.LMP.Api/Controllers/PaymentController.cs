@@ -45,5 +45,21 @@ namespace Kanini.LMP.Api.Controllers
             var updated = await _paymentService.UpdatePaymentStatusAsync(paymentId, status);
             return Ok(updated);
         }
+
+        [HttpGet("analytics-sp")]
+        public async Task<ActionResult> GetPaymentAnalyticsViaSP([FromQuery] DateTime? fromDate = null, [FromQuery] DateTime? toDate = null)
+        {
+            var from = fromDate ?? DateTime.UtcNow.AddMonths(-1);
+            var to = toDate ?? DateTime.UtcNow;
+            var analytics = await _paymentService.GetPaymentsByDateRangeViaSPAsync(from, to);
+            return Ok(analytics);
+        }
+
+        [HttpGet("history-sp/{loanAccountId}")]
+        public async Task<ActionResult> GetPaymentHistoryViaSP(int loanAccountId)
+        {
+            var history = await _paymentService.GetPaymentHistoryViaSPAsync(loanAccountId);
+            return Ok(history);
+        }
     }
 }

@@ -1,33 +1,61 @@
-﻿using Kanini.LMP.Application.Services.Interfaces;
+﻿using Kanini.LMP.Application.Constants;
+using Kanini.LMP.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Kanini.LMP.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route(ApplicationConstants.Routes.JointLoanController)]
     [ApiController]
     [Authorize]
     public class JointLoanController : ControllerBase
     {
         private readonly ILoanApplicationService _loanApplicationService;
+        private readonly ILogger<JointLoanController> _logger;
 
-        public JointLoanController(ILoanApplicationService loanApplicationService)
+        public JointLoanController(ILoanApplicationService loanApplicationService, ILogger<JointLoanController> logger)
         {
             _loanApplicationService = loanApplicationService;
+            _logger = logger;
         }
 
-        [HttpGet("{loanApplicationId}/applicants")]
+        [HttpGet(ApplicationConstants.Routes.Applicants)]
         public async Task<ActionResult> GetLoanApplicants(int loanApplicationId)
         {
-            var applicants = await _loanApplicationService.GetApplicantsByLoanAsync(loanApplicationId);
-            return Ok(new { LoanApplicationId = loanApplicationId, ApplicantIds = applicants });
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingApplicantsRetrieval, loanApplicationId);
+
+                var applicants = await _loanApplicationService.GetApplicantsByLoanAsync(loanApplicationId);
+
+                _logger.LogInformation(ApplicationConstants.Messages.ApplicantsRetrievalCompleted, applicants.Count, loanApplicationId);
+                return Ok(new { LoanApplicationId = loanApplicationId, ApplicantIds = applicants });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.ApplicantsRetrievalFailed, loanApplicationId);
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.ApplicantsRetrievalFailed });
+            }
         }
 
-        [HttpGet("{loanApplicationId}/documents")]
+        [HttpGet(ApplicationConstants.Routes.Documents)]
         public async Task<ActionResult> GetLoanDocuments(int loanApplicationId)
         {
-            var documents = await _loanApplicationService.GetDocumentsByLoanAsync(loanApplicationId);
-            return Ok(new { LoanApplicationId = loanApplicationId, DocumentIds = documents });
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingDocumentsRetrieval, loanApplicationId);
+
+                var documents = await _loanApplicationService.GetDocumentsByLoanAsync(loanApplicationId);
+
+                _logger.LogInformation(ApplicationConstants.Messages.DocumentsRetrievalCompleted, documents.Count, loanApplicationId);
+                return Ok(new { LoanApplicationId = loanApplicationId, DocumentIds = documents });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.DocumentsRetrievalFailed, loanApplicationId);
+                return BadRequest(new { message = ApplicationConstants.ErrorMessages.DocumentsRetrievalFailed });
+            }
         }
     }
 }

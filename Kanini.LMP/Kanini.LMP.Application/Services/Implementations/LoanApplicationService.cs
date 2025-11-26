@@ -1,4 +1,6 @@
-﻿using Kanini.LMP.Application.Services.Interfaces;
+using AutoMapper;
+using Kanini.LMP.Application.Constants;
+using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Data.Repositories.Interfaces;
 using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.Entities.LoanApplicationEntites;
@@ -11,6 +13,7 @@ using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.PersonalLoanApp
 using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.HomeLoanApplication;
 using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.VehicleLoanApplication;
 using Kanini.LMP.Database.Enums;
+using Microsoft.Extensions.Logging;
 
 namespace Kanini.LMP.Application.Services.Implementations
 {
@@ -29,6 +32,8 @@ namespace Kanini.LMP.Application.Services.Implementations
         private readonly ILMPRepository<LoanApplicant, int> _loanApplicantRepository;
         private readonly ILMPRepository<ApplicationDocumentLink, int> _documentLinkRepository;
         private readonly IEligibilityService _eligibilityService;
+        private readonly IMapper _mapper;
+        private readonly ILogger<LoanApplicationService> _logger;
 
         public LoanApplicationService(
             ILMPRepository<LoanApplicationBase, int> loanAppRepository,
@@ -43,7 +48,9 @@ namespace Kanini.LMP.Application.Services.Implementations
             ILMPRepository<DocumentUpload, int> documentRepository,
             ILMPRepository<LoanApplicant, int> loanApplicantRepository,
             ILMPRepository<ApplicationDocumentLink, int> documentLinkRepository,
-            IEligibilityService eligibilityService)
+            IEligibilityService eligibilityService,
+            IMapper mapper,
+            ILogger<LoanApplicationService> logger)
         {
             _loanAppRepository = loanAppRepository;
             _personalLoanRepository = personalLoanRepository;
@@ -58,6 +65,8 @@ namespace Kanini.LMP.Application.Services.Implementations
             _loanApplicantRepository = loanApplicantRepository;
             _documentLinkRepository = documentLinkRepository;
             _eligibilityService = eligibilityService;
+            _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<PersonalLoanApplicationDTO> CreatePersonalLoanAsync(PersonalLoanApplicationCreateDTO dto, int customerId)
@@ -213,15 +222,31 @@ namespace Kanini.LMP.Application.Services.Implementations
 
         public async Task<PersonalLoanApplicationDTO> UpdateLoanStatusAsync(int id, ApplicationStatus status)
         {
-            var application = await _personalLoanRepository.GetByIdAsync(id);
-            if (application == null) throw new ArgumentException("Loan application not found");
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingLoanStatusUpdate, id, status);
 
-            application.Status = status;
-            if (status == ApplicationStatus.Approved)
-                application.ApprovedDate = DateOnly.FromDateTime(DateTime.UtcNow);
+                var application = await _personalLoanRepository.GetByIdAsync(id);
+                if (application == null)
+                {
+                    _logger.LogWarning(ApplicationConstants.ErrorMessages.LoanApplicationsNotFound, id);
+                    throw new ArgumentException(ApplicationConstants.ErrorMessages.LoanApplicationsNotFound);
+                }
 
-            var updated = await _personalLoanRepository.UpdateAsync(application);
-            return MapToDto(updated);
+                application.Status = status;
+                if (status == ApplicationStatus.Approved)
+                    application.ApprovedDate = DateOnly.FromDateTime(DateTime.UtcNow);
+
+                var updated = await _personalLoanRepository.UpdateAsync(application);
+
+                _logger.LogInformation(ApplicationConstants.Messages.LoanStatusUpdateCompleted, id);
+                return MapToDto(updated);
+            }
+            catch (Exception ex) when (!(ex is ArgumentException))
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.LoanStatusUpdateFailed, id);
+                throw new Exception(ApplicationConstants.ErrorMessages.LoanStatusUpdateFailed);
+            }
         }
 
         private async Task CreateLoanDetailsAsync(int loanApplicationBaseId, Database.EntitiesDto.LoanProductEntitiesDto.CommonLoanProductEntiesDto.LoanDetailsDTO dto)
@@ -395,71 +420,17 @@ namespace Kanini.LMP.Application.Services.Implementations
 
         private PersonalLoanApplicationDTO MapToDto(PersonalLoanApplication application)
         {
-            return new PersonalLoanApplicationDTO
-            {
-                LoanApplicationBaseId = application.LoanApplicationBaseId,
-                LoanProductType = application.LoanProductType,
-                Status = application.Status,
-                SubmissionDate = application.SubmissionDate,
-                ApprovedDate = application.ApprovedDate,
-                RejectionReason = application.RejectionReason,
-                IsActive = application.IsActive,
-                LoanDetails = null!,
-                PersonalDetails = null!,
-                AddressInformation = null!,
-                FamilyEmergencyDetails = null!,
-                EmploymentDetails = null!,
-                FinancialInformation = null!,
-                Declaration = null!
-            };
+            return _mapper.Map<PersonalLoanApplicationDTO>(application);
         }
 
         private HomeLoanApplicationDTO MapHomeLoanToDto(HomeLoanApplication application)
         {
-            return new HomeLoanApplicationDTO
-            {
-                LoanApplicationBaseId = application.LoanApplicationBaseId,
-                LoanProductType = application.LoanProductType,
-                Status = application.Status,
-                SubmissionDate = application.SubmissionDate,
-                ApprovedDate = application.ApprovedDate,
-                RejectionReason = application.RejectionReason,
-                IsActive = application.IsActive,
-                LoanDetails = null!,
-                PersonalDetails = null!,
-                AddressInformation = null!,
-                FamilyEmergencyDetails = null!,
-                EmploymentDetails = null!,
-                FinancialInformation = null!,
-                Declaration = null!,
-                BuilderInformation = null!,
-                HomeLoanDetails = null!,
-                PropertyDetails = null!
-            };
+            return _mapper.Map<HomeLoanApplicationDTO>(application);
         }
 
         private VehicleLoanApplicationDTO MapVehicleLoanToDto(VehicleLoanApplication application)
         {
-            return new VehicleLoanApplicationDTO
-            {
-                LoanApplicationBaseId = application.LoanApplicationBaseId,
-                LoanProductType = application.LoanProductType,
-                Status = application.Status,
-                SubmissionDate = application.SubmissionDate,
-                ApprovedDate = application.ApprovedDate,
-                RejectionReason = application.RejectionReason,
-                IsActive = application.IsActive,
-                LoanDetails = null!,
-                PersonalDetails = null!,
-                AddressInformation = null!,
-                FamilyEmergencyDetails = null!,
-                EmploymentDetails = null!,
-                FinancialInformation = null!,
-                Declaration = null!,
-                DealerInformation = null!,
-                VehicleLoanDetails = null!,
-                VehicleInformation = null!
-            };
+            return _mapper.Map<VehicleLoanApplicationDTO>(application);
         }
     }
 }

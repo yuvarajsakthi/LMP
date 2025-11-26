@@ -7,6 +7,15 @@ using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.EntitiesDto;
 using Kanini.LMP.Database.EntitiesDtos.Authentication;
 using Kanini.LMP.Database.Enums;
+using Kanini.LMP.Application.Constants;
+using Kanini.LMP.Application.Services.Implementations;
+using Kanini.LMP.Application.Services.Interfaces;
+using Kanini.LMP.Data.Repositories.Interfaces;
+using Kanini.LMP.Database.Entities;
+using Kanini.LMP.Database.Entities.CustomerEntities;
+using Kanini.LMP.Database.EntitiesDto;
+using Kanini.LMP.Database.EntitiesDtos.Authentication;
+using Kanini.LMP.Database.Enums;
 
 namespace Kanini.LMP.Application.Services.Implementations
 {
@@ -79,17 +88,17 @@ namespace Kanini.LMP.Application.Services.Implementations
 
             var createdUser = await _userRepository.AddAsync(user);
 
-            // Create Customer profile
+            // Create Customer profile with basic info only
             var customer = new Customer
             {
                 UserId = createdUser.UserId,
                 DateOfBirth = registrationDto.DateOfBirth,
                 Gender = registrationDto.Gender,
                 PhoneNumber = registrationDto.PhoneNumber,
-                Occupation = registrationDto.Occupation,
-                AnnualIncome = registrationDto.AnnualIncome,
-                CreditScore = 0, // Will be updated with real CIBIL data
-                HomeOwnershipStatus = registrationDto.HomeOwnershipStatus,
+                Occupation = "Not Specified", // Will be updated in post-registration popup
+                AnnualIncome = 0, // Will be updated in post-registration popup
+                CreditScore = 0, // Will be calculated after profile completion
+                HomeOwnershipStatus = HomeOwnershipStatus.Rented, // Default value
                 UpdatedAt = DateTime.UtcNow,
                 ProfileImage = new byte[0] // Empty profile image initially
             };

@@ -1,8 +1,11 @@
-﻿using Kanini.LMP.Application.Services.Interfaces;
+using AutoMapper;
+using Kanini.LMP.Application.Constants;
+using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Data.Repositories.Interfaces;
 using Kanini.LMP.Database.Entities;
 using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
 using Kanini.LMP.Database.EntitiesDto.KYC;
+using Microsoft.Extensions.Logging;
 
 namespace Kanini.LMP.Application.Services.Implementations
 {
@@ -11,54 +14,49 @@ namespace Kanini.LMP.Application.Services.Implementations
         private readonly ILMPRepository<DocumentUpload, int> _documentRepository;
         private readonly ILMPRepository<User, int> _userRepository;
         private readonly INotificationService _notificationService;
+        private readonly IMapper _mapper;
+        private readonly ILogger<KYCService> _logger;
 
         // Required KYC document types
         private readonly List<string> _requiredKYCDocuments = new()
         {
-            "KYC_Aadhaar",
-            "KYC_PAN"
+            ApplicationConstants.KYCDocumentTypes.Aadhaar,
+            ApplicationConstants.KYCDocumentTypes.PAN
         };
 
         public KYCService(
             ILMPRepository<DocumentUpload, int> documentRepository,
             ILMPRepository<User, int> userRepository,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IMapper mapper,
+            ILogger<KYCService> logger)
         {
             _documentRepository = documentRepository;
             _userRepository = userRepository;
             _notificationService = notificationService;
+            _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<bool> SubmitKYCDocumentAsync(KYCSubmissionDto kycDto)
         {
             try
             {
-                // Convert base64 to byte array
-                var documentData = Convert.FromBase64String(kycDto.DocumentImageBase64);
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCSubmission, kycDto.CustomerId);
 
-                var document = new DocumentUpload
-                {
-                    LoanApplicationBaseId = kycDto.LoanApplicationId,
-                    UserId = kycDto.CustomerId,
-                    DocumentName = kycDto.DocumentName,
-                    DocumentType = kycDto.DocumentType, // "KYC_Aadhaar", "KYC_PAN", etc.
-                    DocumentData = documentData,
-                    UploadedAt = DateTime.UtcNow
-                };
-
+                var document = _mapper.Map<DocumentUpload>(kycDto);
                 await _documentRepository.AddAsync(document);
 
-                // Notify manager for verification
                 await _notificationService.NotifyManagerDocumentVerificationAsync(
-                    3, // Manager ID (you may need to get this dynamically)
-                    kycDto.LoanApplicationId,
-                    "Customer");
+                    3, kycDto.LoanApplicationId, ApplicationConstants.Roles.Customer);
 
+                _logger.LogInformation(ApplicationConstants.Messages.KYCSubmissionCompleted, kycDto.CustomerId);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.KYCSubmissionFailed);
+                throw new Exception(ApplicationConstants.ErrorMessages.KYCSubmissionFailed);
             }
         }
 
@@ -94,71 +92,79 @@ namespace Kanini.LMP.Application.Services.Implementations
         public async Task<IEnumerable<KYCVerificationDto>> GetPendingKYCDocumentsAsync()
         {
             var kycDocuments = await _documentRepository.GetAllAsync(
-                d => d.DocumentType != null && d.DocumentType.StartsWith("KYC_"));
+                d => d.DocumentType != null && d.DocumentType.StartsWith(ApplicationConstants.KYCDocumentTypes.Prefix));
 
             var users = await _userRepository.GetAllAsync();
 
             return kycDocuments.Select(doc =>
             {
                 var user = users.FirstOrDefault(u => u.UserId == doc.UserId);
-                return new KYCVerificationDto
-                {
-                    DocumentId = doc.DocumentId,
-                    CustomerId = doc.UserId,
-                    CustomerName = user?.FullName ?? "Unknown",
-                    DocumentType = doc.DocumentType?.Replace("KYC_", "") ?? "",
-                    DocumentName = doc.DocumentName ?? "",
-                    DocumentImageBase64 = doc.DocumentData != null ? Convert.ToBase64String(doc.DocumentData) : "",
-                    UploadedAt = doc.UploadedAt,
-                    Status = "Pending"
-                };
+                var result = _mapper.Map<KYCVerificationDto>(doc);
+                result.CustomerName = user?.FullName ?? ApplicationConstants.Messages.Unknown;
+                return result;
             });
         }
 
         public async Task<KYCVerificationDto> GetKYCDocumentDetailsAsync(int documentId)
         {
-            var document = await _documentRepository.GetByIdAsync(documentId);
-            if (document == null) throw new ArgumentException("Document not found");
-
-            var user = await _userRepository.GetByIdAsync(document.UserId);
-
-            return new KYCVerificationDto
+            try
             {
-                DocumentId = document.DocumentId,
-                CustomerId = document.UserId,
-                CustomerName = user?.FullName ?? "Unknown",
-                DocumentType = document.DocumentType?.Replace("KYC_", "") ?? "",
-                DocumentName = document.DocumentName ?? "",
-                DocumentImageBase64 = document.DocumentData != null ? Convert.ToBase64String(document.DocumentData) : "",
-                UploadedAt = document.UploadedAt,
-                Status = "Pending"
-            };
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCStatusRetrieval, documentId);
+
+                var document = await _documentRepository.GetByIdAsync(documentId);
+                if (document == null)
+                {
+                    _logger.LogWarning(ApplicationConstants.ErrorMessages.KYCDocumentNotFound, documentId);
+                    throw new ArgumentException(ApplicationConstants.ErrorMessages.KYCDocumentNotFound);
+                }
+
+                var user = await _userRepository.GetByIdAsync(document.UserId);
+
+                var result = _mapper.Map<KYCVerificationDto>(document);
+                result.CustomerName = user?.FullName ?? ApplicationConstants.Messages.Unknown;
+                result.Status = ApplicationConstants.KYCStatus.Pending;
+
+                _logger.LogInformation(ApplicationConstants.Messages.KYCStatusRetrievalCompleted, documentId);
+                return result;
+            }
+            catch (Exception ex) when (!(ex is ArgumentException))
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.KYCStatusRetrievalFailed, documentId);
+                throw new Exception(ApplicationConstants.ErrorMessages.KYCStatusRetrievalFailed);
+            }
         }
 
         public async Task<bool> VerifyKYCDocumentAsync(KYCVerificationRequestDto verificationDto)
         {
             try
             {
-                var document = await _documentRepository.GetByIdAsync(verificationDto.DocumentId);
-                if (document == null) return false;
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCVerification, verificationDto.DocumentId);
 
-                // Update document name to indicate verification
-                document.DocumentName = $"[VERIFIED] {document.DocumentName}";
+                var document = await _documentRepository.GetByIdAsync(verificationDto.DocumentId);
+                if (document == null)
+                {
+                    _logger.LogWarning(ApplicationConstants.ErrorMessages.KYCDocumentNotFound, verificationDto.DocumentId);
+                    return false;
+                }
+
+                document.DocumentName = $"{ApplicationConstants.ErrorMessages.VerifiedPrefix} {document.DocumentName}";
                 await _documentRepository.UpdateAsync(document);
 
-                // Notify customer
                 await _notificationService.CreateNotificationAsync(new Database.EntitiesDto.NotificationDTO
                 {
                     UserId = document.UserId,
-                    Title = "KYC Document Verified",
-                    Message = $"Your {document.DocumentType?.Replace("KYC_", "")} document has been verified successfully."
+                    Title = ApplicationConstants.NotificationTitles.KYCDocumentVerified,
+                    Message = string.Format(ApplicationConstants.NotificationMessages.KYCDocumentVerifiedMessage,
+                        document.DocumentType?.Replace(ApplicationConstants.KYCDocumentTypes.Prefix, ""))
                 });
 
+                _logger.LogInformation(ApplicationConstants.Messages.KYCVerificationCompleted, verificationDto.DocumentId);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.KYCVerificationFailed, verificationDto.DocumentId);
+                throw new Exception(ApplicationConstants.ErrorMessages.KYCVerificationFailed);
             }
         }
 
@@ -166,26 +172,34 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             try
             {
-                var document = await _documentRepository.GetByIdAsync(rejectionDto.DocumentId);
-                if (document == null) return false;
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCRejection, rejectionDto.DocumentId);
 
-                // Update document name to indicate rejection
-                document.DocumentName = $"[REJECTED] {document.DocumentName}";
+                var document = await _documentRepository.GetByIdAsync(rejectionDto.DocumentId);
+                if (document == null)
+                {
+                    _logger.LogWarning(ApplicationConstants.ErrorMessages.KYCDocumentNotFound, rejectionDto.DocumentId);
+                    return false;
+                }
+
+                document.DocumentName = $"{ApplicationConstants.ErrorMessages.RejectedPrefix} {document.DocumentName}";
                 await _documentRepository.UpdateAsync(document);
 
-                // Notify customer
                 await _notificationService.CreateNotificationAsync(new Database.EntitiesDto.NotificationDTO
                 {
                     UserId = document.UserId,
-                    Title = "KYC Document Rejected",
-                    Message = $"Your {document.DocumentType?.Replace("KYC_", "")} document has been rejected. Reason: {rejectionDto.Remarks ?? "Please resubmit with correct information."}"
+                    Title = ApplicationConstants.NotificationTitles.KYCDocumentRejected,
+                    Message = string.Format(ApplicationConstants.NotificationMessages.KYCDocumentRejectedMessage,
+                        document.DocumentType?.Replace(ApplicationConstants.KYCDocumentTypes.Prefix, ""),
+                        rejectionDto.Remarks ?? ApplicationConstants.NotificationMessages.DefaultRejectionReason)
                 });
 
+                _logger.LogInformation(ApplicationConstants.Messages.KYCRejectionCompleted, rejectionDto.DocumentId);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.KYCRejectionFailed, rejectionDto.DocumentId);
+                throw new Exception(ApplicationConstants.ErrorMessages.KYCRejectionFailed);
             }
         }
 

@@ -11,5 +11,15 @@ namespace Kanini.LMP.Application.Services.Interfaces
         Task<IEnumerable<EMIPlanDTO>> GetEmiPlansByLoanApplicationAsync(int loanApplicationId);
         Task<CustomerEMIDashboardDto?> GetCustomerEMIDashboardAsync(int customerId);
         Task<List<CustomerEMIDashboardDto>> GetAllCustomerEMIsAsync(int customerId);
+
+        // Advanced EMI Features
+        Task<List<EMIScheduleDto>> GenerateEMIScheduleAsync(int emiId);
+        Task<PrepaymentCalculationDto> CalculatePrepaymentAsync(int emiId, decimal prepaymentAmount);
+        Task<decimal> CalculateLateFeeAsync(int emiId, DateTime currentDate);
+        Task<EMIRestructureResultDto> CalculateEMIRestructureAsync(EMIRestructureDto restructureDto);
+        Task<EMIPlanDTO> ApplyEMIRestructureAsync(EMIRestructureDto restructureDto);
+        Task<object> GetCompleteEMIDetailsAsync(int emiId);
+        Task<EMIPlanDTO> CalculateEmiViaSPAsync(decimal principalAmount, decimal interestRate, int termMonths);
+        Task<IEnumerable<EMIScheduleDto>> GenerateEMIScheduleViaSPAsync(int emiId);
     }
 }
