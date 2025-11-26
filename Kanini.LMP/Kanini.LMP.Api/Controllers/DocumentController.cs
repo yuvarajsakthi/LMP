@@ -51,9 +51,7 @@ namespace Kanini.LMP.Api.Controllers
 
                 var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
                 var (fileData, fileName) = await _documentService.DownloadDocumentWithNameAsync(documentId, userId);
-                
-                _logger.LogInformation(ApplicationConstants.Messages.DocumentDownloadCompleted, documentId);
-                return File(fileData, ApplicationConstants.ContentTypes.OctetStream, fileName);
+                return File(fileData, "application/octet-stream", fileName);
             }
             catch (FileNotFoundException)
             {
