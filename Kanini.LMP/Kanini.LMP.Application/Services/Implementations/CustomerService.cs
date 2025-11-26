@@ -21,10 +21,18 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<CustomerDto> Add(CustomerDto entity)
         {
+            try
+            {
+                _logger.LogInformation("Adding new customer for user ID: {UserId}", entity.UserId);
+
+                var customer = _mapper.Map<Customer>(entity);
+                customer.ProfileImage = new byte[] { 0x00 }; // Default empty image
+                customer.UpdatedAt = DateTime.UtcNow;
 
                 var created = await _unitOfWork.Customers.AddAsync(customer);
                 await _unitOfWork.SaveChangesAsync();
