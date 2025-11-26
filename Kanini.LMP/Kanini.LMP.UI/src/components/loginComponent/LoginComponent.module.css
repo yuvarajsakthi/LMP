@@ -1,0 +1,126 @@
+.loginContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+    background-color: #ffffff;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 3rem;
+    /* Increased spacing */
+}
+
+.logo {
+    width: 50px;
+    /* Original max-width: 100px, but seemed smaller in context */
+    height: auto;
+    margin-right: 15px;
+}
+
+.brandName {
+    font-family: 'Roboto', sans-serif;
+    font-size: 24px;
+    /* Original size */
+    color: #042747;
+    margin: 0;
+    font-weight: 400;
+}
+
+.brandHighlight {
+    font-weight: bold;
+    color: #2C76C9;
+}
+
+.title {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 600;
+    font-size: 36px;
+    /* Original size */
+    color: #454545;
+    margin-bottom: 3rem;
+    /* Increased spacing */
+    text-align: center;
+    width: 100%;
+    max-width: 441px;
+    text-align: left;
+    /* Original was left aligned relative to form */
+}
+
+.form {
+    width: 100%;
+    max-width: 441px;
+    /* Original width */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.label {
+    font-family: 'Roboto', sans-serif;
+    font-size: 15px;
+    /* Original size */
+    color: #5F6E74;
+    font-weight: 400;
+}
+
+.input {
+    height: 45px;
+    /* Original height */
+    border-radius: 8px;
+    border: 1px solid #E9F3F9;
+    font-size: 14px;
+}
+
+.forgotPasswordLink {
+    align-self: flex-end;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    color: #0088CE;
+    margin-top: -0.5rem;
+}
+
+.submitButton {
+    height: 52px;
+    /* Original height */
+    font-size: 16px;
+    /* "large" in original */
+    background-color: #0088CE;
+    border-radius: 4px;
+    box-shadow: 4px 6px 10px rgba(0, 136, 206, 0.12);
+    margin-top: 1rem;
+}
+
+.newUserText {
+    margin-top: 2rem;
+    text-align: center;
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+}
+
+@media (max-width: 768px) {
+    .loginContainer {
+        padding: 1rem;
+        justify-content: flex-start;
+        padding-top: 3rem;
+    }
+
+    .title {
+        text-align: center;
+        font-size: 28px;
+    }
+
+    .header {
+        margin-bottom: 2rem;
+    }
+}
