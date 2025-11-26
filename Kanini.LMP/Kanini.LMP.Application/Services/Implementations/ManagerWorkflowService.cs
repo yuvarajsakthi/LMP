@@ -90,7 +90,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                 // Note: LoanDetails should have its own repository, using workaround for now
                 var loanDetails = new List<LoanDetails>(); // Placeholder - needs proper LoanDetails repository
 
-                var customer = customers.FirstOrDefault(c => c.CustomerId == application?.Applicants.FirstOrDefault()?.CustomerId);
+                var customer = customers.FirstOrDefault(c => c.CustomerId == application.Applicants.FirstOrDefault()?.CustomerId);
                 var user = users.FirstOrDefault(u => u.UserId == customer?.UserId);
                 var loanDetail = loanDetails.FirstOrDefault(ld => ld.LoanApplicationBaseId == applicationId);
                 var appWorkflows = workflows.Where(w => w.LoanApplicationBaseId == applicationId);

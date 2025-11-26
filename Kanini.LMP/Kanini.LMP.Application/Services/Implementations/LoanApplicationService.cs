@@ -229,8 +229,8 @@ namespace Kanini.LMP.Application.Services.Implementations
                 var application = await _personalLoanRepository.GetByIdAsync(id);
                 if (application == null)
                 {
-                    _logger.LogWarning(ApplicationConstants.ErrorMessages.LoanApplicationsNotFound, id);
-                    throw new ArgumentException(ApplicationConstants.ErrorMessages.LoanApplicationsNotFound);
+                    _logger.LogWarning(ApplicationConstants.ErrorMessages.LoanApplicationNotFound, id);
+                    throw new ArgumentException(ApplicationConstants.ErrorMessages.LoanApplicationNotFound);
                 }
 
                 application.Status = status;
