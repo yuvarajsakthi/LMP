@@ -1,9 +1,8 @@
 export interface RegisterCredentials {
-  role: string;
-  emailId: string;
+  email: string;
   password: string;
   fullName: string;
-  isActive: string;
+  role: string;
 }
 
 export interface RegisterResponse {

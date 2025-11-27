@@ -44,48 +44,9 @@
 }
 
 .image {
-    width: 100%;
-    max-width: 500px;
-    height: auto;
-    z-index: 2;
-}
-
-/* Abstract shapes/rays */
-.ray1,
-.ray2 {
-    position: absolute;
-    background: linear-gradient(269.97deg, #627DF1 -1.44%, rgba(98, 125, 241, 0) 98.4%);
-    z-index: 1;
-    pointer-events: none;
-}
-
-.ray1 {
-    width: 150%;
-    height: 200px;
-    top: 10%;
-    left: -20%;
-    transform: rotate(-35deg);
-}
-
-.ray2 {
-    width: 150%;
-    height: 200px;
-    bottom: 10%;
-    left: -20%;
-    transform: rotate(30deg);
-}
-
-@media (max-width: 768px) {
-    .background {
-        height: auto;
-        min-height: 50vh;
-    }
-
-    .welcome {
-        font-size: 2rem;
-    }
-
-    .subText {
-        font-size: 1.2rem;
-    }
+  max-width: 60%;
+  max-height: 60%;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }

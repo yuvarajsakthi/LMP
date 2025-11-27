@@ -1,156 +1,129 @@
 .registerContainer {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 1rem;
-    background-color: #ffffff;
+  padding: 2rem;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: white;
 }
 
 .header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
 }
 
 .logo {
-    width: 40px;
-    height: auto;
-    margin-right: 10px;
+  width: 40px;
+  height: 40px;
+  margin-right: 1rem;
 }
 
 .brandName {
-    font-family: 'Roboto', sans-serif;
-    font-size: 20px;
-    color: #042747;
-    margin: 0;
-    font-weight: 400;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #262626;
+  margin: 0;
 }
 
 .brandHighlight {
-    font-weight: bold;
-    color: #2C76C9;
+  color: #1890ff;
 }
 
 .title {
-    font-family: 'Roboto', sans-serif;
-    font-weight: 600;
-    font-size: 28px;
-    color: #454545;
-    margin-bottom: 0.5rem;
-    text-align: left;
-    width: 100%;
-    max-width: 441px;
+  color: #262626;
+  margin-bottom: 1rem;
 }
 
 .subtitle {
-    font-family: 'Roboto', sans-serif;
-    font-weight: 400;
-    font-size: 18px;
-    color: #042747;
-    margin-bottom: 1rem;
-    text-align: left;
-    width: 100%;
-    max-width: 441px;
+  color: #8c8c8c;
+  margin-bottom: 1.5rem;
 }
 
 .roleSelection {
-    margin-bottom: 1rem;
-    width: 100%;
-    max-width: 441px;
+  margin-bottom: 2rem;
 }
 
 .roleCard {
-    width: 120px;
-    height: 120px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    border: 1px solid #E9F3F9;
+  text-align: center;
+  padding: 1rem;
+  border: 2px solid #f0f0f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.selected {
-    border: 2px solid #4DADFE !important;
+.roleCard:hover {
+  border-color: #1890ff;
+}
+
+.roleCard.selected {
+  border-color: #1890ff;
+  background-color: #f6ffed;
 }
 
 .roleText {
-    font-size: 14px;
-    margin-top: 0.5rem;
-    color: #5F6E74;
+  display: block;
+  margin-top: 0.5rem;
+  color: #262626;
+  font-weight: 500;
 }
 
-.selectedText {
-    color: #2F53EA;
-    font-weight: bold;
+.roleText.selectedText {
+  color: #1890ff;
 }
 
 .form {
-    width: 100%;
-    max-width: 441px;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  max-width: 400px;
 }
 
 .inputGroup {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+  margin-bottom: 1rem;
 }
 
 .label {
-    font-family: 'Roboto', sans-serif;
-    font-size: 14px;
-    color: #5F6E74;
-    font-weight: 400;
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #262626;
+  font-weight: 500;
 }
 
 .input {
-    height: 40px;
-    border-radius: 8px;
-    border: 1px solid #E9F3F9;
-    font-size: 14px;
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  font-size: 1rem;
 }
 
 .errorMessage {
-    color: red;
-    font-size: 12px;
-    margin-top: 0.1rem;
+  color: #ff4d4f;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
 }
 
 .submitButton {
-    height: 45px;
-    font-size: 16px;
-    background-color: #0088CE;
-    border-radius: 4px;
-    box-shadow: 4px 6px 10px rgba(0, 136, 206, 0.12);
-    margin-top: 0.5rem;
+  width: 100%;
+  height: 48px;
+  background-color: #1890ff;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
 }
 
 .existingUserText {
-    margin-top: 1rem;
-    text-align: center;
-    font-family: 'Roboto', sans-serif;
-    font-size: 14px;
+  text-align: center;
+  color: #8c8c8c;
 }
 
-@media (max-width: 768px) {
-    .registerContainer {
-        padding: 1rem;
-        justify-content: flex-start;
-        padding-top: 2rem;
-    }
+.existingUserText a {
+  color: #1890ff;
+  text-decoration: none;
+}
 
-    .title,
-    .subtitle {
-        text-align: center;
-    }
-
-    .roleSelection {
-        display: flex;
-        justify-content: center;
-    }
+.existingUserText a:hover {
+  text-decoration: underline;
 }

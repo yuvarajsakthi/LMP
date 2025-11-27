@@ -1,5 +1,6 @@
 import React, { Component, type ReactNode } from 'react';
 import { MdError, MdRefresh } from 'react-icons/md';
+import { ERROR_BOUNDARY_MESSAGES } from '../../config';
 import ErrorBoundaryCss from './ErrorBoundary.module.css';
 
 interface Props {
@@ -40,11 +41,11 @@ class ErrorBoundary extends Component<Props, State> {
         <div className={ErrorBoundaryCss.errorBoundary}>
           <div className={ErrorBoundaryCss.errorContent}>
             <MdError className={ErrorBoundaryCss.errorIcon} />
-            <h2>Something went wrong</h2>
-            <p>We're sorry, but something unexpected happened.</p>
+            <h2>{ERROR_BOUNDARY_MESSAGES.TITLE}</h2>
+            <p>{ERROR_BOUNDARY_MESSAGES.DESCRIPTION}</p>
             <button onClick={this.handleRetry} className={ErrorBoundaryCss.retryButton}>
               <MdRefresh />
-              Try Again
+              {ERROR_BOUNDARY_MESSAGES.RETRY_BUTTON}
             </button>
           </div>
         </div>

@@ -56,7 +56,19 @@ namespace Kanini.LMP.Application.Services.Implementations
                 .Join(context.EMIPlans,
                     la => la.LoanAccountId,
                     emi => emi.LoanAccountId,
-                    (la, emi) => new { LoanAccount = la, EMI = emi })
+                    (la, emi) => new { 
+                        LoanAccount = new {
+                            la.LoanAccountId,
+                            la.CustomerId,
+                            la.DisbursementDate
+                        }, 
+                        EMI = new {
+                            emi.EMIId,
+                            emi.MonthlyEMI,
+                            emi.Status,
+                            emi.IsCompleted
+                        }
+                    })
                 .Where(x => x.EMI.Status == EMIPlanStatus.Active && !x.EMI.IsCompleted)
                 .ToListAsync();
 
@@ -104,7 +116,18 @@ namespace Kanini.LMP.Application.Services.Implementations
                 .Join(context.EMIPlans,
                     la => la.LoanAccountId,
                     emi => emi.LoanAccountId,
-                    (la, emi) => new { LoanAccount = la, EMI = emi })
+                    (la, emi) => new { 
+                        LoanAccount = new {
+                            la.LoanAccountId,
+                            la.CustomerId,
+                            la.DaysPastDue,
+                            la.TotalLateFeePaidAmount
+                        }, 
+                        EMI = new {
+                            emi.EMIId,
+                            emi.MonthlyEMI
+                        }
+                    })
                 .ToListAsync();
 
             foreach (var overdueInfo in overdueAccounts)

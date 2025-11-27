@@ -24,14 +24,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const handleSetToken = (newToken: DecodedToken | null) => {
-    setToken(newToken);
-    setIsAuthenticated(!!newToken);
+    try {
+      if (newToken && (!newToken.role || typeof newToken.role !== 'string')) {
+        throw new Error('Invalid token structure');
+      }
+      setToken(newToken);
+      setIsAuthenticated(!!newToken);
+    } catch (error) {
+      console.error('Failed to set token:', error);
+      setToken(null);
+      setIsAuthenticated(false);
+    }
   };
 
   const logout = () => {
-    authMiddleware.removeToken();
-    setToken(null);
-    setIsAuthenticated(false);
+    try {
+      authMiddleware.removeToken();
+      setToken(null);
+      setIsAuthenticated(false);
+    } catch (error) {
+      console.error('Logout failed:', error);
+      setToken(null);
+      setIsAuthenticated(false);
+    }
   };
 
   return (

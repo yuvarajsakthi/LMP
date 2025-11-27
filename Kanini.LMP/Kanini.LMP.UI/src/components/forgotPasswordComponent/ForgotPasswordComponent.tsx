@@ -1,181 +1,132 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { Typography, Input, Button, message } from 'antd';
-import group from '../../assets/images/LoanAcceleratorLogo.svg';
-import axios from '../../axiosInstance';
-import { Link, useNavigate, Link as RouterLink } from 'react-router-dom';
-import emailjs from 'emailjs-com';
+import { useDispatch, useSelector } from 'react-redux';
+import { LeftOutlined } from '@ant-design/icons';
+import { LoanAcceleratorLogo } from '../../assets';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import ForgotPassword from "./ForgotPasswordComponent.module.css";
+import { ROUTES, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../../config';
+import { forgotPassword, resetPassword } from '../../store/slices/authSlice';
+import type { RootState, AppDispatch } from '../../store';
+import type { InputRef } from 'antd';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const ForgotPasswordComponent = () => {
+    const dispatch = useDispatch<AppDispatch>();
+    const { isLoading } = useSelector((state: RootState) => state.auth);
     const [showOTPInput, setShowOTPInput] = useState(false);
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
     const [emailError, setEmailError] = useState('');
-    const formDataRef = useRef(null);
     const [otpVerified, setOtpVerified] = useState(false);
     const [email, setEmail] = useState('');
-    const [otp, setOTP] = useState([]);
+    const [otp, setOTP] = useState<string[]>(Array(6).fill(''));
     const [status, setStatus] = useState('');
-    const [showOTPField, setShowOTPField] = useState(true);
-    const [generatedOTP, setGeneratedOTP] = useState('');
-    const inputRefs = useRef([]);
-
-    function generateOTP() {
-        return Math.floor(100000 + Math.random() * 900000);
-    }
+    const inputRefs = useRef<(InputRef | null)[]>([]);
     const handleSendOTP = async () => {
         if (emailError) {
-            message.error('Invalid email. Please enter a valid email address.');
+            message.error(ERROR_MESSAGES.INVALID_EMAIL);
             return;
         }
         try {
-            // Check if email exists in the database
-            const response = await axios.get(`/user/check-email/${email} `);
-            console.log(response.data);
-            if (response.data) {
-                // Email exists, proceed to send OTP
-                const newGeneratedOTP = generateOTP();
-                setGeneratedOTP(newGeneratedOTP);
-
-                const serviceID = 'Loan_Accelerator';
-                const templateID = 'template_otp';
-                const userID = 'Ilw2K9cIP-4SZDosa';
-
-                const templateParams = {
-                    to_email: email,
-                    message: `Your OTP is: ${newGeneratedOTP}`,
-                };
-
-                emailjs.send(serviceID, templateID, templateParams, userID)
-                    .then(() => {
-                        setStatus('OTP sent successfully.');
-                        setOTP([]);
-                        if (inputRefs.current.length > 0) {
-                            inputRefs.current[0].focus();
-                        }
-                        setTimeout(() => {
-                            setGeneratedOTP('');
-                        }, 60000);
-                    })
-                    .catch(() => {
-                        setStatus('Failed to send OTP.');
-                    });
-                setShowOTPInput(true);
-                setStatus('OTP sent successfully.');
-                setOTP([]);
-
-                if (inputRefs.current.length > 0) {
-                    inputRefs.current[0].focus();
-                }
-                setTimeout(() => {
-                    setGeneratedOTP('');
-                }, 60000);
-            } else {
-                setStatus('Email does not exist in the database.');
-                message.error('Email is not registered ');
+            await dispatch(forgotPassword(email)).unwrap();
+            setShowOTPInput(true);
+            setStatus(SUCCESS_MESSAGES.OTP_SENT);
+            setOTP(Array(6).fill(''));
+            if (inputRefs.current[0]) {
+                inputRefs.current[0].focus();
             }
-        } catch (error) {
-            console.error('Error checking email:', error);
-            setStatus('An error occurred while checking email.');
+            message.success(SUCCESS_MESSAGES.OTP_SENT);
+        } catch (error: any) {
+            message.error(error || ERROR_MESSAGES.OTP_SEND_FAILED);
         }
     };
 
     const handleVerifyOTP = () => {
-
-        const generatedOTPCorrect = parseInt(generatedOTP, 10);
-        const userOTPCorrect = parseInt(otp.join(''), 10);
-
-
-        if (userOTPCorrect === generatedOTPCorrect) {
-            setStatus('OTP verified successfully.');
+        try {
+            const otpValue = otp.join('');
+            if (!otpValue || otpValue.length !== 6 || !/^\d{6}$/.test(otpValue)) {
+                setStatus(ERROR_MESSAGES.OTP_VERIFY_FAILED);
+                setOtpVerified(false);
+                message.error(ERROR_MESSAGES.OTP_VERIFY_FAILED);
+                return;
+            }
+            setStatus(SUCCESS_MESSAGES.OTP_VERIFIED);
             setOtpVerified(true);
-        } else {
-            setStatus('Invalid OTP. Please try again.');
+            message.success(SUCCESS_MESSAGES.OTP_VERIFIED);
+        } catch (error) {
+            setStatus(ERROR_MESSAGES.OTP_VERIFY_FAILED);
             setOtpVerified(false);
-            message.error('Invalid OTP. Please try again.');
-
+            message.error(ERROR_MESSAGES.OTP_VERIFY_FAILED);
         }
     };
-    const handleArrowNavigation = (index, event) => {
+    const handleArrowNavigation = (index: number, event: React.KeyboardEvent) => {
         if (event.key === 'ArrowLeft' && inputRefs.current[index - 1]) {
-
-            inputRefs.current[index - 1].focus();
+            inputRefs.current[index - 1]?.focus();
         } else if (event.key === 'ArrowRight' && inputRefs.current[index + 1]) {
-
-            inputRefs.current[index + 1].focus();
+            inputRefs.current[index + 1]?.focus();
         }
     };
 
-    const handleBackspace = (index, event) => {
+    const handleBackspace = (index: number, event: React.KeyboardEvent) => {
         if (event.key === 'Backspace' && !otp[index] && inputRefs.current[index - 1]) {
-
             const updatedOTP = [...otp];
             updatedOTP[index - 1] = '';
             setOTP(updatedOTP);
-            inputRefs.current[index - 1].focus();
+            inputRefs.current[index - 1]?.focus();
         }
     };
-    const handleInputChangeOTP = (index, value) => {
-
+    const handleInputChangeOTP = (index: number, value: string) => {
         const updatedOTP = [...otp];
         updatedOTP[index] = value.replace(/\D/g, '');
-
         setOTP(updatedOTP);
-
+        
         if (value && inputRefs.current[index + 1]) {
-            inputRefs.current[index + 1].focus();
+            inputRefs.current[index + 1]?.focus();
         }
     };
-    const validateEmail = (email) => {
+    const validateEmail = (email: string) => {
         const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-
         if (!emailRegex.test(email)) {
-            return 'Invalid email';
+            return ERROR_MESSAGES.INVALID_EMAIL;
         }
         return '';
     };
 
-
-    const handleEmailChange = (e) => {
+    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const emailValue = e.target.value;
         setEmail(emailValue);
         setEmailError(validateEmail(emailValue));
     };
 
-    const handlePasswordChange = (e) => {
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const passwordValue = e.target.value;
         setPassword(passwordValue);
     };
 
     const handleSubmit = async () => {
+        if (!otpVerified) {
+            message.error(ERROR_MESSAGES.OTP_REQUIRED);
+            return;
+        }
+
+        if (!password || password.length < 8) {
+            message.error('Password must be at least 8 characters');
+            return;
+        }
+
         try {
-
-            if (!otpVerified) {
-                message.error('Please verify OTP first.');
-                return;
-            }
-
-            const emailId = email;
-            const newPassword = password;
-
-            const response = await axios.put('/user/update-password', {
-                emailId: emailId,
-                password: newPassword,
-            });
-
-            console.log('Response:', response);
-
-            if (response.status === 200) {
-                message.success('Password updated successfully');
-                navigate('/');
-            } else {
-                message.error('An error occurred while updating password');
-            }
-        } catch (error) {
-            console.error('Error updating password:', error);
-            message.error('An error occurred while updating password');
+            await dispatch(resetPassword({
+                email: email,
+                resetToken: otp.join(''),
+                newPassword: password,
+            })).unwrap();
+            
+            message.success(SUCCESS_MESSAGES.PASSWORD_UPDATED);
+            navigate(ROUTES.LOGIN);
+        } catch (error: any) {
+            message.error(error || ERROR_MESSAGES.PASSWORD_UPDATE_FAILED);
         }
     };
 
@@ -183,10 +134,16 @@ const ForgotPasswordComponent = () => {
     return (
         <div className={ForgotPassword.forgotPasswordContainer}>
             <div className={ForgotPassword.header}>
-                <img src={group} alt="Loan Accelerator" className={ForgotPassword.logo} />
+                <img src={LoanAcceleratorLogo} alt="Loan Accelerator" className={ForgotPassword.logo} />
                 <h2 className={ForgotPassword.brandName}>
                     <span className={ForgotPassword.brandHighlight}>Loan</span> Accelerator
                 </h2>
+            </div>
+
+            <div className={ForgotPassword.backButton}>
+                <RouterLink to={ROUTES.LOGIN}>
+                    <LeftOutlined /> Back to Login
+                </RouterLink>
             </div>
 
             <Title level={3} className={ForgotPassword.title}>
@@ -204,14 +161,11 @@ const ForgotPasswordComponent = () => {
                             status={emailError ? "error" : ""}
                             placeholder="name@email.com"
                             value={email}
-                            onChange={(e) => {
-                                setEmail(e.target.value);
-                                if (emailError) setEmailError('');
-                            }}
+                            onChange={handleEmailChange}
                         />
                     </div>
 
-                    <Button type="primary" className={ForgotPassword.submitButton} onClick={handleSendOTP}>
+                    <Button type="primary" className={ForgotPassword.submitButton} onClick={handleSendOTP} loading={isLoading}>
                         SEND OTP
                     </Button>
                 </div>
@@ -230,56 +184,44 @@ const ForgotPasswordComponent = () => {
                                 />
                             </div>
                             <div className={ForgotPassword.buttonGroup}>
-                                <Button type="primary" onClick={handleSubmit} className={ForgotPassword.verifyButton}>Submit</Button>
-                                <Link component={RouterLink} to="/">
+                                <Button type="primary" onClick={handleSubmit} className={ForgotPassword.verifyButton} loading={isLoading}>Submit</Button>
+                                <RouterLink to={ROUTES.LOGIN}>
                                     <Button className={ForgotPassword.cancelButton}>Cancel</Button>
-                                </Link>
+                                </RouterLink>
                             </div>
                         </div>
                     ) : (
-                        <>
-                            <Title level={5} className={ForgotPassword.subtitle}>Enter OTP</Title>
-                            <div className={ForgotPassword.otpInput}>
-                                {Array.from({ length: 6 }, (_, index) => (
-                                    <input
-                                        key={index}
-                                        type="tel"
-                                        value={otp[index] || ''}
-                                        onChange={(e) => handleInputChangeOTP(index, e.target.value)}
-                                        onKeyDown={(e) => {
-                                            handleArrowNavigation(index, e);
-                                            handleBackspace(index, e);
-                                        }}
-                                        ref={(el) => (inputRefs.current[index] = el)}
-                                        style={{
-                                            width: '40px',
-                                            height: '40px',
-                                            fontSize: '18px',
-                                            margin: '4px',
-                                            textAlign: 'center',
-                                            border: '1px solid #ccc',
-                                            borderRadius: '4px',
-                                            outline: 'none',
-                                        }}
-                                        maxLength={1}
-                                        inputMode="numeric"
-                                    />
-                                ))}
+                        <div className={ForgotPassword.form}>
+                            <div className={ForgotPassword.inputGroup}>
+                                <label className={ForgotPassword.label}>Enter OTP</label>
+                                <div className={ForgotPassword.otpInputs}>
+                                    {Array.from({ length: 6 }, (_, index) => (
+                                        <Input
+                                            key={index}
+                                            ref={(el) => { inputRefs.current[index] = el; }}
+                                            className={ForgotPassword.otpInput}
+                                            maxLength={1}
+                                            value={otp[index] || ''}
+                                            onChange={(e) => handleInputChangeOTP(index, e.target.value)}
+                                            onKeyDown={(e) => {
+                                                handleArrowNavigation(index, e);
+                                                handleBackspace(index, e);
+                                            }}
+                                        />
+                                    ))}
+                                </div>
                             </div>
-                            <div className={ForgotPassword.buttonGroup}>
-                                <Button onClick={handleVerifyOTP} className={ForgotPassword.verifyButton}>Verify OTP</Button>
-                                <Link component={RouterLink} to="/">
-                                    <Button className={ForgotPassword.cancelButton}>Cancel</Button>
-                                </Link>
-                            </div>
-                        </>
+                            <Button type="primary" onClick={handleVerifyOTP} className={ForgotPassword.verifyButton}>
+                                Verify OTP
+                            </Button>
+                            {status && <div className={ForgotPassword.status}>{status}</div>}
+                        </div>
                     )}
                 </div>
             )}
         </div>
     );
 };
-
 
 export default ForgotPasswordComponent;
 
