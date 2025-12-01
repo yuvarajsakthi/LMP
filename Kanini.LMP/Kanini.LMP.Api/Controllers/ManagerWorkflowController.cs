@@ -29,12 +29,12 @@ namespace Kanini.LMP.Api.Controllers
             {
                 _logger.LogInformation(ApplicationConstants.Messages.ProcessingPendingApplications);
                 var applications = await _managerWorkflowService.GetPendingApplicationsAsync();
-                _logger.LogInformation(ApplicationConstants.Messages.PendingApplicationsCompleted);
+                _logger.LogInformation("Pending applications retrieval completed");
                 return Ok(applications);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.PendingApplicationsFailed);
+                _logger.LogError(ex, "Failed to retrieve pending applications");
                 return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
             }
         }
@@ -44,14 +44,14 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingApplicationDetails, applicationId);
+                _logger.LogInformation("Processing application details");
                 var details = await _managerWorkflowService.GetApplicationDetailsAsync(applicationId);
-                _logger.LogInformation(ApplicationConstants.Messages.ApplicationDetailsCompleted, applicationId);
+                _logger.LogInformation("Application details retrieval completed");
                 return Ok(details);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.ApplicationDetailsFailed, applicationId);
+                _logger.LogError(ex, "Failed to retrieve application details");
                 return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
             }
         }
@@ -61,14 +61,14 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingWorkflowStart, applicationId, managerId);
+                _logger.LogInformation("Processing workflow start");
                 var workflow = await _managerWorkflowService.StartWorkflowAsync(applicationId, managerId);
-                _logger.LogInformation(ApplicationConstants.Messages.WorkflowStartCompleted, applicationId);
+                _logger.LogInformation("Workflow start completed");
                 return Ok(workflow);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.WorkflowStartFailed, applicationId);
+                _logger.LogError(ex, "Failed to start workflow");
                 return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
             }
         }
@@ -80,15 +80,15 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingWorkflowStepUpdate, applicationId);
+                _logger.LogInformation("Processing workflow step update");
                 var workflow = await _managerWorkflowService.UpdateWorkflowStepAsync(
                     applicationId, request.StepName, request.Status, request.Notes, request.ManagerId);
-                _logger.LogInformation(ApplicationConstants.Messages.WorkflowStepUpdateCompleted, applicationId);
+                _logger.LogInformation("Workflow step update completed");
                 return Ok(workflow);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.WorkflowStepUpdateFailed, applicationId);
+                _logger.LogError(ex, "Failed to update workflow step");
                 return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
             }
         }
@@ -98,14 +98,14 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingWorkflowStatus, applicationId);
+                _logger.LogInformation("Processing workflow status");
                 var status = await _managerWorkflowService.GetWorkflowStatusAsync(applicationId);
-                _logger.LogInformation(ApplicationConstants.Messages.WorkflowStatusCompleted, applicationId);
+                _logger.LogInformation("Workflow status retrieval completed");
                 return Ok(status);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.WorkflowStatusFailed, applicationId);
+                _logger.LogError(ex, "Failed to retrieve workflow status");
                 return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
             }
         }
@@ -115,14 +115,14 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingDocumentVerification, applicationId);
+                _logger.LogInformation("Processing document verification");
                 var result = await _managerWorkflowService.VerifyDocumentsAsync(applicationId, managerId, verificationNotes);
-                _logger.LogInformation(ApplicationConstants.Messages.DocumentVerificationCompleted, applicationId);
+                _logger.LogInformation("Document verification completed");
                 return Ok(new { Success = result, Message = ApplicationConstants.ErrorMessages.DocumentsVerifiedSuccessfully });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.DocumentVerificationFailed, applicationId);
+                _logger.LogError(ex, "Failed to verify documents");
                 return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
             }
         }
@@ -132,14 +132,14 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingApplicationApproval, applicationId);
+                _logger.LogInformation("Processing application approval");
                 var result = await _managerWorkflowService.ApproveApplicationAsync(applicationId, managerId, approvalNotes);
-                _logger.LogInformation(ApplicationConstants.Messages.ApplicationApprovalCompleted, applicationId);
+                _logger.LogInformation("Application approval completed");
                 return Ok(new { Success = result, Message = ApplicationConstants.ErrorMessages.ApplicationApprovedSuccessfully });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.ApplicationApprovalFailed, applicationId);
+                _logger.LogError(ex, "Failed to approve application");
                 return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
             }
         }
@@ -149,14 +149,14 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingApplicationRejection, applicationId);
+                _logger.LogInformation("Processing application rejection");
                 var result = await _managerWorkflowService.RejectApplicationAsync(applicationId, managerId, rejectionReason);
-                _logger.LogInformation(ApplicationConstants.Messages.ApplicationRejectionCompleted, applicationId);
+                _logger.LogInformation("Application rejection completed");
                 return Ok(new { Success = result, Message = ApplicationConstants.ErrorMessages.ApplicationRejected });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.ApplicationRejectionFailed, applicationId);
+                _logger.LogError(ex, "Failed to reject application");
                 return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
             }
         }
@@ -166,14 +166,14 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingApplicationRevision, applicationId);
+                _logger.LogInformation("Processing application revision");
                 var result = await _managerWorkflowService.ReviseApplicationAsync(applicationId, revisionData, managerId);
-                _logger.LogInformation(ApplicationConstants.Messages.ApplicationRevisionCompleted, applicationId);
+                _logger.LogInformation("Application revision completed");
                 return Ok(new { Success = result, Message = ApplicationConstants.ErrorMessages.ApplicationRevisedSuccessfully });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.ApplicationRevisionFailed, applicationId);
+                _logger.LogError(ex, "Failed to revise application");
                 return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
             }
         }
@@ -183,14 +183,14 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingApplicationDisbursement, applicationId);
+                _logger.LogInformation("Processing application disbursement");
                 var result = await _managerWorkflowService.DisburseApplicationAsync(applicationId, managerId, disbursedAmount);
-                _logger.LogInformation(ApplicationConstants.Messages.ApplicationDisbursementCompleted, applicationId);
+                _logger.LogInformation("Application disbursement completed");
                 return Ok(new { Success = result, Message = ApplicationConstants.ErrorMessages.LoanDisbursedSuccessfully });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.ApplicationDisbursementFailed, applicationId);
+                _logger.LogError(ex, "Failed to disburse application");
                 return StatusCode(500, new { message = ApplicationConstants.ErrorMessages.InternalServerError });
             }
         }

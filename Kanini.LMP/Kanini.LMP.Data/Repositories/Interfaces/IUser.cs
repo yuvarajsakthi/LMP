@@ -6,7 +6,7 @@ namespace Kanini.LMP.Data.Repositories.Interfaces
 {
     public interface IUser
     {
-        Task<User> GetByUsernameAsync(string username);
+        Task<User?> GetByUsernameAsync(string username);
         Task<UserDTO> CreateUserAsync(UserDTO userDto);
         Task<UserDTO> GetUserByIdAsync(int userId);
         Task<IReadOnlyList<UserDTO>> GetAllUsersAsync();

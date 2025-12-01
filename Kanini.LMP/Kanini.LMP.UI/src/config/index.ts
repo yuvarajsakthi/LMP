@@ -5,4 +5,4 @@ export * from './constants/endpoints';
 export * from './constants/storage';
 export * from './constants/errorMessages';
 
-export { default as AppRoutes } from './routes/AppRoutes';
+export { default as AppRoutes } from './routing/AppRoutes';

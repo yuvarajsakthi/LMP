@@ -9,8 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kanini.LMP.Application", "K
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kanini.LMP.Data", "Kanini.LMP.Data\Kanini.LMP.Data.csproj", "{09B75DD3-1217-4102-B309-A887626F86D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kanini.LMP.UnitTests", "Kanini.LMP.UnitTests\Kanini.LMP.UnitTests.csproj", "{E7E9E7F7-C989-40EA-8AED-FC644F334735}"
-EndProject
+
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kanini.LMP.Database", "Kanini.LMP.Database\Kanini.LMP.Database.csproj", "{829CC301-4C57-4A16-88FA-93E5EA1CF11F}"
 EndProject
 Global
@@ -31,10 +30,7 @@ Global
 		{09B75DD3-1217-4102-B309-A887626F86D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{09B75DD3-1217-4102-B309-A887626F86D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{09B75DD3-1217-4102-B309-A887626F86D7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E7E9E7F7-C989-40EA-8AED-FC644F334735}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E7E9E7F7-C989-40EA-8AED-FC644F334735}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E7E9E7F7-C989-40EA-8AED-FC644F334735}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E7E9E7F7-C989-40EA-8AED-FC644F334735}.Release|Any CPU.Build.0 = Release|Any CPU
+
 		{829CC301-4C57-4A16-88FA-93E5EA1CF11F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{829CC301-4C57-4A16-88FA-93E5EA1CF11F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{829CC301-4C57-4A16-88FA-93E5EA1CF11F}.Release|Any CPU.ActiveCfg = Release|Any CPU

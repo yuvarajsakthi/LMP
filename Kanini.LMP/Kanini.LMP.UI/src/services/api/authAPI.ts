@@ -2,9 +2,26 @@ import axiosInstance from './axiosInstance';
 import { jwtDecode } from 'jwt-decode';
 import { API_ENDPOINTS } from '../../config';
 import { secureStorage } from '../../utils/secureStorage';
-import type { LoginCredentials, RegisterCredentials, LoginResponse, RegisterResponse, DecodedToken } from '../../types';
+import { ApiService } from './apiService';
+import type { LoginCredentials, RegisterCredentials, DecodedToken, ApiResponse } from '../../types';
 
-const processTokenResponse = (token: string): { token: string; user: DecodedToken } => {
+// Backend response types (matching C# controller responses)
+interface LoginResponseData {
+  token: string;
+  username: string;
+  role: string;
+}
+
+interface RegisterResponseData {
+  message: string;
+  userId: number;
+  email: string;
+  fullName: string;
+}
+
+const processTokenResponse = (responseData: LoginResponseData): { token: string; user: DecodedToken } => {
+  const { token, role, username } = responseData;
+  
   if (!token || typeof token !== 'string') {
     throw new Error('Invalid token received from server');
   }
@@ -13,15 +30,17 @@ const processTokenResponse = (token: string): { token: string; user: DecodedToke
     const decodedToken = jwtDecode<any>(token);
     console.log('Decoded token:', decodedToken);
     
-    // Extract role from Microsoft JWT claim format
-    const role = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || decodedToken.role;
+    // Use role from response data (more reliable than JWT parsing)
+    const userRole = role || decodedToken.role || 
+                     decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
     
-    if (!role) {
+    if (!userRole) {
       throw new Error('Invalid token structure - missing role');
     }
     
     const user: DecodedToken = {
-      role,
+      role: userRole,
+      FullName: username,
       ...decodedToken
     };
     
@@ -38,52 +57,60 @@ export const authAPI = {
     if (!credentials?.username || !credentials?.password) {
       throw new Error('Authentication credentials are required');
     }
-    try {
-      const response = await axiosInstance.post<LoginResponse>(API_ENDPOINTS.USER_LOGIN, credentials);
-      console.log('Login response:', response.data);
-      if (!response.data || !response.data.token) {
-        throw new Error('Invalid response from server');
+    
+    return ApiService.execute(async () => {
+      const response = await axiosInstance.post<ApiResponse<LoginResponseData>>(
+        API_ENDPOINTS.USER_LOGIN, 
+        credentials
+      );
+      return response;
+    }).then(loginData => {
+      if (!loginData.token) {
+        throw new Error('No token received from server');
       }
-      const result = processTokenResponse(response.data.token);
-      console.log('Login successful:', result);
-      return result;
-    } catch (error: any) {
-      console.error('Login error:', error);
-      throw new Error(error.response?.data?.message || error.message || 'Login failed');
-    }
+      return processTokenResponse(loginData);
+    });
   },
 
-  async register(credentials: RegisterCredentials): Promise<{ token: string; user: DecodedToken }> {
-    try {
-      const response = await axiosInstance.post<RegisterResponse>(API_ENDPOINTS.USER_REGISTER, credentials);
-      if (!response.data || !response.data.token) {
-        throw new Error('Invalid response from server');
-      }
-      return processTokenResponse(response.data.token);
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Registration failed');
-    }
+  async register(credentials: RegisterCredentials): Promise<RegisterResponseData> {
+    return ApiService.execute(async () => {
+      const response = await axiosInstance.post<ApiResponse<RegisterResponseData>>(
+        API_ENDPOINTS.USER_REGISTER, 
+        credentials
+      );
+      return response;
+    });
   },
 
-  async forgotPassword(email: string): Promise<{ success: boolean; message: string }> {
-    try {
-      await axiosInstance.post(API_ENDPOINTS.FORGOT_PASSWORD, { email });
-      return { success: true, message: 'OTP sent successfully' };
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to send OTP');
-    }
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    return ApiService.execute(async () => {
+      const response = await axiosInstance.post<ApiResponse<{}>>(
+        API_ENDPOINTS.FORGOT_PASSWORD, 
+        { email }
+      );
+      return response;
+    }).then(() => ({ message: 'Password reset email sent successfully' }));
   },
 
-  async resetPassword(data: { email: string; resetToken: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
-    try {
-      await axiosInstance.post(API_ENDPOINTS.RESET_PASSWORD, data);
-      return { success: true, message: 'Password reset successfully' };
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to reset password');
-    }
+  async resetPassword(data: { 
+    email: string; 
+    resetToken: string; 
+    newPassword: string 
+  }): Promise<{ message: string }> {
+    return ApiService.execute(async () => {
+      const response = await axiosInstance.post<ApiResponse<{}>>(
+        API_ENDPOINTS.RESET_PASSWORD, 
+        data
+      );
+      return response;
+    }).then(() => ({ message: 'Password reset successfully' }));
   },
 
   logout(): void {
-    secureStorage.removeToken();
+    try {
+      secureStorage.removeToken();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   }
 };

@@ -1,0 +1,222 @@
+/* Modern Responsive Sidebar Styles */
+
+.sidebar-wrapper {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 280px;
+  background: linear-gradient(180deg, #2C76C9 0%, #1e5a9e 100%);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-wrapper.collapsed {
+  width: 80px;
+}
+
+.sidebar-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px 0;
+}
+
+/* Header Section */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.sidebar-logo {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.sidebar-title {
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 16px 16px;
+}
+
+/* Collapse Toggle */
+.collapse-toggle {
+  padding: 0 16px;
+  margin-bottom: 16px;
+}
+
+.collapse-btn {
+  color: white !important;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.collapse-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Menu Styles */
+.sidebar-menu {
+  background: transparent !important;
+  border: none !important;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar-menu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.sidebar-menu .ant-menu-item {
+  color: rgba(255, 255, 255, 0.85) !important;
+  margin: 4px 16px !important;
+  border-radius: 8px !important;
+  height: 48px !important;
+  line-height: 48px !important;
+  padding: 0 16px !important;
+  transition: all 0.3s !important;
+}
+
+.sidebar-menu .ant-menu-item:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+}
+
+.sidebar-menu .ant-menu-item-selected {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  font-weight: 500;
+}
+
+.sidebar-menu .ant-menu-item-selected::after {
+  border-right: 3px solid white;
+}
+
+.sidebar-menu .ant-menu-item-icon {
+  font-size: 20px !important;
+}
+
+/* Footer Section */
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.logout-item {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.logout-item:hover {
+  background: rgba(255, 0, 0, 0.2) !important;
+  color: #ff4d4f !important;
+}
+
+/* Mobile Styles */
+.mobile-menu-btn {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 999;
+  background: #2C76C9 !important;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.desktop-only {
+  display: block;
+}
+
+.mobile-sidebar-drawer .ant-drawer-body {
+  background: linear-gradient(180deg, #2C76C9 0%, #1e5a9e 100%);
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 768px) {
+  .sidebar-wrapper {
+    display: none;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  .desktop-only {
+    display: none;
+  }
+
+  .sidebar-header {
+    padding: 0 20px;
+  }
+
+  .sidebar-menu .ant-menu-item {
+    margin: 4px 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-sidebar-drawer {
+    width: 100% !important;
+  }
+}
+
+/* Collapsed State Adjustments */
+.sidebar-wrapper.collapsed .sidebar-header {
+  justify-content: center;
+  padding: 0 16px;
+}
+
+.sidebar-wrapper.collapsed .sidebar-menu .ant-menu-item {
+  padding: 0 !important;
+  justify-content: center;
+}
+
+.sidebar-wrapper.collapsed .collapse-btn {
+  padding: 0;
+}
+
+/* Smooth Transitions */
+.sidebar-wrapper,
+.sidebar-menu .ant-menu-item,
+.collapse-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Accessibility */
+.sidebar-menu .ant-menu-item:focus-visible {
+  outline: 2px solid white;
+  outline-offset: -2px;
+}
+
+/* Dark Mode Support (Optional) */
+@media (prefers-color-scheme: dark) {
+  .sidebar-wrapper {
+    background: linear-gradient(180deg, #1a4d7a 0%, #0f3557 100%);
+  }
+}

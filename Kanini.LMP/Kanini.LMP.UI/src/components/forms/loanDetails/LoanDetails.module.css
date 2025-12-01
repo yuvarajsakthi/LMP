@@ -1,0 +1,114 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.header h2 {
+  color: #1890ff;
+  margin-bottom: 8px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.header p {
+  color: #666;
+  font-size: 14px;
+}
+
+.form {
+  width: 100%;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.segmented {
+  width: 100%;
+}
+
+.formRow {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.formItem {
+  flex: 1;
+}
+
+.formRow .formItem {
+  margin-bottom: 0;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.backButton {
+  border: none;
+  color: #928c8c;
+  font-size: 16px;
+  font-weight: 400;
+  background: transparent;
+  padding: 8px 24px;
+}
+
+.backButton:hover {
+  color: #666;
+  background: #f5f5f5;
+}
+
+.nextButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 24px;
+  height: auto;
+  border-radius: 6px;
+  font-weight: 500;
+  background: #1890ff;
+  border-color: #1890ff;
+}
+
+.nextButton:hover {
+  background: #40a9ff;
+  border-color: #40a9ff;
+}
+
+.buttonIcon {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 768px) {
+  .formRow {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .buttonContainer {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .backButton,
+  .nextButton {
+    width: 100%;
+    justify-content: center;
+  }
+}

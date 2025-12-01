@@ -1,44 +1,49 @@
-﻿using Kanini.LMP.Application.Constants;
+﻿using Kanini.LMP.Api.Constants;
+using Kanini.LMP.Application.Constants;
 using Kanini.LMP.Data.Repositories.Interfaces;
+using Kanini.LMP.Data.UnitOfWork;
 using Kanini.LMP.Database.EntitiesDto;
+using Kanini.LMP.Database.EntitiesDtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace Kanini.LMP.Api.Controllers
 {
-    [Route(ApplicationConstants.Routes.UserController.Base)]
+    [Route(ApiConstants.Routes.UserController.Base)]
     [ApiController]
     public class UserController : ControllerBase
     {
         private readonly IUser _userService;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<UserController> _logger;
 
-        public UserController(IUser userService, ILogger<UserController> logger)
+        public UserController(IUser userService, IUnitOfWork unitOfWork, ILogger<UserController> logger)
         {
             _userService = userService;
+            _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ActionResult<IReadOnlyList<UserDTO>>> GetAllUsers()
+        public async Task<ActionResult<ApiResponse<IReadOnlyList<UserDTO>>>> GetAllUsers()
         {
             try
             {
                 _logger.LogInformation(ApplicationConstants.Messages.ProcessingUsersRetrieval);
                 var users = await _userService.GetAllUsersAsync();
                 _logger.LogInformation(ApplicationConstants.Messages.UsersRetrievalCompleted, users.Count);
-                return Ok(users);
+                return Ok(ApiResponse<IReadOnlyList<UserDTO>>.SuccessResponse(users));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ApplicationConstants.ErrorMessages.UsersRetrievalFailed);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.UsersRetrievalFailed });
+                return BadRequest(ApiResponse<IReadOnlyList<UserDTO>>.ErrorResponse(ApplicationConstants.ErrorMessages.UsersRetrievalFailed));
             }
         }
 
-        [HttpGet(ApplicationConstants.Routes.UserController.GetById)]
+        [HttpGet(ApiConstants.Routes.UserController.GetById)]
         [AllowAnonymous]
         public async Task<ActionResult<UserDTO>> GetUser(int id)
         {
@@ -58,36 +63,41 @@ namespace Kanini.LMP.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.UserRetrievalFailed, id);
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.UserRetrievalFailed);
                 return BadRequest(new { message = ApplicationConstants.ErrorMessages.UserRetrievalFailed });
             }
         }
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<ActionResult<UserDTO>> CreateUser(UserDTO userDto)
+        public async Task<ActionResult<ApiResponse<UserDTO>>> CreateUser(UserDTO userDto)
         {
             try
             {
                 _logger.LogInformation(ApplicationConstants.Messages.ProcessingUserCreation, userDto.Email);
+                
+                await _unitOfWork.BeginTransactionAsync();
                 var created = await _userService.CreateUserAsync(userDto);
+                await _unitOfWork.CommitTransactionAsync();
+                
                 _logger.LogInformation(ApplicationConstants.Messages.UserCreationCompleted, created.UserId);
-
-                return CreatedAtAction(nameof(GetUser), new { id = created.UserId }, created);
+                return CreatedAtAction(nameof(GetUser), new { id = created.UserId }, ApiResponse<UserDTO>.SuccessResponse(created, ApplicationConstants.Messages.Created));
             }
             catch (ArgumentException ex)
             {
+                await _unitOfWork.RollbackTransactionAsync();
                 _logger.LogWarning(ex, ApplicationConstants.ErrorMessages.UserCreationValidationFailed);
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(ApiResponse<UserDTO>.ErrorResponse(ex.Message));
             }
             catch (Exception ex)
             {
+                await _unitOfWork.RollbackTransactionAsync();
                 _logger.LogError(ex, ApplicationConstants.ErrorMessages.UserCreationFailed);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.UserCreationFailed });
+                return BadRequest(ApiResponse<UserDTO>.ErrorResponse(ApplicationConstants.ErrorMessages.UserCreationFailed));
             }
         }
 
-        [HttpPost(ApplicationConstants.Routes.UserController.ChangePassword)]
+        [HttpPost(ApiConstants.Routes.UserController.ChangePassword)]
         [Authorize]
         public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
         {

@@ -8,7 +8,7 @@ namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.LoanCentricView
 {
     public class LoanProductSummaryDto
     {
-        public string LoanProductType { get; set; } 
+        public required string LoanProductType { get; set; } 
 
         /// <summary>
         /// Percentage of applications for this type that reached 'Approved' status.

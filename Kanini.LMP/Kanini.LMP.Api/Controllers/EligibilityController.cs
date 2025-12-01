@@ -1,4 +1,5 @@
-﻿using Kanini.LMP.Application.Constants;
+﻿using Kanini.LMP.Api.Constants;
+using Kanini.LMP.Application.Constants;
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto;
 using Kanini.LMP.Database.EntitiesDtos.CreditDtos;
@@ -10,7 +11,7 @@ using System.Security.Claims;
 
 namespace Kanini.LMP.Api.Controllers
 {
-    [Route(ApplicationConstants.Routes.EligibilityController)]
+    [Route(ApiConstants.Routes.ApiController)]
     [ApiController]
     [Authorize]
     public class EligibilityController : ControllerBase
@@ -26,12 +27,12 @@ namespace Kanini.LMP.Api.Controllers
 
 
 
-        [HttpPost(ApplicationConstants.Routes.Check)]
+        [HttpPost(ApiConstants.Routes.Check)]
         public async Task<ActionResult> CheckEligibility([FromBody] EligibilityProfileRequest request)
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.EligibilityCheckRequested, request.IsExistingBorrower);
+                _logger.LogInformation(ApiConstants.LogMessages.EligibilityCheckRequested, request.IsExistingBorrower);
 
                 // Validate required fields based on user type
                 if (!request.IsExistingBorrower)
@@ -55,7 +56,7 @@ namespace Kanini.LMP.Api.Controllers
                 var eligibleProductIds = await _eligibilityService.GetEligibleProductsAsync(userId);
 
                 var response = BuildEligibilityResponse(eligibility, eligibleProductIds, request.IsExistingBorrower);
-                _logger.LogInformation(ApplicationConstants.Messages.EligibilityCheckCompleted, userId, eligibility.EligibilityScore);
+                _logger.LogInformation(ApiConstants.LogMessages.EligibilityCheckCompleted, userId, eligibility.EligibilityScore);
                 return Ok(response);
             }
             catch (ArgumentException ex)

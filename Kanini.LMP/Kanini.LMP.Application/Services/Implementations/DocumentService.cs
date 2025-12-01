@@ -37,7 +37,7 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingDocumentUpload, request.DocumentName, userId);
+                _logger.LogInformation("Processing document upload");
 
                 using (var transaction = await _unitOfWork.BeginTransactionAsync())
                 {
@@ -71,7 +71,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                         await _unitOfWork.SaveChangesAsync();
                         await transaction.CommitAsync();
 
-                        _logger.LogInformation(ApplicationConstants.Messages.DocumentUploadedSuccessfully, createdDocument.DocumentId);
+                        _logger.LogInformation("Document uploaded successfully");
                         return MapToDto(createdDocument, documentLink);
                     }
                     catch (Exception)
@@ -83,7 +83,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.DocumentUploadFailed, request.DocumentName, userId);
+                _logger.LogError(ex, "Document upload failed");
                 throw new Exception(ApplicationConstants.ErrorMessages.DocumentUploadFailed);
             }
         }
@@ -92,12 +92,12 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingDocumentDownload, documentId, userId);
+                _logger.LogInformation("Processing document download");
 
                 var document = await _documentRepository.GetByIdAsync(documentId);
                 if (document?.DocumentData == null)
                 {
-                    _logger.LogWarning(ApplicationConstants.ErrorMessages.DocumentNotFound, documentId);
+                    _logger.LogWarning("Document not found");
                     throw new FileNotFoundException(ApplicationConstants.Messages.DocumentNotFound);
                 }
 
@@ -105,7 +105,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
             catch (Exception ex) when (!(ex is FileNotFoundException))
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.DocumentDownloadFailed, documentId);
+                _logger.LogError(ex, "Document download failed");
                 throw new Exception(ApplicationConstants.ErrorMessages.DocumentDownloadFailed);
             }
         }
@@ -114,12 +114,12 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingDocumentDownload, documentId, userId);
+                _logger.LogInformation("Processing document download with name");
                 return await _documentRepository.GetDocumentWithNameAsync(documentId);
             }
             catch (Exception ex) when (!(ex is FileNotFoundException))
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.DocumentDownloadFailed, documentId);
+                _logger.LogError(ex, "Document download with name failed");
                 throw new Exception(ApplicationConstants.ErrorMessages.DocumentDownloadFailed);
             }
         }
@@ -128,7 +128,7 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.RetrievingDocumentsByApplication, loanApplicationBaseId);
+                _logger.LogInformation("Retrieving documents by application");
 
                 var documentLinks = await _documentLinkRepository.GetLinksByApplicationAsync(loanApplicationBaseId);
                 var result = new List<DocumentUploadDto>();
@@ -146,7 +146,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.RetrieveDocumentsFailed, loanApplicationBaseId);
+                _logger.LogError(ex, "Failed to retrieve documents");
                 throw new Exception(ApplicationConstants.ErrorMessages.RetrieveDocumentsFailed);
             }
         }
@@ -155,7 +155,7 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingDocumentVerification, request.DocumentId, managerId);
+                _logger.LogInformation("Processing document verification");
 
                 using (var transaction = await _unitOfWork.BeginTransactionAsync())
                 {
@@ -166,7 +166,7 @@ namespace Kanini.LMP.Application.Services.Implementations
 
                         if (documentLink == null)
                         {
-                            _logger.LogWarning(ApplicationConstants.ErrorMessages.DocumentLinkNotFound, request.DocumentId, request.LoanApplicationBaseId);
+                            _logger.LogWarning("Document link not found");
                             throw new ArgumentException(ApplicationConstants.ErrorMessages.DocumentLinkNotFound);
                         }
 
@@ -180,7 +180,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                         await transaction.CommitAsync();
 
                         var document = await _documentRepository.GetByIdAsync(request.DocumentId);
-                        _logger.LogInformation(ApplicationConstants.Messages.DocumentVerifiedSuccessfully, request.DocumentId);
+                        _logger.LogInformation("Document verified successfully");
                         return MapToDto(document!, documentLink);
                     }
                     catch (Exception)
@@ -192,7 +192,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
             catch (Exception ex) when (!(ex is ArgumentException))
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.DocumentVerificationFailed, request.DocumentId);
+                _logger.LogError(ex, "Document verification failed");
                 throw new Exception(ApplicationConstants.ErrorMessages.DocumentVerificationFailed);
             }
         }
@@ -201,11 +201,11 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingDocumentDeletion, documentId, userId);
+                _logger.LogInformation("Processing document deletion");
 
                 if (!await _documentRepository.IsDocumentOwnedByUserAsync(documentId, userId))
                 {
-                    _logger.LogWarning(ApplicationConstants.ErrorMessages.DocumentNotFoundOrUnauthorized, documentId, userId);
+                    _logger.LogWarning("Document not found or unauthorized");
                     return false;
                 }
 
@@ -217,7 +217,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                         await _unitOfWork.SaveChangesAsync();
                         await transaction.CommitAsync();
 
-                        _logger.LogInformation(ApplicationConstants.Messages.DocumentDeletedSuccessfully, documentId);
+                        _logger.LogInformation("Document deleted successfully");
                         return true;
                     }
                     catch (Exception)
@@ -229,7 +229,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.DocumentDeletionFailed, documentId);
+                _logger.LogError(ex, "Document deletion failed");
                 throw new Exception(ApplicationConstants.ErrorMessages.DocumentDeletionFailed);
             }
         }
@@ -252,7 +252,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                     }
                 }
 
-                _logger.LogInformation(ApplicationConstants.Messages.PendingDocumentsRetrieved, result.Count);
+                _logger.LogInformation("Pending documents retrieved successfully");
                 return result;
             }
             catch (Exception ex)

@@ -13,7 +13,7 @@ namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.LoanAnalystics
         /// DTO for the 'Loan Issued Country Distribution' chart (Pie Chart).
         /// Source: LoanApplication -> AddressInformation (uses Country field)
         /// </summary>
-        public string Country { get; set; } 
+        public required string Country { get; set; } 
         public decimal Percentage { get; set; } // Percentage of loans issued in this country
     }
 }

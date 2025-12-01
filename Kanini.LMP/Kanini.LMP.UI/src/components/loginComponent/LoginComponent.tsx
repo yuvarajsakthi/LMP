@@ -6,7 +6,7 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import LoginComponentCss from "./LoginComponent.module.css";
 import { useAuth } from "../../context";
 import type { LoginCredentials, InputChangeEvent } from "../../types";
-import { USER_ROLES, ERROR_MESSAGES, SUCCESS_MESSAGES, ROUTES } from "../../config";
+import { USER_ROLES, ROUTES } from "../../config";
 import { validateField } from "../../utils";
 import { loginUser } from "../../store/slices/authSlice";
 import type { RootState, AppDispatch } from "../../store";
@@ -39,7 +39,6 @@ const Login = () => {
   };
   const handleSubmit = async () => {
     if (emailError || passwordError) {
-      message.error(emailError || passwordError);
       return;
     }
 
@@ -59,14 +58,13 @@ const Login = () => {
       
       const userRole = result.user.role;
       if (userRole?.toLowerCase() === USER_ROLES.MANAGER.toLowerCase()) {
-        message.success(SUCCESS_MESSAGES.LOGIN_MANAGER);
         navigate(ROUTES.APPLIED_LOAN);
       } else if (userRole?.toLowerCase() === USER_ROLES.CUSTOMER.toLowerCase()) {
         navigate(ROUTES.CUSTOMER_DASHBOARD);
-        message.success(SUCCESS_MESSAGES.LOGIN_CUSTOMER);
       }
     } catch (error: any) {
-      message.error(error);
+      // Error is already handled by ApiService and shown via notifications
+      console.error('Login failed:', error);
     }
   };
 

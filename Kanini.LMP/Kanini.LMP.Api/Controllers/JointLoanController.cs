@@ -1,4 +1,5 @@
-﻿using Kanini.LMP.Application.Constants;
+﻿using Kanini.LMP.Api.Constants;
+using Kanini.LMP.Application.Constants;
 using Kanini.LMP.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,11 +26,11 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingApplicantsRetrieval, loanApplicationId);
+                _logger.LogInformation(ApiConstants.LogMessages.ApplicantsRetrievalRequested, loanApplicationId);
 
                 var applicants = await _loanApplicationService.GetApplicantsByLoanAsync(loanApplicationId);
 
-                _logger.LogInformation(ApplicationConstants.Messages.ApplicantsRetrievalCompleted, applicants.Count, loanApplicationId);
+                _logger.LogInformation(ApiConstants.LogMessages.ApplicantsRetrievalCompleted, applicants.Count, loanApplicationId);
                 return Ok(new { LoanApplicationId = loanApplicationId, ApplicantIds = applicants });
             }
             catch (Exception ex)
@@ -44,11 +45,11 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingDocumentsRetrieval, loanApplicationId);
+                _logger.LogInformation(ApiConstants.LogMessages.DocumentsRetrievalRequested, loanApplicationId);
 
                 var documents = await _loanApplicationService.GetDocumentsByLoanAsync(loanApplicationId);
 
-                _logger.LogInformation(ApplicationConstants.Messages.DocumentsRetrievalCompleted, documents.Count, loanApplicationId);
+                _logger.LogInformation(ApiConstants.LogMessages.DocumentsRetrievalCompleted, documents.Count, loanApplicationId);
                 return Ok(new { LoanApplicationId = loanApplicationId, DocumentIds = documents });
             }
             catch (Exception ex)

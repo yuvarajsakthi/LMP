@@ -1,0 +1,279 @@
+/* Modern Responsive Manager Sidebar Styles */
+
+.manager-sidebar-wrapper {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 280px;
+  background: linear-gradient(180deg, #2C76C9 0%, #1e5a9e 100%);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+}
+
+.manager-sidebar-wrapper.collapsed {
+  width: 80px;
+}
+
+.manager-sidebar-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px 0;
+}
+
+/* Header Section */
+.manager-sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.manager-sidebar-logo {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.manager-sidebar-title {
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.5px;
+}
+
+.manager-sidebar-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 16px 16px;
+}
+
+/* Collapse Toggle */
+.manager-collapse-toggle {
+  padding: 0 16px;
+  margin-bottom: 16px;
+}
+
+.manager-collapse-btn {
+  color: white !important;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.manager-collapse-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Menu Styles */
+.manager-sidebar-menu {
+  background: transparent !important;
+  border: none !important;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.manager-sidebar-menu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.manager-sidebar-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.manager-sidebar-menu .ant-menu-item,
+.manager-sidebar-menu .ant-menu-submenu-title {
+  color: rgba(255, 255, 255, 0.85) !important;
+  margin: 4px 16px !important;
+  border-radius: 8px !important;
+  height: 48px !important;
+  line-height: 48px !important;
+  padding: 0 16px !important;
+  transition: all 0.3s !important;
+}
+
+.manager-sidebar-menu .ant-menu-item:hover,
+.manager-sidebar-menu .ant-menu-submenu-title:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+}
+
+.manager-sidebar-menu .ant-menu-item-selected {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  font-weight: 500;
+}
+
+.manager-sidebar-menu .ant-menu-item-selected::after {
+  border-right: 3px solid white;
+}
+
+.manager-sidebar-menu .ant-menu-item-icon,
+.manager-sidebar-menu .ant-menu-submenu-title .ant-menu-item-icon {
+  font-size: 20px !important;
+}
+
+/* Submenu Styles */
+.manager-sidebar-menu .ant-menu-submenu {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.manager-sidebar-menu .ant-menu-submenu-arrow {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.manager-sidebar-menu .ant-menu-submenu-open>.ant-menu-submenu-title {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.manager-sidebar-menu .ant-menu-sub {
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+.manager-sidebar-menu .ant-menu-sub .ant-menu-item {
+  height: 40px !important;
+  line-height: 40px !important;
+  padding-left: 48px !important;
+}
+
+/* Footer Section */
+.manager-sidebar-footer {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.manager-logout-item {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.manager-logout-item:hover {
+  background: rgba(255, 0, 0, 0.2) !important;
+  color: #ff4d4f !important;
+}
+
+/* Mobile Styles */
+.manager-mobile-menu-btn {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 999;
+  background: #2C76C9 !important;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.desktop-only {
+  display: block;
+}
+
+.manager-mobile-sidebar-drawer .ant-drawer-body {
+  background: linear-gradient(180deg, #2C76C9 0%, #1e5a9e 100%);
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 768px) {
+  .manager-sidebar-wrapper {
+    display: none;
+  }
+
+  .manager-mobile-menu-btn {
+    display: flex;
+  }
+
+  .desktop-only {
+    display: none;
+  }
+
+  .manager-sidebar-header {
+    padding: 0 20px;
+  }
+
+  .manager-sidebar-menu .ant-menu-item,
+  .manager-sidebar-menu .ant-menu-submenu-title {
+    margin: 4px 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .manager-mobile-sidebar-drawer {
+    width: 100% !important;
+  }
+}
+
+/* Collapsed State Adjustments */
+.manager-sidebar-wrapper.collapsed .manager-sidebar-header {
+  justify-content: center;
+  padding: 0 16px;
+}
+
+.manager-sidebar-wrapper.collapsed .manager-sidebar-menu .ant-menu-item,
+.manager-sidebar-wrapper.collapsed .manager-sidebar-menu .ant-menu-submenu-title {
+  padding: 0 !important;
+  justify-content: center;
+}
+
+.manager-sidebar-wrapper.collapsed .manager-collapse-btn {
+  padding: 0;
+}
+
+.manager-sidebar-wrapper.collapsed .manager-sidebar-menu .ant-menu-sub .ant-menu-item {
+  padding-left: 0 !important;
+  text-align: center;
+}
+
+/* Smooth Transitions */
+.manager-sidebar-wrapper,
+.manager-sidebar-menu .ant-menu-item,
+.manager-sidebar-menu .ant-menu-submenu-title,
+.manager-collapse-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Accessibility */
+.manager-sidebar-menu .ant-menu-item:focus-visible,
+.manager-sidebar-menu .ant-menu-submenu-title:focus-visible {
+  outline: 2px solid white;
+  outline-offset: -2px;
+}
+
+/* Dark Mode Support (Optional) */
+@media (prefers-color-scheme: dark) {
+  .manager-sidebar-wrapper {
+    background: linear-gradient(180deg, #1a4d7a 0%, #0f3557 100%);
+  }
+}
+
+/* Animation for submenu expansion */
+.manager-sidebar-menu .ant-menu-submenu-title {
+  position: relative;
+}
+
+.manager-sidebar-menu .ant-menu-submenu-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  background: white;
+  transition: height 0.3s;
+}
+
+.manager-sidebar-menu .ant-menu-submenu-open>.ant-menu-submenu-title::before {
+  height: 70%;
+}

@@ -52,7 +52,7 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingEMIPlanCreation, createDto.LoanApplicationBaseId);
+                _logger.LogInformation("Processing EMI plan creation");
 
                 using (var transaction = await _unitOfWork.BeginTransactionAsync())
                 {
@@ -78,7 +78,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                         await _unitOfWork.SaveChangesAsync();
                         await transaction.CommitAsync();
 
-                        _logger.LogInformation(ApplicationConstants.Messages.EMIPlanCreatedSuccessfully, created.EMIId);
+                        _logger.LogInformation("EMI plan created successfully");
                         return MapToDto(created);
                     }
                     catch (Exception)
@@ -99,14 +99,14 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingEMIPlanRetrieval, emiId);
+                _logger.LogInformation("Processing EMI plan retrieval");
 
                 var emiPlan = await _unitOfWork.EMIPlans.GetByIdAsync(emiId);
-                return emiPlan != null ? MapToDto(emiPlan) : null;
+                return emiPlan != null ? MapToDto(emiPlan) : new EMIPlanDTO();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.EMIPlanRetrievalFailed, emiId);
+                _logger.LogError(ex, "EMI plan retrieval failed");
                 throw new Exception(ApplicationConstants.ErrorMessages.EMIPlanRetrievalFailed);
             }
         }
@@ -257,7 +257,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                         var emiPlan = await _unitOfWork.EMIPlans.GetByIdAsync(restructureDto.EMIId);
                         if (emiPlan == null)
                         {
-                            _logger.LogWarning(ApplicationConstants.ErrorMessages.EMIPlanNotFound, restructureDto.EMIId);
+                            _logger.LogWarning("EMI plan not found");
                             throw new ArgumentException(ApplicationConstants.ErrorMessages.EMIPlanNotFound);
                         }
 
@@ -273,7 +273,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                         await _unitOfWork.SaveChangesAsync();
                         await transaction.CommitAsync();
 
-                        _logger.LogInformation(ApplicationConstants.Messages.EMIRestructureAppliedSuccessfully, restructureDto.EMIId);
+                        _logger.LogInformation("EMI restructure applied successfully");
                         return MapToDto(updated);
                     }
                     catch (Exception)
@@ -285,7 +285,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
             catch (Exception ex) when (!(ex is ArgumentException))
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.EMIRestructureApplicationFailed, restructureDto.EMIId);
+                _logger.LogError(ex, "EMI restructure application failed");
                 throw new Exception(ApplicationConstants.ErrorMessages.EMIRestructureApplicationFailed);
             }
         }
@@ -293,7 +293,7 @@ namespace Kanini.LMP.Application.Services.Implementations
         public async Task<object> GetCompleteEMIDetailsAsync(int emiId)
         {
             var emiPlan = await GetEmiPlanByIdAsync(emiId);
-            if (emiPlan == null) return null;
+            if (emiPlan == null) return new { };
 
             var schedule = await GenerateEMIScheduleAsync(emiId);
             var lateFee = await CalculateLateFeeAsync(emiId, DateTime.UtcNow);

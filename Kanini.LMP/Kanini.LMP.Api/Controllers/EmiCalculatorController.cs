@@ -1,6 +1,9 @@
-﻿using Kanini.LMP.Application.Constants;
+﻿using Kanini.LMP.Api.Constants;
+using Kanini.LMP.Application.Constants;
 using Kanini.LMP.Application.Services.Interfaces;
+using Kanini.LMP.Data.UnitOfWork;
 using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto.CustomerBasicDto.EMIPlan;
+using Kanini.LMP.Database.EntitiesDtos;
 using Kanini.LMP.Database.EntitiesDtos.CustomerEntitiesDtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,189 +12,271 @@ using System.Security.Claims;
 
 namespace Kanini.LMP.Api.Controllers
 {
-    [Route(ApplicationConstants.Routes.EmiCalculatorController)]
+    [Route(ApiConstants.Routes.ApiController)]
     [ApiController]
     [Authorize]
     public class EmiCalculatorController : ControllerBase
     {
         private readonly IEmiCalculatorService _emiCalculatorService;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<EmiCalculatorController> _logger;
 
-        public EmiCalculatorController(IEmiCalculatorService emiCalculatorService, ILogger<EmiCalculatorController> logger)
+        public EmiCalculatorController(IEmiCalculatorService emiCalculatorService, IUnitOfWork unitOfWork, ILogger<EmiCalculatorController> logger)
         {
             _emiCalculatorService = emiCalculatorService;
+            _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
-        [HttpPost(ApplicationConstants.Routes.Calculate)]
-        public async Task<ActionResult<EMIPlanDTO>> CalculateEmi([FromBody] CalculateEmiRequest request)
+        [HttpPost(ApiConstants.Routes.EmiCalculatorController.Calculate)]
+        public async Task<ActionResult<ApiResponse<EMIPlanDTO>>> CalculateEmi([FromBody] CalculateEmiRequest request)
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.EMICalculationRequested, request.PrincipalAmount, request.TermMonths);
+                _logger.LogInformation("Processing EMI calculation");
 
                 var result = await _emiCalculatorService.CalculateEmiAsync(request.PrincipalAmount, request.InterestRate, request.TermMonths);
 
-                _logger.LogInformation(ApplicationConstants.Messages.EMICalculationCompleted, result.MonthlyEMI);
-                return Ok(result);
+                _logger.LogInformation("EMI calculation completed");
+                return Ok(ApiResponse<EMIPlanDTO>.SuccessResponse(result));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ApplicationConstants.ErrorMessages.EMICalculationFailed);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.EMICalculationFailed });
+                return BadRequest(ApiResponse<EMIPlanDTO>.ErrorResponse(ApplicationConstants.ErrorMessages.EMICalculationFailed));
             }
         }
 
-        [HttpPost("create")]
-        public async Task<ActionResult<EMIPlanDTO>> CreateEmiPlan([FromBody] EMIPlanCreateDTO createDto)
-        {
-            var result = await _emiCalculatorService.CreateEmiPlanAsync(createDto);
-            return Ok(result);
-        }
-
-        [HttpGet("{emiId}")]
-        public async Task<ActionResult<EMIPlanDTO>> GetEmiPlan(int emiId)
-        {
-            var result = await _emiCalculatorService.GetEmiPlanByIdAsync(emiId);
-            return result != null ? Ok(result) : NotFound();
-        }
-
-        [HttpGet("loan/{loanApplicationId}")]
-        public async Task<ActionResult<IEnumerable<EMIPlanDTO>>> GetEmiPlansByLoan(int loanApplicationId)
-        {
-            var result = await _emiCalculatorService.GetEmiPlansByLoanApplicationAsync(loanApplicationId);
-            return Ok(result);
-        }
-
-        [HttpGet(ApplicationConstants.Routes.Dashboard)]
-        [Authorize(Roles = ApplicationConstants.Roles.Customer)]
-        public async Task<IActionResult> GetEMIDashboard()
+        [HttpPost(ApiConstants.Routes.EmiCalculatorController.Create)]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult<ApiResponse<EMIPlanDTO>>> CreateEmiPlan([FromBody] EMIPlanCreateDTO createDto)
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.EMIDashboardRequested);
+                await _unitOfWork.BeginTransactionAsync();
+                var result = await _emiCalculatorService.CreateEmiPlanAsync(createDto);
+                await _unitOfWork.CommitTransactionAsync();
+                return Ok(ApiResponse<EMIPlanDTO>.SuccessResponse(result, ApplicationConstants.Messages.Created));
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.EMIPlanCreationFailed);
+                return BadRequest(ApiResponse<EMIPlanDTO>.ErrorResponse(ApplicationConstants.ErrorMessages.EMIPlanCreationFailed));
+            }
+        }
+
+        [HttpGet(ApiConstants.Routes.EmiCalculatorController.GetById)]
+        public async Task<ActionResult<ApiResponse<EMIPlanDTO>>> GetEmiPlan(int emiId)
+        {
+            try
+            {
+                var result = await _emiCalculatorService.GetEmiPlanByIdAsync(emiId);
+                return result != null ? Ok(ApiResponse<EMIPlanDTO>.SuccessResponse(result)) : NotFound(ApiResponse<EMIPlanDTO>.ErrorResponse(ApplicationConstants.ErrorMessages.EMIPlanNotFound));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to retrieve EMI plan");
+                return BadRequest(ApiResponse<EMIPlanDTO>.ErrorResponse(ApplicationConstants.ErrorMessages.EMIPlanRetrievalFailed));
+            }
+        }
+
+        [HttpGet(ApiConstants.Routes.EmiCalculatorController.GetByLoan)]
+        public async Task<ActionResult<ApiResponse<IEnumerable<EMIPlanDTO>>>> GetEmiPlansByLoan(int loanApplicationId)
+        {
+            try
+            {
+                var result = await _emiCalculatorService.GetEmiPlansByLoanApplicationAsync(loanApplicationId);
+                return Ok(ApiResponse<IEnumerable<EMIPlanDTO>>.SuccessResponse(result));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.EMIPlansRetrievalFailed);
+                return BadRequest(ApiResponse<IEnumerable<EMIPlanDTO>>.ErrorResponse(ApplicationConstants.ErrorMessages.EMIPlansRetrievalFailed));
+            }
+        }
+
+        [HttpGet(ApiConstants.Routes.EmiCalculatorController.Dashboard)]
+        [Authorize(Roles = ApplicationConstants.Roles.Customer)]
+        public async Task<ActionResult<ApiResponse<object>>> GetEMIDashboard()
+        {
+            try
+            {
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingEMIDashboard);
 
                 var customerIdClaim = User.FindFirst(ApplicationConstants.Claims.CustomerId)?.Value;
                 if (string.IsNullOrEmpty(customerIdClaim) || !int.TryParse(customerIdClaim, out int customerId))
                 {
-                    _logger.LogWarning(ApplicationConstants.ErrorMessages.CustomerIdNotFound);
-                    return Unauthorized(new { message = ApplicationConstants.ErrorMessages.CustomerIdNotFound });
+                    _logger.LogWarning("Customer ID not found in token");
+                    return Unauthorized(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.CustomerIdNotFound));
                 }
 
                 var dashboard = await _emiCalculatorService.GetCustomerEMIDashboardAsync(customerId);
                 if (dashboard == null)
                 {
-                    _logger.LogWarning(ApplicationConstants.ErrorMessages.NoActiveEMIFound, customerId);
-                    return NotFound(new { message = ApplicationConstants.ErrorMessages.NoActiveEMIFound });
+                    _logger.LogWarning("No active EMI found for customer");
+                    return NotFound(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.NoActiveEMIFound));
                 }
 
-                _logger.LogInformation(ApplicationConstants.Messages.EMIDashboardCompleted, customerId);
-                return Ok(dashboard);
+                _logger.LogInformation("EMI dashboard completed");
+                return Ok(ApiResponse<object>.SuccessResponse(dashboard));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ApplicationConstants.ErrorMessages.EMIDashboardFailed);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.EMIDashboardFailed });
+                return BadRequest(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.EMIDashboardFailed));
             }
         }
 
-        [HttpGet("all")]
+        [HttpGet(ApiConstants.Routes.EmiCalculatorController.All)]
         [Authorize(Roles = ApplicationConstants.Roles.Customer)]
-        public async Task<IActionResult> GetAllEMIs()
+        public async Task<ActionResult<ApiResponse<object>>> GetAllEMIs()
         {
             try
             {
                 var customerIdClaim = User.FindFirst(ApplicationConstants.Claims.CustomerId)?.Value;
                 if (string.IsNullOrEmpty(customerIdClaim) || !int.TryParse(customerIdClaim, out int customerId))
                 {
-                    return Unauthorized(new { message = ApplicationConstants.ErrorMessages.CustomerIdNotFound });
+                    return Unauthorized(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.CustomerIdNotFound));
                 }
 
                 var emis = await _emiCalculatorService.GetAllCustomerEMIsAsync(customerId);
-                return Ok(emis);
+                return Ok(ApiResponse<object>.SuccessResponse(emis));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.EMIDashboardFailed);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.EMIDashboardFailed });
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.EMIPlansRetrievalFailed);
+                return BadRequest(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.EMIPlansRetrievalFailed));
             }
         }
 
-        [HttpGet("{emiId}/schedule")]
-        public async Task<IActionResult> GetEMISchedule(int emiId)
-        {
-            var schedule = await _emiCalculatorService.GenerateEMIScheduleAsync(emiId);
-            return Ok(schedule);
-        }
-
-        [HttpPost("{emiId}/prepayment")]
-        public async Task<IActionResult> CalculatePrepayment(int emiId, [FromBody] PrepaymentRequest request)
-        {
-            var calculation = await _emiCalculatorService.CalculatePrepaymentAsync(emiId, request.PrepaymentAmount);
-            return Ok(calculation);
-        }
-
-        [HttpGet("{emiId}/latefee")]
-        public async Task<IActionResult> CalculateLateFee(int emiId)
-        {
-            var lateFee = await _emiCalculatorService.CalculateLateFeeAsync(emiId, DateTime.UtcNow);
-            return Ok(new { LateFee = lateFee });
-        }
-
-        [HttpPost("restructure/calculate")]
-        public async Task<IActionResult> CalculateRestructure([FromBody] EMIRestructureDto restructureDto)
-        {
-            var result = await _emiCalculatorService.CalculateEMIRestructureAsync(restructureDto);
-            return Ok(result);
-        }
-
-        [HttpPost(ApplicationConstants.Routes.RestructureApply)]
-        [Authorize(Roles = ApplicationConstants.Roles.Manager)]
-        public async Task<IActionResult> ApplyRestructure([FromBody] EMIRestructureDto restructureDto)
+        [HttpGet(ApiConstants.Routes.EmiCalculatorController.Schedule)]
+        public async Task<ActionResult<ApiResponse<object>>> GetEMISchedule(int emiId)
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.EMIRestructureRequested, restructureDto.EMIId);
-
-                var result = await _emiCalculatorService.ApplyEMIRestructureAsync(restructureDto);
-
-                _logger.LogInformation(ApplicationConstants.Messages.EMIRestructureCompleted, restructureDto.EMIId);
-                return Ok(result);
+                var schedule = await _emiCalculatorService.GenerateEMIScheduleAsync(emiId);
+                return Ok(ApiResponse<object>.SuccessResponse(schedule));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.EMIRestructureFailed, restructureDto.EMIId);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.EMIRestructureFailed });
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.EMIPlansRetrievalFailed);
+                return BadRequest(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.EMIPlansRetrievalFailed));
             }
         }
 
-        [HttpGet("{emiId}/complete-details")]
-        public async Task<IActionResult> GetCompleteEMIDetails(int emiId)
+        [HttpPost(ApiConstants.Routes.EmiCalculatorController.Prepayment)]
+        public async Task<ActionResult<ApiResponse<object>>> CalculatePrepayment(int emiId, [FromBody] PrepaymentRequest request)
         {
-            var result = await _emiCalculatorService.GetCompleteEMIDetailsAsync(emiId);
-            return result != null ? Ok(result) : NotFound();
+            try
+            {
+                var calculation = await _emiCalculatorService.CalculatePrepaymentAsync(emiId, request.PrepaymentAmount);
+                return Ok(ApiResponse<object>.SuccessResponse(calculation));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.EMICalculationFailed);
+                return BadRequest(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.EMICalculationFailed));
+            }
         }
 
-        [HttpPost("calculate-sp")]
-        public async Task<ActionResult<EMIPlanDTO>> CalculateEmiViaSP([FromBody] CalculateEmiRequest request)
+        [HttpGet(ApiConstants.Routes.EmiCalculatorController.LateFee)]
+        public async Task<ActionResult<ApiResponse<object>>> CalculateLateFee(int emiId)
+        {
+            try
+            {
+                var lateFee = await _emiCalculatorService.CalculateLateFeeAsync(emiId, DateTime.UtcNow);
+                return Ok(ApiResponse<object>.SuccessResponse(new { LateFee = lateFee }));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.EMICalculationFailed);
+                return BadRequest(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.EMICalculationFailed));
+            }
+        }
+
+        [HttpPost(ApiConstants.Routes.EmiCalculatorController.RestructureCalculate)]
+        public async Task<ActionResult<ApiResponse<object>>> CalculateRestructure([FromBody] EMIRestructureDto restructureDto)
+        {
+            try
+            {
+                var result = await _emiCalculatorService.CalculateEMIRestructureAsync(restructureDto);
+                return Ok(ApiResponse<object>.SuccessResponse(result));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.EMICalculationFailed);
+                return BadRequest(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.EMICalculationFailed));
+            }
+        }
+
+        [HttpPost(ApiConstants.Routes.EmiCalculatorController.RestructureApply)]
+        [Authorize(Roles = ApplicationConstants.Roles.Manager)]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult<ApiResponse<object>>> ApplyRestructure([FromBody] EMIRestructureDto restructureDto)
+        {
+            try
+            {
+                _logger.LogInformation("Processing EMI restructure");
+
+                await _unitOfWork.BeginTransactionAsync();
+                var result = await _emiCalculatorService.ApplyEMIRestructureAsync(restructureDto);
+                await _unitOfWork.CommitTransactionAsync();
+
+                _logger.LogInformation("EMI restructure completed");
+                return Ok(ApiResponse<object>.SuccessResponse(result, ApplicationConstants.Messages.Updated));
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                _logger.LogError(ex, "Failed to restructure EMI");
+                return BadRequest(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.EMIRestructureFailed));
+            }
+        }
+
+        [HttpGet(ApiConstants.Routes.EmiCalculatorController.CompleteDetails)]
+        public async Task<ActionResult<ApiResponse<object>>> GetCompleteEMIDetails(int emiId)
+        {
+            try
+            {
+                var result = await _emiCalculatorService.GetCompleteEMIDetailsAsync(emiId);
+                return result != null ? Ok(ApiResponse<object>.SuccessResponse(result)) : NotFound(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.EMIPlanNotFound));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to retrieve EMI plan");
+                return BadRequest(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.EMIPlanRetrievalFailed));
+            }
+        }
+
+        [HttpPost(ApiConstants.Routes.EmiCalculatorController.CalculateSP)]
+        public async Task<ActionResult<ApiResponse<EMIPlanDTO>>> CalculateEmiViaSP([FromBody] CalculateEmiRequest request)
         {
             try
             {
                 var result = await _emiCalculatorService.CalculateEmiViaSPAsync(request.PrincipalAmount, request.InterestRate, request.TermMonths);
-                return Ok(result);
+                return Ok(ApiResponse<EMIPlanDTO>.SuccessResponse(result));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "EMI calculation via SP failed");
-                return BadRequest(new { message = "EMI calculation failed" });
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.EMICalculationFailed);
+                return BadRequest(ApiResponse<EMIPlanDTO>.ErrorResponse(ApplicationConstants.ErrorMessages.EMICalculationFailed));
             }
         }
 
-        [HttpGet("{emiId}/schedule-sp")]
-        public async Task<IActionResult> GetEMIScheduleViaSP(int emiId)
+        [HttpGet(ApiConstants.Routes.EmiCalculatorController.ScheduleSP)]
+        public async Task<ActionResult<ApiResponse<object>>> GetEMIScheduleViaSP(int emiId)
         {
-            var schedule = await _emiCalculatorService.GenerateEMIScheduleViaSPAsync(emiId);
-            return Ok(schedule);
+            try
+            {
+                var schedule = await _emiCalculatorService.GenerateEMIScheduleViaSPAsync(emiId);
+                return Ok(ApiResponse<object>.SuccessResponse(schedule));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.EMIPlansRetrievalFailed);
+                return BadRequest(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.EMIPlansRetrievalFailed));
+            }
         }
     }
 

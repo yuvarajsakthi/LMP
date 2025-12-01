@@ -1,10 +1,15 @@
 export interface RegisterCredentials {
+  fullName: string;
   email: string;
   password: string;
-  fullName: string;
-  role: string;
+  dateOfBirth: string;
+  gender: number;
+  phoneNumber: string;
 }
 
 export interface RegisterResponse {
-  token: string;
+  message: string;
+  userId: number;
+  email: string;
+  fullName: string;
 }

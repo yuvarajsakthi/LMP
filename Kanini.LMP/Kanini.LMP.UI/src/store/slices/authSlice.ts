@@ -24,7 +24,12 @@ export const loginUser = createAsyncThunk(
       const response = await authAPI.login(credentials);
       return response;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Login failed');
+      // Error is already handled by ApiService and shown to user
+      return rejectWithValue({
+        message: error.message || 'Login failed',
+        statusCode: error.statusCode || 500,
+        errors: error.errors || []
+      });
     }
   }
 );
@@ -36,7 +41,12 @@ export const registerUser = createAsyncThunk(
       const response = await authAPI.register(credentials);
       return response;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Registration failed');
+      // Error is already handled by ApiService and shown to user
+      return rejectWithValue({
+        message: error.message || 'Registration failed',
+        statusCode: error.statusCode || 500,
+        errors: error.errors || []
+      });
     }
   }
 );
@@ -45,10 +55,15 @@ export const forgotPassword = createAsyncThunk(
   'auth/forgotPassword',
   async (email: string, { rejectWithValue }) => {
     try {
-      await authAPI.forgotPassword(email);
-      return 'Password reset email sent successfully';
+      const response = await authAPI.forgotPassword(email);
+      return response.message || 'Password reset email sent successfully';
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to send reset email');
+      // Error is already handled by ApiService and shown to user
+      return rejectWithValue({
+        message: error.message || 'Failed to send reset email',
+        statusCode: error.statusCode || 500,
+        errors: error.errors || []
+      });
     }
   }
 );
@@ -57,10 +72,15 @@ export const resetPassword = createAsyncThunk(
   'auth/resetPassword',
   async (data: { email: string; resetToken: string; newPassword: string }, { rejectWithValue }) => {
     try {
-      await authAPI.resetPassword(data);
-      return 'Password reset successfully';
+      const response = await authAPI.resetPassword(data);
+      return response.message || 'Password reset successfully';
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to reset password');
+      // Error is already handled by ApiService and shown to user
+      return rejectWithValue({
+        message: error.message || 'Failed to reset password',
+        statusCode: error.statusCode || 500,
+        errors: error.errors || []
+      });
     }
   }
 );
@@ -97,21 +117,21 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        const error = action.payload as any;
+        state.error = error?.message || 'Login failed';
       })
       .addCase(registerUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(registerUser.fulfilled, (state, action) => {
+      .addCase(registerUser.fulfilled, (state) => {
         state.isLoading = false;
-        state.token = action.payload.token;
-        state.user = action.payload.user;
         state.error = null;
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        const error = action.payload as any;
+        state.error = error?.message || 'Registration failed';
       })
       .addCase(forgotPassword.pending, (state) => {
         state.isLoading = true;
@@ -123,7 +143,8 @@ const authSlice = createSlice({
       })
       .addCase(forgotPassword.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        const error = action.payload as any;
+        state.error = error?.message || 'Failed to send reset email';
       })
       .addCase(resetPassword.pending, (state) => {
         state.isLoading = true;
@@ -135,7 +156,8 @@ const authSlice = createSlice({
       })
       .addCase(resetPassword.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        const error = action.payload as any;
+        state.error = error?.message || 'Failed to reset password';
       });
   },
 });

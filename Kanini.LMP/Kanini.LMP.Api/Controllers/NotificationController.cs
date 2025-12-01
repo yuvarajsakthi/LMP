@@ -34,17 +34,17 @@ namespace Kanini.LMP.Api.Controllers
             try
             {
                 var userId = GetCurrentUserId();
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingNotificationsRetrieval, userId);
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingNotificationsRetrieval);
 
                 var notifications = await _notificationService.GetUserNotificationsAsync(userId);
 
-                _logger.LogInformation(ApplicationConstants.Messages.NotificationsRetrievalCompleted, notifications.Count(), userId);
+                _logger.LogInformation(ApplicationConstants.Messages.NotificationsRetrievalCompleted);
                 return Ok(notifications);
             }
             catch (Exception ex)
             {
                 var userId = GetCurrentUserId();
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.NotificationsRetrievalFailed, userId);
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.NotificationsRetrievalFailed);
                 return BadRequest(new { message = ApplicationConstants.ErrorMessages.NotificationsRetrievalFailed });
             }
         }
@@ -55,17 +55,17 @@ namespace Kanini.LMP.Api.Controllers
             try
             {
                 var userId = GetCurrentUserId();
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingUnreadNotifications, userId);
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingUnreadNotifications);
 
                 var notifications = await _notificationService.GetUnreadNotificationsAsync(userId);
 
-                _logger.LogInformation(ApplicationConstants.Messages.UnreadNotificationsCompleted, notifications.Count(), userId);
+                _logger.LogInformation(ApplicationConstants.Messages.UnreadNotificationsCompleted);
                 return Ok(notifications);
             }
             catch (Exception ex)
             {
                 var userId = GetCurrentUserId();
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.UnreadNotificationsFailed, userId);
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.UnreadNotificationsFailed);
                 return BadRequest(new { message = ApplicationConstants.ErrorMessages.UnreadNotificationsFailed });
             }
         }
@@ -76,17 +76,17 @@ namespace Kanini.LMP.Api.Controllers
             try
             {
                 var userId = GetCurrentUserId();
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingUnreadCount, userId);
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingUnreadCount);
 
                 var count = await _notificationService.GetUnreadCountAsync(userId);
 
-                _logger.LogInformation(ApplicationConstants.Messages.UnreadCountCompleted, userId, count);
+                _logger.LogInformation(ApplicationConstants.Messages.UnreadCountCompleted);
                 return Ok(new { count });
             }
             catch (Exception ex)
             {
                 var userId = GetCurrentUserId();
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.UnreadCountFailed, userId);
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.UnreadCountFailed);
                 return BadRequest(new { message = ApplicationConstants.ErrorMessages.UnreadCountFailed });
             }
         }
@@ -96,16 +96,16 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingMarkAsRead, notificationId);
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingMarkAsRead);
 
                 var notification = await _notificationService.MarkAsReadAsync(notificationId);
 
-                _logger.LogInformation(ApplicationConstants.Messages.MarkAsReadCompleted, notificationId);
+                _logger.LogInformation(ApplicationConstants.Messages.MarkAsReadCompleted);
                 return Ok(notification);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.MarkAsReadFailed, notificationId);
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.MarkAsReadFailed);
                 return BadRequest(new { message = ApplicationConstants.ErrorMessages.MarkAsReadFailed });
             }
         }
@@ -116,17 +116,17 @@ namespace Kanini.LMP.Api.Controllers
             try
             {
                 var userId = GetCurrentUserId();
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingMarkAllAsRead, userId);
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingMarkAllAsRead);
 
                 var result = await _notificationService.MarkAllAsReadAsync(userId);
 
-                _logger.LogInformation(ApplicationConstants.Messages.MarkAllAsReadCompleted, userId);
+                _logger.LogInformation(ApplicationConstants.Messages.MarkAllAsReadCompleted);
                 return Ok(new { success = result, message = ApplicationConstants.ErrorMessages.AllNotificationsMarkedAsRead });
             }
             catch (Exception ex)
             {
                 var userId = GetCurrentUserId();
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.MarkAllAsReadFailed, userId);
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.MarkAllAsReadFailed);
                 return BadRequest(new { message = ApplicationConstants.ErrorMessages.MarkAllAsReadFailed });
             }
         }
@@ -138,17 +138,17 @@ namespace Kanini.LMP.Api.Controllers
             try
             {
                 var userId = GetCurrentUserId();
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingPreferencesRetrieval, userId);
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingPreferencesRetrieval);
 
                 var preferences = await _enhancedNotificationService.GetUserNotificationPreferencesAsync(userId);
 
-                _logger.LogInformation(ApplicationConstants.Messages.PreferencesRetrievalCompleted, userId);
+                _logger.LogInformation(ApplicationConstants.Messages.PreferencesRetrievalCompleted);
                 return Ok(preferences);
             }
             catch (Exception ex)
             {
                 var userId = GetCurrentUserId();
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.PreferencesRetrievalFailed, userId);
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.PreferencesRetrievalFailed);
                 return BadRequest(new { message = ApplicationConstants.ErrorMessages.PreferencesRetrievalFailed });
             }
         }
@@ -161,7 +161,7 @@ namespace Kanini.LMP.Api.Controllers
             try
             {
                 var userId = GetCurrentUserId();
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingPreferencesUpdate, userId, notificationType);
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingPreferencesUpdate);
 
                 var result = await _enhancedNotificationService.UpdateNotificationPreferencesAsync(
                     userId, notificationType, request.EmailEnabled, request.SMSEnabled,
@@ -169,17 +169,17 @@ namespace Kanini.LMP.Api.Controllers
 
                 if (result)
                 {
-                    _logger.LogInformation(ApplicationConstants.Messages.PreferencesUpdateCompleted, userId, notificationType);
+                    _logger.LogInformation(ApplicationConstants.Messages.PreferencesUpdateCompleted);
                     return Ok(new { Message = ApplicationConstants.ErrorMessages.PreferencesUpdatedSuccessfully });
                 }
 
-                _logger.LogWarning(ApplicationConstants.ErrorMessages.PreferencesUpdateFailed, userId);
+                _logger.LogWarning(ApplicationConstants.ErrorMessages.PreferencesUpdateFailed);
                 return BadRequest(new { message = ApplicationConstants.ErrorMessages.PreferencesUpdateFailed });
             }
             catch (Exception ex)
             {
                 var userId = GetCurrentUserId();
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.PreferencesUpdateFailed, userId);
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.PreferencesUpdateFailed);
                 return BadRequest(new { message = ApplicationConstants.ErrorMessages.PreferencesUpdateFailed });
             }
         }
@@ -190,20 +190,20 @@ namespace Kanini.LMP.Api.Controllers
             try
             {
                 var userId = GetCurrentUserId();
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingTestNotification, userId);
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingTestNotification);
 
                 await _enhancedNotificationService.SendMultiChannelNotificationAsync(
                     userId, request.Title ?? ApplicationConstants.Messages.Unknown,
                     request.Message ?? ApplicationConstants.Messages.Unknown,
                     NotificationType.General, NotificationPriority.Low);
 
-                _logger.LogInformation(ApplicationConstants.Messages.TestNotificationCompleted, userId);
+                _logger.LogInformation(ApplicationConstants.Messages.TestNotificationCompleted);
                 return Ok(new { Message = ApplicationConstants.ErrorMessages.TestNotificationSent });
             }
             catch (Exception ex)
             {
                 var userId = GetCurrentUserId();
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.TestNotificationFailed, userId);
+                _logger.LogError(ex, ApplicationConstants.ErrorMessages.TestNotificationFailed);
                 return BadRequest(new { message = ApplicationConstants.ErrorMessages.TestNotificationFailed });
             }
         }
@@ -220,12 +220,12 @@ namespace Kanini.LMP.Api.Controllers
                     return BadRequest(new { message = ApplicationConstants.ErrorMessages.UserIdsRequired });
                 }
 
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingBulkNotification, request.UserIds.Count);
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingBulkNotification);
 
                 await _enhancedNotificationService.SendBulkNotificationAsync(
                     request.UserIds, request.Title, request.Message, request.Type, request.Priority);
 
-                _logger.LogInformation(ApplicationConstants.Messages.BulkNotificationCompleted, request.UserIds.Count);
+                _logger.LogInformation(ApplicationConstants.Messages.BulkNotificationCompleted);
                 return Ok(new { Message = string.Format(ApplicationConstants.ErrorMessages.BulkNotificationSent, request.UserIds.Count) });
             }
             catch (Exception ex)

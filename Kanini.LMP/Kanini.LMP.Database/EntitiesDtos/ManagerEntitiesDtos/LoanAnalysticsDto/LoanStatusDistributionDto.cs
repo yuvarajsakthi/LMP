@@ -12,7 +12,7 @@ namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.LoanAnalystics
         /// DTO for the 'Loan Status Distribution' chart (Bar with percentages).
         /// Source: LoanAccount (group by CurrentPaymentStatus)
         /// </summary>
-        public string StatusName { get; set; } // e.g., Fully Paid, Late (> 1-100 Days), Default
+        public required string StatusName { get; set; } // e.g., Fully Paid, Late (> 1-100 Days), Default
         public decimal Percentage { get; set; }
     }
 }

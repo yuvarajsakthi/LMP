@@ -1,4 +1,5 @@
-﻿using Kanini.LMP.Application.Constants;
+﻿using Kanini.LMP.Api.Constants;
+using Kanini.LMP.Application.Constants;
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Database.EntitiesDto.PaymentTransaction;
 using Microsoft.AspNetCore.Authorization;
@@ -6,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kanini.LMP.Api.Controllers
 {
-    [Route(ApplicationConstants.Routes.RazorpayController.Base)]
+    [Route(ApiConstants.Routes.RazorpayController.Base)]
     [ApiController]
     [Authorize]
     public class RazorpayController : ControllerBase
@@ -20,7 +21,7 @@ namespace Kanini.LMP.Api.Controllers
             _logger = logger;
         }
 
-        [HttpPost(ApplicationConstants.Routes.RazorpayController.CreateOrder)]
+        [HttpPost(ApiConstants.Routes.RazorpayController.CreateOrder)]
         public async Task<ActionResult<RazorpayOrderResponseDto>> CreateOrder([FromBody] RazorpayOrderCreateDto orderDto)
         {
             try
@@ -37,7 +38,7 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        [HttpPost(ApplicationConstants.Routes.RazorpayController.ProcessPayment)]
+        [HttpPost(ApiConstants.Routes.RazorpayController.ProcessPayment)]
         public async Task<ActionResult<PaymentTransactionResponseDTO>> ProcessPayment([FromBody] RazorpayPaymentDto paymentDto)
         {
             try
@@ -54,7 +55,7 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        [HttpPost(ApplicationConstants.Routes.RazorpayController.VerifySignature)]
+        [HttpPost(ApiConstants.Routes.RazorpayController.VerifySignature)]
         public async Task<ActionResult<bool>> VerifySignature([FromBody] RazorpayPaymentDto paymentDto)
         {
             try
@@ -74,7 +75,7 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        [HttpPost(ApplicationConstants.Routes.RazorpayController.DisburseLoan)]
+        [HttpPost(ApiConstants.Routes.RazorpayController.DisburseLoan)]
         public async Task<ActionResult<DisbursementResponseDto>> DisburseLoan([FromBody] DisbursementDto disbursementDto)
         {
             try
@@ -91,7 +92,7 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        [HttpGet(ApplicationConstants.Routes.RazorpayController.GetDisbursementStatus)]
+        [HttpGet(ApiConstants.Routes.RazorpayController.GetDisbursementStatus)]
         public async Task<ActionResult<DisbursementResponseDto>> GetDisbursementStatus(string disbursementId)
         {
             try
