@@ -607,7 +607,10 @@ namespace Kanini.LMP.Application.Services.Implementations
 
         public async Task<LoanProductAnalysisDto> GetLoanProductAnalysisAsync(string loanProductType)
         {
-            return new LoanProductAnalysisDto();
+            return new LoanProductAnalysisDto
+            {
+                ApplicationType = loanProductType
+            };
         }
 
         // Risk Assessment Reports

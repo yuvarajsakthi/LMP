@@ -1,9 +1,10 @@
 .registerContainer {
   padding: 2rem;
-  height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   background: white;
 }
 

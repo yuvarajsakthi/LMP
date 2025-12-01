@@ -27,13 +27,13 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingEligibilityCalculation, customerId, loanProductId);
+                _logger.LogInformation("Processing eligibility calculation");
 
                 // Find customer by UserId (not CustomerId)
                 var customer = await _unitOfWork.Customers.GetAsync(c => c.UserId == customerId);
                 if (customer == null)
                 {
-                    _logger.LogWarning(ApplicationConstants.ErrorMessages.CustomerNotFound, customerId);
+                    _logger.LogWarning("Customer not found");
                     throw new ArgumentException(ApplicationConstants.ErrorMessages.CustomerNotFound);
                 }
 
@@ -44,7 +44,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                 var eligibilityScore = CalculateScore(customer, loanProductId, (int)creditScore);
                 var status = DetermineStatus(eligibilityScore, loanProductId);
 
-                _logger.LogInformation(ApplicationConstants.Messages.EligibilityCalculationCompleted, customerId, eligibilityScore);
+                _logger.LogInformation("Eligibility calculation completed");
                 return new EligibilityScoreDto
                 {
                     CustomerId = customer.CustomerId,
@@ -61,7 +61,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
             catch (Exception ex) when (!(ex is ArgumentException))
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.EligibilityCalculationFailed, customerId);
+                _logger.LogError(ex, "Eligibility calculation failed");
                 throw new Exception(ApplicationConstants.ErrorMessages.EligibilityCalculationFailed);
             }
         }
@@ -109,7 +109,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                         var customer = await _unitOfWork.Customers.GetAsync(c => c.UserId == userId);
                         if (customer == null)
                         {
-                            _logger.LogWarning(ApplicationConstants.ErrorMessages.CustomerNotFound, userId);
+                            _logger.LogWarning("Customer not found");
                             throw new ArgumentException(ApplicationConstants.ErrorMessages.CustomerNotFound);
                         }
 
@@ -138,7 +138,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                         await _unitOfWork.SaveChangesAsync();
                         await transaction.CommitAsync();
 
-                        _logger.LogInformation(ApplicationConstants.Messages.CustomerProfileUpdatedSuccessfully, userId);
+                        _logger.LogInformation("Customer profile updated successfully");
                     }
                     catch (Exception)
                     {
@@ -149,7 +149,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
             catch (Exception ex) when (!(ex is ArgumentException))
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.CustomerProfileUpdateFailed, userId);
+                _logger.LogError(ex, "Customer profile update failed");
                 throw new Exception(ApplicationConstants.ErrorMessages.CustomerProfileUpdateFailed);
             }
         }
@@ -200,7 +200,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             else if (request.AnnualIncome >= 200000) score += 40;
 
             // Occupation factor (30% weightage)
-            var occupation = request.Occupation.ToLower();
+            var occupation = request.Occupation?.ToLower() ?? "";
             if (occupation.Contains("government") || occupation.Contains("bank")) score += 70;
             else if (occupation.Contains("engineer") || occupation.Contains("doctor") || occupation.Contains("manager")) score += 60;
             else if (occupation.Contains("teacher") || occupation.Contains("consultant")) score += 50;
@@ -226,7 +226,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             else if (request.AnnualIncome >= 200000) score += 35;
 
             // Occupation & Experience (25% weightage)
-            var occupation = request.Occupation.ToLower();
+            var occupation = request.Occupation?.ToLower() ?? "";
             int occupationScore = 0;
             if (occupation.Contains("government") || occupation.Contains("bank")) occupationScore = 50;
             else if (occupation.Contains("engineer") || occupation.Contains("doctor")) occupationScore = 45;

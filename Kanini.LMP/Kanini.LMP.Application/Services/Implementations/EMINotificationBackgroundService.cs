@@ -47,6 +47,13 @@ namespace Kanini.LMP.Application.Services.Implementations
             var context = scope.ServiceProvider.GetRequiredService<LmpDbContext>();
             var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
+            // Check database connectivity before proceeding
+            if (!await context.Database.CanConnectAsync())
+            {
+                _logger.LogWarning("Database connection unavailable, skipping EMI due date check");
+                return;
+            }
+
             var today = DateTime.Today;
             var threeDaysFromNow = today.AddDays(3);
 
@@ -106,6 +113,13 @@ namespace Kanini.LMP.Application.Services.Implementations
             using var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<LmpDbContext>();
             var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+
+            // Check database connectivity before proceeding
+            if (!await context.Database.CanConnectAsync())
+            {
+                _logger.LogWarning("Database connection unavailable, skipping overdue payments check");
+                return;
+            }
 
             // Get overdue loan accounts
             var overdueAccounts = await context.LoanAccounts

@@ -1056,10 +1056,6 @@ namespace Kanini.LMP.Data.Migrations
                     b.Property<DateTime>("DisbursementDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("DisbursementTransactionId")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<DateTime?>("LastPaymentDate")
                         .HasColumnType("datetime2");
 
@@ -1191,10 +1187,19 @@ namespace Kanini.LMP.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationId"));
 
+                    b.Property<int>("Channel")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ExternalId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSent")
                         .HasColumnType("bit");
 
                     b.Property<string>("Message")
@@ -1202,10 +1207,19 @@ namespace Kanini.LMP.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -1225,28 +1239,40 @@ namespace Kanini.LMP.Data.Migrations
                         new
                         {
                             NotificationId = 1,
+                            Channel = 4,
                             CreatedAt = new DateTime(2025, 2, 2, 9, 30, 0, 0, DateTimeKind.Utc),
                             IsRead = false,
+                            IsSent = false,
                             Message = "Your Personal Loan application has been approved and funds have been disbursed to your account.",
+                            Priority = 1,
                             Title = "Loan Disbursed Successfully",
+                            Type = 8,
                             UserId = 1
                         },
                         new
                         {
                             NotificationId = 2,
+                            Channel = 4,
                             CreatedAt = new DateTime(2025, 10, 15, 14, 0, 0, 0, DateTimeKind.Utc),
                             IsRead = true,
+                            IsSent = false,
                             Message = "A payment of ₹4,403.95 is due in 5 days for your Car Loan.",
+                            Priority = 1,
                             Title = "Payment Due Reminder",
+                            Type = 8,
                             UserId = 2
                         },
                         new
                         {
                             NotificationId = 3,
+                            Channel = 4,
                             CreatedAt = new DateTime(2025, 1, 1, 10, 0, 0, 0, DateTimeKind.Utc),
                             IsRead = true,
+                            IsSent = false,
                             Message = "Thank you for registering with our loan management system.",
+                            Priority = 1,
                             Title = "Welcome to Loan Management Portal",
+                            Type = 8,
                             UserId = 1
                         });
                 });

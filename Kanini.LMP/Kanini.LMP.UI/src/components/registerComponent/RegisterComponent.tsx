@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Typography, Input, Button, message } from "antd";
+import { Typography, Input, Button, message, Select } from "antd";
 import { useDispatch, useSelector } from 'react-redux';
 import { LoanAcceleratorLogo } from "../../assets";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import RegisterCss from "./RegisterComponent.module.css";
 import type { RegisterCredentials, InputChangeEvent } from "../../types";
-import { USER_ROLES, ROUTES, SUCCESS_MESSAGES, ERROR_MESSAGES } from "../../config";
+import { ROUTES, SUCCESS_MESSAGES, ERROR_MESSAGES } from "../../config";
 import { validateField } from "../../utils";
 import { useAuth } from "../../context";
 import { registerUser } from "../../store/slices/authSlice";
@@ -16,13 +16,17 @@ const RegisterComponent = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { isLoading } = useSelector((state: RootState) => state.auth);
   const navigate = useNavigate();
-  const { setToken } = useAuth();
+  const {} = useAuth();
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [gender, setGender] = useState(0);
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
 
 
 
@@ -47,32 +51,35 @@ const RegisterComponent = () => {
     setPasswordError(error);
   };
 
+  const handlePhoneChange = (e: InputChangeEvent) => {
+    const phoneValue = e.target.value.replace(/\D/g, '');
+    setPhoneNumber(phoneValue);
+    if (phoneValue.length !== 10) {
+      setPhoneError('Phone number must be 10 digits');
+    } else {
+      setPhoneError('');
+    }
+  };
+
   const handleSubmit = async () => {
-    if (nameError || emailError || passwordError) {
+    if (nameError || emailError || passwordError || phoneError || !dateOfBirth || !phoneNumber) {
       message.error('Please fill all fields correctly');
       return;
     }
 
     const registerData: RegisterCredentials = {
+      fullName: name,
       email: email,
       password: password,
-      fullName: name,
-      role: "Customer",
+      dateOfBirth: dateOfBirth,
+      gender: gender,
+      phoneNumber: phoneNumber,
     };
     
     try {
-      const result = await dispatch(registerUser(registerData)).unwrap();
+      await dispatch(registerUser(registerData)).unwrap();
       message.success(SUCCESS_MESSAGES.REGISTER_SUCCESS);
-      setToken(result.user);
-      
-      const userRole = result.user.role;
-      if (userRole?.toLowerCase() === USER_ROLES.MANAGER.toLowerCase()) {
-        message.success(SUCCESS_MESSAGES.REGISTER_MANAGER);
-        navigate(ROUTES.APPLIED_LOAN);
-      } else if (userRole?.toLowerCase() === USER_ROLES.CUSTOMER.toLowerCase()) {
-        navigate(ROUTES.CUSTOMER_DASHBOARD);
-        message.success(SUCCESS_MESSAGES.REGISTER_CUSTOMER);
-      }
+      navigate(ROUTES.LOGIN);
     } catch (error: any) {
       message.error(error || ERROR_MESSAGES.REGISTRATION_FAILED);
     }
@@ -137,6 +144,45 @@ const RegisterComponent = () => {
           />
           {passwordError && (
             <div className={RegisterCss.errorMessage}>{passwordError}</div>
+          )}
+        </div>
+
+        <div className={RegisterCss.inputGroup}>
+          <label className={RegisterCss.label}>Date of Birth</label>
+          <Input
+            type="date"
+            className={RegisterCss.input}
+            value={dateOfBirth}
+            onChange={(e) => setDateOfBirth(e.target.value)}
+          />
+        </div>
+
+        <div className={RegisterCss.inputGroup}>
+          <label className={RegisterCss.label}>Gender</label>
+          <Select
+            className={RegisterCss.input}
+            value={gender}
+            onChange={(value) => setGender(value)}
+            options={[
+              { value: 0, label: 'Male' },
+              { value: 1, label: 'Female' }
+            ]}
+          />
+        </div>
+
+        <div className={RegisterCss.inputGroup}>
+          <label className={RegisterCss.label}>Phone Number</label>
+          <Input
+            type="tel"
+            className={RegisterCss.input}
+            value={phoneNumber}
+            onChange={handlePhoneChange}
+            status={phoneError ? "error" : ""}
+            placeholder="10 digit phone number"
+            maxLength={10}
+          />
+          {phoneError && (
+            <div className={RegisterCss.errorMessage}>{phoneError}</div>
           )}
         </div>
 

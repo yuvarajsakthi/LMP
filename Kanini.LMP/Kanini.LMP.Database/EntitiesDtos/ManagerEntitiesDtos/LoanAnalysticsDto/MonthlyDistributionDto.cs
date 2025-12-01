@@ -13,7 +13,7 @@ namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.LoanAnalystics
         /// Source: LoanApplication (group by SubmissionDate or ApprovedDate)
         /// </summary>
 
-        public string Month { get; set; } 
+        public required string Month { get; set; } 
         public decimal Value { get; set; } 
 
     }

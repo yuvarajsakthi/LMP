@@ -13,7 +13,7 @@ namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.LoanAnalystics
         /// DTO for the 'Loan Type Distribution' chart (Donut Chart).
         /// Source: LoanApplication (group by LoanProductType)
         /// </summary>
-        public string LoanTypeName { get; set; } 
+        public required string LoanTypeName { get; set; } 
         public decimal Percentage { get; set; } // The percentage of the total
     }
 }

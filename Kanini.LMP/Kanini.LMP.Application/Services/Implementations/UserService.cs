@@ -23,7 +23,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             _emailService = emailService;
         }
 
-        public async Task<User> GetByUsernameAsync(string username)
+        public async Task<User?> GetByUsernameAsync(string username)
         {
             return await _userRepository.GetAsync(u => u.Email == username);
         }
@@ -47,7 +47,7 @@ namespace Kanini.LMP.Application.Services.Implementations
         public async Task<UserDTO> GetUserByIdAsync(int userId)
         {
             var user = await _userRepository.GetByIdAsync(userId);
-            return user != null ? MapToDto(user) : null;
+            return user != null ? MapToDto(user) : new UserDTO();
         }
 
         public async Task<IReadOnlyList<UserDTO>> GetAllUsersAsync()

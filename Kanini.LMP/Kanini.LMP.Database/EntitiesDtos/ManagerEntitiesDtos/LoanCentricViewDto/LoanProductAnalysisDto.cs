@@ -15,7 +15,7 @@ namespace Kanini.LMP.Database.EntitiesDto.ManagerEntitiesDto.LoanCentricView
 
 
 
-        public string ApplicationType { get; set; } 
+        public required string ApplicationType { get; set; } 
         public int TotalNoOfLoans { get; set; }
 
 

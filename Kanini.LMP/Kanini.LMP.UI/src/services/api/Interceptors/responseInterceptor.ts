@@ -3,6 +3,7 @@ import { enqueueSnackbar } from "notistack";
 import { API_ENDPOINTS, ROUTES } from '../../../config';
 import { navigationService } from '../..';
 import { secureStorage } from '../../../utils/secureStorage';
+import type { ApiResponse } from '../../../types';
 
 interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -10,11 +11,23 @@ interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5156";
 
-export const responseInterceptor = (response: AxiosResponse) => response;
+export const responseInterceptor = (response: AxiosResponse<ApiResponse>) => {
+  // Handle structured API responses from backend
+  if (response.data && typeof response.data === 'object') {
+    // If backend returns success: false, treat as error (business logic error)
+    if (response.data.success === false) {
+      const error = new Error(response.data.message || 'Operation failed');
+      (error as any).response = response;
+      throw error;
+    }
+  }
+  return response;
+};
 
 export const responseErrorHandler = async (error: AxiosError) => {
   const originalRequest = error.config as ExtendedAxiosRequestConfig;
 
+  // Handle 401 Unauthorized - Token refresh logic
   if (error.response?.status === 401 && !originalRequest?._retry) {
     originalRequest._retry = true;
 
@@ -29,40 +42,61 @@ export const responseErrorHandler = async (error: AxiosError) => {
       }
     } catch (refreshError) {
       console.error("Token refresh failed:", refreshError);
-      try {
-        secureStorage.removeToken();
-      } catch (storageError) {
-        console.error("Failed to remove token:", storageError);
-      }
-      try {
-        navigationService.navigateTo(ROUTES.LOGIN, true);
-      } catch (navError) {
-        console.error("Navigation failed:", navError);
-      }
+      handleAuthFailure();
+      return Promise.reject(error);
     }
     
-    try {
-      secureStorage.removeToken();
-    } catch (storageError) {
-      console.error("Failed to remove token:", storageError);
-    }
-    try {
-      navigationService.navigateTo(ROUTES.LOGIN, true);
-    } catch (navError) {
-      console.error("Navigation failed:", navError);
-    }
+    handleAuthFailure();
+    return Promise.reject(error);
   }
 
-  let errorMessage = "An unexpected error occurred";
-  try {
-    errorMessage = (error.response?.data as any)?.message || error.message || "An unexpected error occurred";
-  } catch (parseError) {
-    console.error("Failed to parse error message:", parseError);
-  }
-  
-  const status = error.response?.status;
-  
-
-  console.error("API Error:", errorMessage);
+  // Handle structured error responses
+  handleApiError(error);
   return Promise.reject(error);
 };
+
+function handleAuthFailure(): void {
+  try {
+    secureStorage.removeToken();
+    enqueueSnackbar('Session expired. Please login again.', { variant: 'warning' });
+    navigationService.navigateTo(ROUTES.LOGIN, true);
+  } catch (error) {
+    console.error("Failed to handle auth failure:", error);
+  }
+}
+
+function handleApiError(error: AxiosError): void {
+  let errorMessage = "An unexpected error occurred";
+  let errors: string[] = [];
+  
+  try {
+    const responseData = error.response?.data as ApiResponse;
+    
+    if (responseData) {
+      errorMessage = responseData.message || errorMessage;
+      errors = responseData.errors || [];
+    } else {
+      errorMessage = error.message || errorMessage;
+    }
+  } catch (parseError) {
+    console.error("Failed to parse error response:", parseError);
+    errorMessage = error.message || errorMessage;
+  }
+  
+  // Show main error message
+  enqueueSnackbar(errorMessage, { variant: 'error' });
+  
+  // Show additional error details
+  errors.forEach(err => {
+    if (err !== errorMessage) {
+      enqueueSnackbar(err, { variant: 'error' });
+    }
+  });
+  
+  console.error("API Error:", {
+    message: errorMessage,
+    errors,
+    status: error.response?.status,
+    url: error.config?.url
+  });
+}

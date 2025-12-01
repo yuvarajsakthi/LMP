@@ -51,7 +51,8 @@ namespace Kanini.LMP.Application.Services.Implementations
                     .Where(app => app.Status == ApplicationStatus.Submitted || app.Status == ApplicationStatus.Pending)
                     .Select(app =>
                     {
-                        var customer = customers.FirstOrDefault(c => c.CustomerId == app.Applicants.FirstOrDefault()?.CustomerId);
+                        var applicant = app?.Applicants?.FirstOrDefault();
+                        var customer = applicant != null ? customers.FirstOrDefault(c => c.CustomerId == applicant.CustomerId) : null;
                         var user = users.FirstOrDefault(u => u.UserId == customer?.UserId);
 
                         return new AppliedLoanListDto
@@ -90,8 +91,8 @@ namespace Kanini.LMP.Application.Services.Implementations
                 // Note: LoanDetails should have its own repository, using workaround for now
                 var loanDetails = new List<LoanDetails>(); // Placeholder - needs proper LoanDetails repository
 
-                var customer = customers.FirstOrDefault(c => c.CustomerId == application.Applicants.FirstOrDefault()?.CustomerId);
-                var user = users.FirstOrDefault(u => u.UserId == customer?.UserId);
+                var customer = customers.FirstOrDefault(c => c.CustomerId == application?.Applicants?.FirstOrDefault()?.CustomerId);
+                var user = customer != null ? users.FirstOrDefault(u => u.UserId == customer.UserId) : null;
                 var loanDetail = loanDetails.FirstOrDefault(ld => ld.LoanApplicationBaseId == applicationId);
                 var appWorkflows = workflows.Where(w => w.LoanApplicationBaseId == applicationId);
 
@@ -99,8 +100,8 @@ namespace Kanini.LMP.Application.Services.Implementations
                 {
                     LoanApplicationId = applicationId,
                     ApplicationNumber = $"LMP{applicationId:D6}",
-                    LoanProductType = application.LoanProductType,
-                    CurrentStatus = application.Status,
+                    LoanProductType = application?.LoanProductType ?? "PersonalLoan",
+                    CurrentStatus = application?.Status ?? ApplicationStatus.Pending,
                     CustomerFullName = user?.FullName ?? ApplicationConstants.Messages.Unknown,
                     CustomerId = customer?.CustomerId.ToString() ?? "0",
                     CustomerOccupation = customer?.Occupation ?? ApplicationConstants.Messages.Unknown,
@@ -156,8 +157,11 @@ namespace Kanini.LMP.Application.Services.Implementations
 
                 // Update application status
                 var application = await _unitOfWork.LoanApplications.GetByIdAsync(applicationId);
-                application.Status = ApplicationStatus.Pending;
-                await _unitOfWork.LoanApplications.UpdateAsync(application);
+                if (application != null)
+                {
+                    application.Status = ApplicationStatus.Pending;
+                    await _unitOfWork.LoanApplications.UpdateAsync(application);
+                }
 
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
@@ -229,12 +233,16 @@ namespace Kanini.LMP.Application.Services.Implementations
             await UpdateWorkflowStepAsync(applicationId, ManagerEnum.Decision, StepStatus.Completed, approvalNotes, managerId);
 
             var application = await _unitOfWork.LoanApplications.GetByIdAsync(applicationId);
-            application.Status = ApplicationStatus.Approved;
-            application.ApprovedDate = DateOnly.FromDateTime(DateTime.UtcNow);
-            await _unitOfWork.LoanApplications.UpdateAsync(application);
+            if (application != null)
+            {
+                application.Status = ApplicationStatus.Approved;
+                application.ApprovedDate = DateOnly.FromDateTime(DateTime.UtcNow);
+                await _unitOfWork.LoanApplications.UpdateAsync(application);
+            }
 
             // Get customer for notification
-            var customer = application.Applicants.FirstOrDefault()?.Customer;
+            var applicant = application?.Applicants?.FirstOrDefault();
+            var customer = applicant?.Customer;
 
             if (customer != null)
             {
@@ -255,11 +263,15 @@ namespace Kanini.LMP.Application.Services.Implementations
             await UpdateWorkflowStepAsync(applicationId, ManagerEnum.Decision, StepStatus.Failed, rejectionReason, managerId);
 
             var application = await _unitOfWork.LoanApplications.GetByIdAsync(applicationId);
-            application.Status = ApplicationStatus.Rejected;
-            await _unitOfWork.LoanApplications.UpdateAsync(application);
+            if (application != null)
+            {
+                application.Status = ApplicationStatus.Rejected;
+                await _unitOfWork.LoanApplications.UpdateAsync(application);
+            }
 
             // Notify customer of rejection
-            var customer = application.Applicants.FirstOrDefault()?.Customer;
+            var applicant = application?.Applicants?.FirstOrDefault();
+            var customer = applicant?.Customer;
             if (customer != null)
             {
                 await _notificationService.NotifyLoanRejectedAsync(
@@ -291,7 +303,8 @@ namespace Kanini.LMP.Application.Services.Implementations
 
                 // Get application and customer details
                 var application = await _unitOfWork.LoanApplications.GetByIdAsync(applicationId);
-                var applicantCustomer = application?.Applicants.FirstOrDefault()?.Customer;
+                var applicant = application?.Applicants?.FirstOrDefault();
+                var applicantCustomer = applicant?.Customer;
                 var user = applicantCustomer != null ? await _unitOfWork.Users.GetByIdAsync(applicantCustomer.UserId) : null;
                 var customerName = user?.FullName ?? "Customer";
 
@@ -301,8 +314,11 @@ namespace Kanini.LMP.Application.Services.Implementations
                 if (!string.IsNullOrEmpty(razorpayTransactionId))
                 {
                     // Update application status
-                    application.Status = ApplicationStatus.Disbursed;
-                    await _unitOfWork.LoanApplications.UpdateAsync(application);
+                    if (application != null)
+                    {
+                        application.Status = ApplicationStatus.Disbursed;
+                        await _unitOfWork.LoanApplications.UpdateAsync(application);
+                    }
 
                     // Create loan account with Razorpay transaction ID
                     if (applicantCustomer != null)

@@ -1,4 +1,5 @@
-﻿using Kanini.LMP.Application.Constants;
+﻿using Kanini.LMP.Api.Constants;
+using Kanini.LMP.Application.Constants;
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Database.EntitiesDto.KYC;
 using Microsoft.AspNetCore.Authorization;
@@ -28,12 +29,12 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCSubmission, kycDto.CustomerId);
+                _logger.LogInformation(ApiConstants.LogMessages.KYCSubmissionRequested, kycDto.CustomerId);
 
                 var result = await _kycService.SubmitKYCDocumentAsync(kycDto);
                 if (result)
                 {
-                    _logger.LogInformation(ApplicationConstants.Messages.KYCSubmissionCompleted, kycDto.CustomerId);
+                    _logger.LogInformation(ApiConstants.LogMessages.KYCSubmissionCompleted, kycDto.CustomerId);
                     return Ok(new { success = true, message = ApplicationConstants.ErrorMessages.KYCSubmissionSuccess });
                 }
 
@@ -52,11 +53,11 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCStatusRetrieval, customerId);
+                _logger.LogInformation(ApiConstants.LogMessages.KYCStatusRetrievalRequested, customerId);
 
                 var status = await _kycService.GetCustomerKYCStatusAsync(customerId);
 
-                _logger.LogInformation(ApplicationConstants.Messages.KYCStatusRetrievalCompleted, customerId);
+                _logger.LogInformation(ApiConstants.LogMessages.KYCStatusRetrievalCompleted, customerId);
                 return Ok(status);
             }
             catch (Exception ex)
@@ -72,11 +73,11 @@ namespace Kanini.LMP.Api.Controllers
             try
             {
                 var userId = GetCurrentUserId();
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCStatusRetrieval, userId);
+                _logger.LogInformation(ApiConstants.LogMessages.KYCStatusRetrievalRequested, userId);
 
                 var status = await _kycService.GetCustomerKYCStatusAsync(userId);
 
-                _logger.LogInformation(ApplicationConstants.Messages.KYCStatusRetrievalCompleted, userId);
+                _logger.LogInformation(ApiConstants.LogMessages.KYCStatusRetrievalCompleted, userId);
                 return Ok(status);
             }
             catch (Exception ex)
@@ -92,11 +93,11 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCStatusRetrieval, customerId);
+                _logger.LogInformation(ApiConstants.LogMessages.KYCStatusRetrievalRequested, customerId);
 
                 var isCompleted = await _kycService.IsKYCCompletedAsync(customerId);
 
-                _logger.LogInformation(ApplicationConstants.Messages.KYCStatusRetrievalCompleted, customerId);
+                _logger.LogInformation(ApiConstants.LogMessages.KYCStatusRetrievalCompleted, customerId);
                 return Ok(new { isCompleted });
             }
             catch (Exception ex)
@@ -112,11 +113,11 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingPendingKYCRetrieval);
+                _logger.LogInformation(ApiConstants.LogMessages.PendingKYCRetrievalRequested);
 
                 var documents = await _kycService.GetPendingKYCDocumentsAsync();
 
-                _logger.LogInformation(ApplicationConstants.Messages.PendingKYCRetrievalCompleted, documents.Count());
+                _logger.LogInformation(ApiConstants.LogMessages.PendingKYCRetrievalCompleted, documents.Count());
                 return Ok(documents);
             }
             catch (Exception ex)
@@ -131,11 +132,11 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCStatusRetrieval, documentId);
+                _logger.LogInformation(ApiConstants.LogMessages.KYCStatusRetrievalRequested, documentId);
 
                 var document = await _kycService.GetKYCDocumentDetailsAsync(documentId);
 
-                _logger.LogInformation(ApplicationConstants.Messages.KYCStatusRetrievalCompleted, documentId);
+                _logger.LogInformation(ApiConstants.LogMessages.KYCStatusRetrievalCompleted, documentId);
                 return Ok(document);
             }
             catch (ArgumentException)
@@ -155,12 +156,12 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCVerification, verificationDto.DocumentId);
+                _logger.LogInformation(ApiConstants.LogMessages.KYCVerificationRequested, verificationDto.DocumentId);
 
                 var result = await _kycService.VerifyKYCDocumentAsync(verificationDto);
                 if (result)
                 {
-                    _logger.LogInformation(ApplicationConstants.Messages.KYCVerificationCompleted, verificationDto.DocumentId);
+                    _logger.LogInformation(ApiConstants.LogMessages.KYCVerificationCompleted, verificationDto.DocumentId);
                     return Ok(new { success = true, message = ApplicationConstants.ErrorMessages.KYCVerificationSuccess });
                 }
 
@@ -179,12 +180,12 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCRejection, rejectionDto.DocumentId);
+                _logger.LogInformation(ApiConstants.LogMessages.KYCRejectionRequested, rejectionDto.DocumentId);
 
                 var result = await _kycService.RejectKYCDocumentAsync(rejectionDto);
                 if (result)
                 {
-                    _logger.LogInformation(ApplicationConstants.Messages.KYCRejectionCompleted, rejectionDto.DocumentId);
+                    _logger.LogInformation(ApiConstants.LogMessages.KYCRejectionCompleted, rejectionDto.DocumentId);
                     return Ok(new { success = true, message = ApplicationConstants.ErrorMessages.KYCRejectionSuccess });
                 }
 
@@ -203,11 +204,11 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingKYCScoreCalculation, customerId);
+                _logger.LogInformation(ApiConstants.LogMessages.KYCScoreCalculationRequested, customerId);
 
                 var score = await _kycService.CalculateKYCScoreAsync(customerId);
 
-                _logger.LogInformation(ApplicationConstants.Messages.KYCScoreCalculationCompleted, customerId, score);
+                _logger.LogInformation(ApiConstants.LogMessages.KYCScoreCalculationCompleted, customerId, score);
                 return Ok(new { score });
             }
             catch (Exception ex)
