@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { Login, Register, ForgotPassword } from '../../pages';
+import { Login, Register, ForgotPassword, FAQ, EmiCalculatorPage, ViewStatus, Settings, ApplyLoan } from '../../pages';
 import CustomerDashboard from '../../pages/customer/customerDashboard/CustomerDashboard';
 import ProtectedRoute from '../../components/custom/ProtectedRoute';
 import { ROUTES } from '..';
@@ -8,7 +8,7 @@ import { navigationService } from '../../services';
 
 const AppRoutes = () => {
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     navigationService.setNavigate(navigate);
   }, [navigate]);
@@ -26,27 +26,27 @@ const AppRoutes = () => {
       } />
       <Route path={ROUTES.LOAN_TYPES} element={
         <ProtectedRoute>
-          <div>Loan Types Page</div>
+          <ApplyLoan />
         </ProtectedRoute>
       } />
       <Route path={ROUTES.INTEGRATION} element={
         <ProtectedRoute>
-          <div>Integration Page</div>
+          <ViewStatus />
         </ProtectedRoute>
       } />
       <Route path={ROUTES.EMI_CALCULATOR} element={
         <ProtectedRoute>
-          <div>EMI Calculator Page</div>
+          <EmiCalculatorPage />
         </ProtectedRoute>
       } />
       <Route path={ROUTES.FAQ} element={
         <ProtectedRoute>
-          <div>FAQ Page</div>
+          <FAQ />
         </ProtectedRoute>
       } />
       <Route path={ROUTES.SETTINGS} element={
         <ProtectedRoute>
-          <div>Settings Page</div>
+          <Settings />
         </ProtectedRoute>
       } />
     </Routes>

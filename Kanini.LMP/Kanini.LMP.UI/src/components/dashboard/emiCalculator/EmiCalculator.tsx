@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styles from './EmiCalculator.module.css';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { Card, Select, Input } from 'antd';
+import axiosInstance from '../../../services/api/axiosInstance';
 
 interface LoanTypeRates {
   [key: string]: number;
@@ -24,18 +25,16 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
   const [emiAmount, setEmiAmount] = useState(0);
   const [totalRepayable, setTotalRepayable] = useState(0);
   const [totalInterest, setTotalInterest] = useState(0);
-  const [selectedLoanType, setSelectedLoanType] = useState('Personal loan');
+  const [selectedLoanType, setSelectedLoanType] = useState('Personal Loan');
+  const [loanProducts, setLoanProducts] = useState<any[]>([]);
 
   const loanTypeInterestRates: LoanTypeRates = loanTypes || {
-    'Personal loan': 3.5,
-    'Consumer loan': 8,
-    'Vehicle loan': 7,
-    'House loan': 6,
-    'Medical Loan': 12,
-    'Debt consolidation Loan': 9,
-    'Small business Loan': 10,
-    'Credit card Loan': 12,
-    'Education Loan': 7
+    'Personal Loan': 10.5,
+    'Vehicle Loan': 8.5,
+    'Home Loan': 8.0,
+    'Education Loan': 7.5,
+    'Medical Loan': 12.0,
+    'Business Loan': 11.0
   };
 
   const chartData = [
@@ -49,6 +48,21 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
   useEffect(() => {
     calculateEmi();
   }, [loanAmount, interestRate, tenure]);
+
+  useEffect(() => {
+    fetchLoanProducts();
+  }, []);
+
+  const fetchLoanProducts = async () => {
+    try {
+      const response = await axiosInstance.get('/api/Eligibility/check');
+      if (response.data?.products) {
+        setLoanProducts(response.data.products);
+      }
+    } catch (error) {
+      console.error('Failed to fetch loan products:', error);
+    }
+  };
 
   const calculateEmi = () => {
     const principle = loanAmount;
@@ -97,10 +111,16 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
               value={selectedLoanType}
               onChange={handleLoanTypeChange}
               className={styles.select1}
-              options={Object.keys(loanTypeInterestRates).map(type => ({
-                label: type,
-                value: type
-              }))}
+              options={loanProducts.length > 0 
+                ? loanProducts.map(product => ({
+                    label: product.productName,
+                    value: product.productName
+                  }))
+                : Object.keys(loanTypeInterestRates).map(type => ({
+                    label: type,
+                    value: type
+                  }))
+              }
             />
             
             <Input
@@ -109,6 +129,7 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
               placeholder="Enter Amount"
               onChange={(e) => setLoanAmount(Number(e.target.value))}
               className={styles.inputGroup}
+              prefix="₹"
             />
             
             <div className={styles.rateandtime}>
@@ -117,6 +138,7 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
                 value={tenure}
                 placeholder="Tenure in years"
                 onChange={(e) => setTenure(Number(e.target.value))}
+                suffix="years"
               />
               
               <Input
@@ -154,12 +176,16 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
         </div>
         <div className={styles.amountdisplay}>
           <div className={styles.emiLabel123}>
-            <p>EMI Amount</p>
-            <p>₹{emiAmount}</p>
+            <p>Monthly EMI</p>
+            <p>₹{emiAmount.toLocaleString()}</p>
           </div>
           <div className={styles.trp}>
-            <p>Total Repayable</p>
-            <p>₹{totalRepayable}</p>
+            <p>Total Amount</p>
+            <p>₹{totalRepayable.toLocaleString()}</p>
+          </div>
+          <div className={styles.trp}>
+            <p>Total Interest</p>
+            <p>₹{totalInterest.toLocaleString()}</p>
           </div>
         </div>
       </Card>

@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { Menu, Drawer, Button } from 'antd';
+import { useCallback } from 'react';
+import { Menu } from 'antd';
 import {
     DashboardOutlined,
     FileTextOutlined,
@@ -7,19 +7,18 @@ import {
     CalculatorOutlined,
     QuestionCircleOutlined,
     SettingOutlined,
-    LogoutOutlined,
-    MenuOutlined,
-    CloseOutlined
+    LogoutOutlined
 } from '@ant-design/icons';
 import styles from './Sidebar.module.css';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context';
 import { ROUTES } from '../../config';
-import logo from '../../assets/images/logo1.svg';
 
-const Sidebar = () => {
-    const [collapsed, setCollapsed] = useState(false);
-    const [mobileOpen, setMobileOpen] = useState(false);
+interface SidebarProps {
+  collapsed?: boolean;
+}
+
+const Sidebar = ({ collapsed = false }: SidebarProps) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { logout } = useAuth();
@@ -40,27 +39,10 @@ const Sidebar = () => {
         { key: ROUTES.SETTINGS, icon: <SettingOutlined />, label: 'Settings', onClick: handleNavigation(ROUTES.SETTINGS) }
     ];
 
-    const SidebarContent = useCallback(() => (
-        <div className={styles.sidebarContainer}>
-            {/* Logo Section */}
-            <div className={styles.sidebarHeader}>
-                <img src={logo} alt="Logo" className={styles.sidebarLogo} />
-                {!collapsed && <span className={styles.sidebarTitle}>Loan Accelerator</span>}
-            </div>
-
+    return (
+        <div className={`${styles.sidebarContainer} ${collapsed ? styles.collapsed : ''}`}>
             <div className={styles.sidebarDivider} />
 
-            {/* Collapse Toggle - Desktop Only */}
-            <div className={`${styles.collapseToggle} ${styles.desktopOnly}`}>
-                <Button
-                    type="text"
-                    icon={collapsed ? <MenuOutlined /> : <CloseOutlined />}
-                    onClick={() => setCollapsed(!collapsed)}
-                    className={styles.collapseBtn}
-                />
-            </div>
-
-            {/* Menu Items */}
             <Menu
                 mode="inline"
                 selectedKeys={[location.pathname]}
@@ -69,12 +51,10 @@ const Sidebar = () => {
                 items={menuItems}
             />
 
-            {/* Logout Button */}
             <div className={styles.sidebarFooter}>
                 <Menu
                     mode="inline"
                     className={styles.sidebarMenu}
-                    inlineCollapsed={collapsed}
                     items={[
                         {
                             key: 'logout',
@@ -87,35 +67,6 @@ const Sidebar = () => {
                 />
             </div>
         </div>
-    ), [collapsed, location.pathname, menuItems, handleLogout]);
-
-    return (
-        <>
-            {/* Mobile Menu Button */}
-            <Button
-                className={styles.mobileMenuBtn}
-                type="primary"
-                icon={<MenuOutlined />}
-                onClick={() => setMobileOpen(true)}
-            />
-
-            {/* Desktop Sidebar */}
-            <div className={`${styles.sidebarWrapper} ${collapsed ? styles.collapsed : ''}`}>
-                <SidebarContent />
-            </div>
-
-            {/* Mobile Drawer */}
-            <Drawer
-                placement="left"
-                onClose={() => setMobileOpen(false)}
-                open={mobileOpen}
-                className={styles.mobileSidebarDrawer}
-                width={280}
-                styles={{ body: { padding: 0 } }}
-            >
-                <SidebarContent />
-            </Drawer>
-        </>
     );
 };
 

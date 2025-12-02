@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Kanini.LMP.Data.Migrations
 {
     [DbContext(typeof(LmpDbContext))]
-    [Migration("20251029105117_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251202072356_AddNotificationPreferences")]
+    partial class AddNotificationPreferences
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -189,12 +189,23 @@ namespace Kanini.LMP.Data.Migrations
                     b.Property<int>("DocumentId")
                         .HasColumnType("int");
 
-                    b.Property<string>("DocumentRequirementType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("DocumentRequirementType")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("LinkedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("VerificationNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("VerifiedBy")
+                        .HasColumnType("int");
 
                     b.HasKey("LoanApplicationBaseId", "DocumentId");
 
@@ -207,15 +218,17 @@ namespace Kanini.LMP.Data.Migrations
                         {
                             LoanApplicationBaseId = 1,
                             DocumentId = 1,
-                            DocumentRequirementType = "AddressProof-UtilityBill",
-                            LinkedAt = new DateTime(2025, 1, 10, 0, 0, 0, 0, DateTimeKind.Utc)
+                            DocumentRequirementType = 6,
+                            LinkedAt = new DateTime(2025, 1, 10, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Status = 0
                         },
                         new
                         {
                             LoanApplicationBaseId = 2,
                             DocumentId = 2,
-                            DocumentRequirementType = "IncomeProof-PayStub",
-                            LinkedAt = new DateTime(2025, 10, 17, 0, 0, 0, 0, DateTimeKind.Utc)
+                            DocumentRequirementType = 6,
+                            LinkedAt = new DateTime(2025, 10, 17, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Status = 0
                         });
                 });
 
@@ -420,14 +433,9 @@ namespace Kanini.LMP.Data.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("UserId1")
-                        .HasColumnType("int");
-
                     b.HasKey("DocumentId");
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("UserId1");
 
                     b.ToTable("DocumentUploads");
 
@@ -779,6 +787,9 @@ namespace Kanini.LMP.Data.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("LoanProductId");
+
+                    b.HasIndex("LoanProductName")
+                        .IsUnique();
 
                     b.ToTable("LoanProducts");
 
@@ -1177,10 +1188,19 @@ namespace Kanini.LMP.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationId"));
 
+                    b.Property<int>("Channel")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ExternalId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSent")
                         .HasColumnType("bit");
 
                     b.Property<string>("Message")
@@ -1188,22 +1208,26 @@ namespace Kanini.LMP.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("UserId")
+                    b.Property<int>("Type")
                         .HasColumnType("int");
 
-                    b.Property<int?>("UserId1")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("NotificationId");
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("UserId1");
 
                     b.ToTable("Notifications");
 
@@ -1211,30 +1235,78 @@ namespace Kanini.LMP.Data.Migrations
                         new
                         {
                             NotificationId = 1,
+                            Channel = 4,
                             CreatedAt = new DateTime(2025, 2, 2, 9, 30, 0, 0, DateTimeKind.Utc),
                             IsRead = false,
+                            IsSent = false,
                             Message = "Your Personal Loan application has been approved and funds have been disbursed to your account.",
+                            Priority = 1,
                             Title = "Loan Disbursed Successfully",
+                            Type = 8,
                             UserId = 1
                         },
                         new
                         {
                             NotificationId = 2,
+                            Channel = 4,
                             CreatedAt = new DateTime(2025, 10, 15, 14, 0, 0, 0, DateTimeKind.Utc),
                             IsRead = true,
+                            IsSent = false,
                             Message = "A payment of ₹4,403.95 is due in 5 days for your Car Loan.",
+                            Priority = 1,
                             Title = "Payment Due Reminder",
+                            Type = 8,
                             UserId = 2
                         },
                         new
                         {
                             NotificationId = 3,
+                            Channel = 4,
                             CreatedAt = new DateTime(2025, 1, 1, 10, 0, 0, 0, DateTimeKind.Utc),
                             IsRead = true,
+                            IsSent = false,
                             Message = "Thank you for registering with our loan management system.",
+                            Priority = 1,
                             Title = "Welcome to Loan Management Portal",
+                            Type = 8,
                             UserId = 1
                         });
+                });
+
+            modelBuilder.Entity("Kanini.LMP.Database.Entities.NotificationPreference", b =>
+                {
+                    b.Property<int>("PreferenceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PreferenceId"));
+
+                    b.Property<bool>("EmailEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("InAppEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("PushEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("SMSEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("WhatsAppEnabled")
+                        .HasColumnType("bit");
+
+                    b.HasKey("PreferenceId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("NotificationPreferences");
                 });
 
             modelBuilder.Entity("Kanini.LMP.Database.Entities.PaymentTransaction", b =>
@@ -1520,16 +1592,11 @@ namespace Kanini.LMP.Data.Migrations
 
             modelBuilder.Entity("Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities.DocumentUpload", b =>
                 {
-                    b.HasOne("Kanini.LMP.Database.Entities.User", null)
+                    b.HasOne("Kanini.LMP.Database.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("Kanini.LMP.Database.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId1")
-                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -1657,16 +1724,22 @@ namespace Kanini.LMP.Data.Migrations
 
             modelBuilder.Entity("Kanini.LMP.Database.Entities.Notification", b =>
                 {
-                    b.HasOne("Kanini.LMP.Database.Entities.User", null)
+                    b.HasOne("Kanini.LMP.Database.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Kanini.LMP.Database.Entities.NotificationPreference", b =>
+                {
                     b.HasOne("Kanini.LMP.Database.Entities.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId1")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import style from './LoanTypes.module.css';
 import ML from '../../assets/images/Medical Loan.svg';
 import EL from '../../assets/images/Education Loan.svg';
@@ -11,43 +11,36 @@ import PL from '../../assets/images/PersonalLoan.svg';
 import HL from '../../assets/images/Housing Loan.svg';
 import note from '../../assets/images/note.svg';
 import bell from '../../assets/images/bell.svg';
-// import Navbar from '../../layout/Navbar/Navbar';
-import { Link } from 'react-router-dom';
 import arrow from '../../assets/images/NextButtonArrow.svg';
 import Sidenav from '../../layout/sidebar/Sidebar';
-import { DownloadOutlined } from '@ant-design/icons';
-import { Button, Radio, Space, Divider } from 'antd';
-import { ArrowRightOutlined } from '@ant-design/icons';
-import { Avatar, Badge } from 'antd';
+import { Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../services/api/axiosInstance';
-// import { ApiContext } from '../../apicontext/ApiContext';
 import { Card } from 'antd';
 const { Meta } = Card;
+
+interface LoanCategory {
+  loanCategoryId: number;
+  loanCategory1: string;
+  loanCategoryKey: string;
+}
 
 
 
 const LoanTypes = () => {
 
     // const { loanCategoryId, setLoanCategoryId } = useContext(ApiContext);
-    const [loanCategoryId, setLoanCategoryId] = useState(null);
+    const [loanCategoryId, setLoanCategoryId] = useState<number | null>(null);
 
-    const [clickedCard, setClickedCard] = useState(null);
+    const [clickedCard, setClickedCard] = useState<number | null>(null);
 
-    const handleCardClick = (primaryKeyValue) => {
+    const handleCardClick = (primaryKeyValue: number) => {
         setClickedCard(primaryKeyValue);
         setLoanCategoryId(primaryKeyValue);
     };
     console.log(loanCategoryId);
-    const [color, setColor] = useState('blue'); // Initial color state
 
-    const handleClick = () => {
-
-        setColor(prevColor => (prevColor === 'blue' ? 'black' : 'blue'));
-        console.log('Component clicked');
-    };
-
-    const [categories, setCategories] = useState([]); // State to store fetched categories
+    const [categories, setCategories] = useState<LoanCategory[]>([]); // State to store fetched categories
 
     const firstRowCategories = categories.slice(0, 5); // First 5 categories
     const secondRowCategories = categories.slice(5, 9); // Remaining 4 categories
@@ -68,7 +61,7 @@ const LoanTypes = () => {
 
     const navigate = useNavigate();
 
-    const getImageByFilename = (filename) => {
+    const getImageByFilename = (filename: string) => {
         switch (filename) {
             case 'Medical Loan':
                 return ML;

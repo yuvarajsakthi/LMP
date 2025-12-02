@@ -2,6 +2,7 @@
 using Kanini.LMP.Database.Entities;
 using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable;
+using Kanini.LMP.Database.Entities.LoanProductEntities;
 using Kanini.LMP.Database.Entities.ManagerEntities;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -20,6 +21,7 @@ namespace Kanini.LMP.Data.UnitOfWork
         ILMPRepository<ApplicationDocumentLink, int> ApplicationDocuments { get; }
         ILMPRepository<LoanOriginationWorkflow, int> LoanWorkflows { get; }
         ILMPRepository<LoanApplicant, int> LoanApplicants { get; }
+        ILMPRepository<LoanProduct, int> LoanProducts { get; }
 
         Task<int> SaveChangesAsync();
         Task<IDbContextTransaction> BeginTransactionAsync();

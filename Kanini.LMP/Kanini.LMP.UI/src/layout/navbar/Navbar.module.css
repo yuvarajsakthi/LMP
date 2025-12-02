@@ -1,0 +1,58 @@
+.navbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.notificationIcon {
+  font-size: 20px;
+  color: #626D8A;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+
+.notificationIcon:hover {
+  background: rgba(44, 118, 201, 0.1);
+  color: #2C76C9;
+}
+
+.userSection {
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.userSection:hover {
+  background: rgba(44, 118, 201, 0.1);
+}
+
+.avatar {
+  background: #2C76C9;
+}
+
+.userName {
+  color: #2c3e50;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .userName {
+    display: none;
+  }
+  
+  .navRight {
+    gap: 12px;
+  }
+}

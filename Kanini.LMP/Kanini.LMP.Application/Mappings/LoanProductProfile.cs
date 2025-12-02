@@ -11,6 +11,7 @@ using Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.CommonLoanProductEn
 using Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.HomeLoanEntitiesDto;
 using Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.PersonalLoanEntitiesDto;
 using Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.VehicleLoanEntitiesDto;
+using Kanini.LMP.Database.EntitiesDtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,6 +65,11 @@ namespace Kanini.LMP.Application.Mappings
 
             #region 13. Loan Product master
             CreateMap<LoanProductDTO, LoanProduct>().ReverseMap();
+            CreateMap<LoanProductDto, LoanProduct>()
+                .ForMember(d => d.LoanProductName, o => o.MapFrom(s => s.LoanProductName))
+                .ForMember(d => d.LoanProductDescription, o => o.MapFrom(s => s.LoanProductDescription))
+                .ForMember(d => d.IsActive, o => o.MapFrom(s => s.IsActive))
+                .ReverseMap();
             #endregion
         }
     }

@@ -1,0 +1,205 @@
+.eligibilityModal .ant-modal-content {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.eligibilityModal .ant-modal-header {
+  background: linear-gradient(135deg, #2C76C9 0%, #1e5a9e 100%);
+  border-bottom: none;
+  padding: 24px;
+}
+
+.modalTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.titleIcon {
+  font-size: 20px;
+  color: white;
+}
+
+.eligibilityModal .ant-modal-body {
+  padding: 32px;
+  background: #fafbfc;
+}
+
+.eligibilityForm {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.eligibilityForm .ant-form-item-label > label {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.eligibilityForm .ant-input,
+.eligibilityForm .ant-select-selector,
+.eligibilityForm .ant-input-number {
+  border-radius: 8px;
+  border: 1px solid #e1e8ed;
+  transition: all 0.3s ease;
+}
+
+.eligibilityForm .ant-input:focus,
+.eligibilityForm .ant-select-focused .ant-select-selector,
+.eligibilityForm .ant-input-number:focus {
+  border-color: #2C76C9;
+  box-shadow: 0 0 0 2px rgba(44, 118, 201, 0.1);
+}
+
+.submitButton {
+  margin-top: 24px;
+  margin-bottom: 0;
+}
+
+.checkButton {
+  width: 100%;
+  height: 48px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #2C76C9 0%, #1e5a9e 100%);
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(44, 118, 201, 0.3);
+  transition: all 0.3s ease;
+}
+
+.checkButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(44, 118, 201, 0.4);
+}
+
+.resultContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.scoreCard {
+  text-align: center;
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.scoreCard .ant-card-body {
+  padding: 32px;
+}
+
+.scoreHeader h3 {
+  margin-bottom: 20px;
+  color: #2C76C9;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.scoreDisplay {
+  margin: 24px 0;
+}
+
+.creditScore {
+  font-size: 16px;
+  color: #666;
+  margin-top: 16px;
+  font-weight: 500;
+}
+
+.message {
+  font-size: 16px;
+  font-weight: 500;
+  color: #2c3e50;
+  margin-top: 20px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f6ffed 0%, #e6f7ff 100%);
+  border-radius: 8px;
+  border-left: 4px solid #52c41a;
+}
+
+.productsCard,
+.tipsCard {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.productsCard .ant-card-head-title,
+.tipsCard .ant-card-head-title {
+  color: #2C76C9;
+  font-weight: 600;
+}
+
+.productItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #f0f2f5;
+  transition: all 0.3s ease;
+}
+
+.productItem:hover {
+  background: #fafbfc;
+  margin: 0 -16px;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.productItem:last-child {
+  border-bottom: none;
+}
+
+.productInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.productName {
+  font-weight: 600;
+  font-size: 16px;
+  color: #2c3e50;
+}
+
+.productDetails {
+  font-size: 14px;
+  color: #7f8c8d;
+}
+
+.tipsCard ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.tipsCard li {
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #2c3e50;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .eligibilityModal .ant-modal-body {
+    padding: 16px;
+  }
+  
+  .eligibilityForm {
+    padding: 16px;
+  }
+  
+  .modalTitle {
+    font-size: 16px;
+  }
+  
+  .checkButton {
+    height: 44px;
+    font-size: 15px;
+  }
+}

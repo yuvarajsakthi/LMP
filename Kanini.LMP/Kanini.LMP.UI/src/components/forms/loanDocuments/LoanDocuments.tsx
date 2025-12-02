@@ -11,13 +11,6 @@ interface LoanDocumentsProps {
   onPrevious?: () => void;
 }
 
-interface DocumentFile {
-  uid: string;
-  name: string;
-  status: string;
-  url?: string;
-}
-
 const LoanDocuments: React.FC<LoanDocumentsProps> = ({ onNext, onPrevious }) => {
   const [passportPhoto, setPassportPhoto] = useState<UploadFile[]>([]);
   const [signature, setSignature] = useState<UploadFile[]>([]);

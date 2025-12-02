@@ -37,6 +37,7 @@ namespace Kanini.LMP.Data.Data
         public DbSet<LoanOriginationWorkflow> LoanOriginationWorkflows => Set<LoanOriginationWorkflow>();
         public DbSet<LoanAccount> LoanAccounts => Set<LoanAccount>();
         public DbSet<Notification> Notifications => Set<Notification>();
+        public DbSet<NotificationPreference> NotificationPreferences => Set<NotificationPreference>();
 
         /* ---------- Common-detail entities ---------- */
         public DbSet<AddressInformation> AddressInformations => Set<AddressInformation>();
@@ -249,16 +250,23 @@ namespace Kanini.LMP.Data.Data
 
             // DocumentUpload (M) to User (1)
             b.Entity<DocumentUpload>()
-                .HasOne<User>()
+                .HasOne(du => du.User)
                 .WithMany()
                 .HasForeignKey(du => du.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Notification (M) to User (1)
             b.Entity<Notification>()
-                .HasOne<User>()
+                .HasOne(n => n.User)
                 .WithMany()
                 .HasForeignKey(n => n.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // NotificationPreference (M) to User (1)
+            b.Entity<NotificationPreference>()
+                .HasOne(np => np.User)
+                .WithMany()
+                .HasForeignKey(np => np.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
 

@@ -1,5 +1,5 @@
 
-import { Card, Col, Row } from 'antd';
+import { Card, Col } from 'antd';
 import { ArrowRightOutlined } from '@ant-design/icons';
 import EducationLoan from "../../assets/images/Education Loan.svg"
 import DebtConsolidationLoan from "../../assets/images/DebtConsolidationLoan.svg"
@@ -10,11 +10,16 @@ import ConsumerLoan from "../../assets/images/ConsumerLoan.svg"
 import PersonalLoan from "../../assets/images/PersonalLoan.svg"
 import HousingLoan from "../../assets/images/HousingLoan.svg"
 import { Typography } from 'antd/es';
-import Icon from '@ant-design/icons/lib/components/Icon';
 import { Button } from 'antd';
 import './LoanCentric.css';
 import { useState } from 'react';
 import axiosInstance from '../../services/api/axiosInstance';
+
+interface LoanCategory {
+  loanCategoryId: number;
+  loanCategory1: string;
+  loanCategoryKey: string;
+}
 
 const apiResponse = [
   { id: 1, title: 'Medical Loan ', name: EducationLoan, successRate: 'Success Rate 15%' },
@@ -31,7 +36,7 @@ const apiResponse = [
 ];
 
 const YourComponent = () => {
-  const [data, setdata] = useState([]);
+  const [data, setdata] = useState<LoanCategory[]>([]);
 
   axiosInstance.get('/categories/loan-category').then((response) => setdata(response.data));
 

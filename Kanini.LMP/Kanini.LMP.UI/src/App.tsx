@@ -1,6 +1,6 @@
 import { BrowserRouter } from "react-router-dom"
 import { Provider } from 'react-redux'
-import { AuthProvider } from "./context"
+import { AuthProvider, LayoutProvider } from "./context"
 import { ErrorBoundary } from "./components"
 import { AppRoutes } from "./config"
 import { store } from "./store"
@@ -10,9 +10,11 @@ function App() {
     <Provider store={store}>
       <BrowserRouter>
         <AuthProvider>
-          <ErrorBoundary>
-            <AppRoutes />
-          </ErrorBoundary>
+          <LayoutProvider>
+            <ErrorBoundary>
+              <AppRoutes />
+            </ErrorBoundary>
+          </LayoutProvider>
         </AuthProvider>
       </BrowserRouter>
     </Provider>

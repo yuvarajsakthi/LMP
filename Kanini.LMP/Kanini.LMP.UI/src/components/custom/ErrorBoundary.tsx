@@ -1,59 +1,48 @@
-import React, { Component, type ReactNode } from 'react';
-import { MdError, MdRefresh } from 'react-icons/md';
-import { ERROR_BOUNDARY_MESSAGES } from '../../config';
+import React from 'react';
+import { ErrorBoundary as ReactErrorBoundary } from 'react-error-boundary';
+import { Result, Button } from 'antd';
+import { motion } from 'framer-motion';
 import ErrorBoundaryCss from './ErrorBoundary.module.css';
 
-interface Props {
-  children: ReactNode;
-  fallback?: ReactNode;
+function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
+  return (
+    <motion.div 
+      className={ErrorBoundaryCss.errorBoundary}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Result
+        status="error"
+        title="Something went wrong"
+        subTitle={error.message || "An unexpected error occurred. Please try again."}
+        extra={[
+          <Button type="primary" key="retry" onClick={resetErrorBoundary}>
+            Try Again
+          </Button>,
+          <Button key="home" onClick={() => window.location.href = '/'}>
+            Go Home
+          </Button>
+        ]}
+      />
+    </motion.div>
+  );
 }
 
-interface State {
-  hasError: boolean;
-  error?: Error;
-}
-
-class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
-  }
-
-  handleRetry = () => {
-    this.setState({ hasError: false, error: undefined });
-  };
-
-  render() {
-    if (this.state.hasError) {
-      if (this.props.fallback) {
-        return this.props.fallback;
-      }
-
-      return (
-        <div className={ErrorBoundaryCss.errorBoundary}>
-          <div className={ErrorBoundaryCss.errorContent}>
-            <MdError className={ErrorBoundaryCss.errorIcon} />
-            <h2>{ERROR_BOUNDARY_MESSAGES.TITLE}</h2>
-            <p>{ERROR_BOUNDARY_MESSAGES.DESCRIPTION}</p>
-            <button onClick={this.handleRetry} className={ErrorBoundaryCss.retryButton}>
-              <MdRefresh />
-              {ERROR_BOUNDARY_MESSAGES.RETRY_BUTTON}
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
+function ErrorBoundary({ children }: { children: React.ReactNode }) {
+  return (
+    <ReactErrorBoundary
+      FallbackComponent={ErrorFallback}
+      onError={(error, errorInfo) => {
+        console.error('Error caught by boundary:', error, errorInfo);
+      }}
+      onReset={() => {
+        window.location.reload();
+      }}
+    >
+      {children}
+    </ReactErrorBoundary>
+  );
 }
 
 export default ErrorBoundary;

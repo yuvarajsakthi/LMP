@@ -1,3 +1,8 @@
 export { default as Login } from './auth/login/Login';
 export { default as Register } from './auth/register/Register';
 export { default as ForgotPassword } from './auth/forgotPassword/ForgotPassword';
+export { default as FAQ } from './customer/faq/FAQ';
+export { default as EmiCalculatorPage } from './customer/emiCalculator/EmiCalculatorPage';
+export { default as ViewStatus } from './customer/viewStatus/ViewStatus';
+export { default as Settings } from './customer/settings/Settings';
+export { default as ApplyLoan } from './customer/applyLoan/ApplyLoan';
