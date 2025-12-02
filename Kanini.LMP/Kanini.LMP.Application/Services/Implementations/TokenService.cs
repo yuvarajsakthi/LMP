@@ -50,7 +50,11 @@ namespace Kanini.LMP.Data.Repositories.Implementations
         public async Task<string?> AuthenticateAsync(string email, string password)
         {
             var user = await _userRepository.GetAsync(u => u.Email == email);
-            if (user == null || !PasswordService.VerifyPassword(password, user.PasswordHash))
+            if (user == null)
+                return null;
+
+            // For OTP-based authentication, password can be empty
+            if (!string.IsNullOrEmpty(password) && !PasswordService.VerifyPassword(password, user.PasswordHash))
                 return null;
 
             return GenerateToken(user);

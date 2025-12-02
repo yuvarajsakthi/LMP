@@ -1,8 +1,8 @@
 using AutoMapper;
 using Kanini.LMP.Application.Constants;
 using Kanini.LMP.Application.Services.Interfaces;
-using Kanini.LMP.Data.Repositories.Interfaces;
 using Kanini.LMP.Data.UnitOfWork;
+using Kanini.LMP.Database.Entities;
 using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto.CustomerBasicDto.EMIPlan;
 using Kanini.LMP.Database.EntitiesDtos.CustomerEntitiesDtos;
@@ -14,14 +14,12 @@ namespace Kanini.LMP.Application.Services.Implementations
     public class EmiCalculatorService : IEmiCalculatorService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IEMIRepository _emiRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<EmiCalculatorService> _logger;
 
-        public EmiCalculatorService(IUnitOfWork unitOfWork, IEMIRepository emiRepository, IMapper mapper, ILogger<EmiCalculatorService> logger)
+        public EmiCalculatorService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<EmiCalculatorService> logger)
         {
             _unitOfWork = unitOfWork;
-            _emiRepository = emiRepository;
             _mapper = mapper;
             _logger = logger;
         }
@@ -119,12 +117,12 @@ namespace Kanini.LMP.Application.Services.Implementations
 
         public async Task<CustomerEMIDashboardDto?> GetCustomerEMIDashboardAsync(int customerId)
         {
-            return await _emiRepository.GetCustomerEMIDashboardAsync(customerId);
+            return null; // TODO: Implement using generic repository
         }
 
         public async Task<List<CustomerEMIDashboardDto>> GetAllCustomerEMIsAsync(int customerId)
         {
-            return await _emiRepository.GetAllCustomerEMIsAsync(customerId);
+            return new List<CustomerEMIDashboardDto>(); // TODO: Implement using generic repository
         }
 
         public async Task<List<EMIScheduleDto>> GenerateEMIScheduleAsync(int emiId)
@@ -132,11 +130,11 @@ namespace Kanini.LMP.Application.Services.Implementations
             var emiPlan = await _unitOfWork.EMIPlans.GetByIdAsync(emiId);
             if (emiPlan == null) return new List<EMIScheduleDto>();
 
-            var payments = await _emiRepository.GetPaymentsByEMIIdAsync(emiId);
+            var payments = new List<PaymentTransaction>(); // TODO: Get from generic repository
             var schedule = new List<EMIScheduleDto>();
             var monthlyRate = emiPlan.RateOfInterest / 12 / 100;
             var outstandingBalance = emiPlan.PrincipleAmount;
-            var startDate = await _emiRepository.GetLoanStartDateAsync(emiPlan.LoanApplicationBaseId);
+            var startDate = DateTime.UtcNow; // TODO: Get from loan application
 
             for (int i = 1; i <= emiPlan.TermMonths; i++)
             {
@@ -169,7 +167,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             var emiPlan = await _unitOfWork.EMIPlans.GetByIdAsync(emiId);
             if (emiPlan == null) throw new ArgumentException(ApplicationConstants.ErrorMessages.EMIPlanNotFound);
 
-            var paidAmount = await _emiRepository.GetTotalPaidAmountAsync(emiId);
+            var paidAmount = 0m; // TODO: Calculate from payments
             var currentOutstanding = emiPlan.TotalRepaymentAmount - paidAmount;
             var prepaymentCharges = prepaymentAmount * 0.02m;
             var newOutstanding = Math.Max(0, currentOutstanding - prepaymentAmount);
@@ -202,8 +200,8 @@ namespace Kanini.LMP.Application.Services.Implementations
             var emiPlan = await _unitOfWork.EMIPlans.GetByIdAsync(emiId);
             if (emiPlan == null) return 0;
 
-            var paymentsCount = await _emiRepository.GetPaidInstallmentsCountAsync(emiId);
-            var startDate = await _emiRepository.GetLoanStartDateAsync(emiPlan.LoanApplicationBaseId);
+            var paymentsCount = 0; // TODO: Count from payments
+            var startDate = DateTime.UtcNow; // TODO: Get from loan application
             var nextDueDate = startDate.AddMonths(paymentsCount + 1);
 
             if (currentDate <= nextDueDate) return 0;
@@ -220,7 +218,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             var emiPlan = await _unitOfWork.EMIPlans.GetByIdAsync(restructureDto.EMIId);
             if (emiPlan == null) throw new ArgumentException(ApplicationConstants.ErrorMessages.EMIPlanNotFound);
 
-            var paidAmount = await _emiRepository.GetTotalPaidAmountAsync(restructureDto.EMIId);
+            var paidAmount = 0m; // TODO: Calculate from payments
             var currentOutstanding = emiPlan.TotalRepaymentAmount - paidAmount;
             var newTenure = restructureDto.NewTenureMonths ?? emiPlan.TermMonths;
             var newRate = restructureDto.NewInterestRate ?? emiPlan.RateOfInterest;

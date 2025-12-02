@@ -1,4 +1,4 @@
-﻿using Kanini.LMP.Application.Constants;
+using Kanini.LMP.Application.Constants;
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Database.EntitiesDto;
 using Kanini.LMP.Database.Enums;
@@ -15,16 +15,13 @@ namespace Kanini.LMP.Api.Controllers
     public class NotificationController : ControllerBase
     {
         private readonly INotificationService _notificationService;
-        private readonly IEnhancedNotificationService _enhancedNotificationService;
         private readonly ILogger<NotificationController> _logger;
 
         public NotificationController(
             INotificationService notificationService,
-            IEnhancedNotificationService enhancedNotificationService,
             ILogger<NotificationController> logger)
         {
             _notificationService = notificationService;
-            _enhancedNotificationService = enhancedNotificationService;
             _logger = logger;
         }
 
@@ -131,138 +128,10 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        // Notification Preferences
-        [HttpGet(ApplicationConstants.Routes.Preferences)]
-        public async Task<ActionResult> GetNotificationPreferences()
-        {
-            try
-            {
-                var userId = GetCurrentUserId();
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingPreferencesRetrieval);
-
-                var preferences = await _enhancedNotificationService.GetUserNotificationPreferencesAsync(userId);
-
-                _logger.LogInformation(ApplicationConstants.Messages.PreferencesRetrievalCompleted);
-                return Ok(preferences);
-            }
-            catch (Exception ex)
-            {
-                var userId = GetCurrentUserId();
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.PreferencesRetrievalFailed);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.PreferencesRetrievalFailed });
-            }
-        }
-
-        [HttpPut(ApplicationConstants.Routes.PreferencesUpdate)]
-        public async Task<ActionResult> UpdateNotificationPreferences(
-            NotificationType notificationType,
-            [FromBody] NotificationPreferenceUpdateDto request)
-        {
-            try
-            {
-                var userId = GetCurrentUserId();
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingPreferencesUpdate);
-
-                var result = await _enhancedNotificationService.UpdateNotificationPreferencesAsync(
-                    userId, notificationType, request.EmailEnabled, request.SMSEnabled,
-                    request.PushEnabled, request.WhatsAppEnabled, request.InAppEnabled);
-
-                if (result)
-                {
-                    _logger.LogInformation(ApplicationConstants.Messages.PreferencesUpdateCompleted);
-                    return Ok(new { Message = ApplicationConstants.ErrorMessages.PreferencesUpdatedSuccessfully });
-                }
-
-                _logger.LogWarning(ApplicationConstants.ErrorMessages.PreferencesUpdateFailed);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.PreferencesUpdateFailed });
-            }
-            catch (Exception ex)
-            {
-                var userId = GetCurrentUserId();
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.PreferencesUpdateFailed);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.PreferencesUpdateFailed });
-            }
-        }
-
-        [HttpPost(ApplicationConstants.Routes.Test)]
-        public async Task<ActionResult> SendTestNotification([FromBody] TestNotificationRequest request)
-        {
-            try
-            {
-                var userId = GetCurrentUserId();
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingTestNotification);
-
-                await _enhancedNotificationService.SendMultiChannelNotificationAsync(
-                    userId, request.Title ?? ApplicationConstants.Messages.Unknown,
-                    request.Message ?? ApplicationConstants.Messages.Unknown,
-                    NotificationType.General, NotificationPriority.Low);
-
-                _logger.LogInformation(ApplicationConstants.Messages.TestNotificationCompleted);
-                return Ok(new { Message = ApplicationConstants.ErrorMessages.TestNotificationSent });
-            }
-            catch (Exception ex)
-            {
-                var userId = GetCurrentUserId();
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.TestNotificationFailed);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.TestNotificationFailed });
-            }
-        }
-
-        [HttpPost(ApplicationConstants.Routes.Bulk)]
-        [Authorize(Roles = ApplicationConstants.Roles.Manager)]
-        public async Task<ActionResult> SendBulkNotification([FromBody] BulkNotificationRequest request)
-        {
-            try
-            {
-                if (!request.UserIds.Any())
-                {
-                    _logger.LogWarning(ApplicationConstants.ErrorMessages.UserIdsRequired);
-                    return BadRequest(new { message = ApplicationConstants.ErrorMessages.UserIdsRequired });
-                }
-
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingBulkNotification);
-
-                await _enhancedNotificationService.SendBulkNotificationAsync(
-                    request.UserIds, request.Title, request.Message, request.Type, request.Priority);
-
-                _logger.LogInformation(ApplicationConstants.Messages.BulkNotificationCompleted);
-                return Ok(new { Message = string.Format(ApplicationConstants.ErrorMessages.BulkNotificationSent, request.UserIds.Count) });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.BulkNotificationFailed);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.BulkNotificationFailed });
-            }
-        }
-
         private int GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             return int.Parse(userIdClaim ?? "0");
         }
-    }
-
-    public class NotificationPreferenceUpdateDto
-    {
-        public bool EmailEnabled { get; set; } = true;
-        public bool SMSEnabled { get; set; } = true;
-        public bool PushEnabled { get; set; } = false;
-        public bool WhatsAppEnabled { get; set; } = false;
-        public bool InAppEnabled { get; set; } = true;
-    }
-
-    public class TestNotificationRequest
-    {
-        public string? Title { get; set; }
-        public string? Message { get; set; }
-    }
-
-    public class BulkNotificationRequest
-    {
-        public List<int> UserIds { get; set; } = new();
-        public string Title { get; set; } = string.Empty;
-        public string Message { get; set; } = string.Empty;
-        public NotificationType Type { get; set; } = NotificationType.General;
-        public NotificationPriority Priority { get; set; } = NotificationPriority.Medium;
     }
 }

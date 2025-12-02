@@ -20,8 +20,8 @@ namespace Kanini.LMP.Data.UnitOfWork
             _context = context;
             Users = new LMPRepositoy<User, int>(_context);
             Customers = new LMPRepositoy<Customer, int>(_context);
-            Notifications = new NotificationRepository(_context);
-            NotificationPreferences = new NotificationPreferenceRepository(_context);
+            Notifications = new LMPRepositoy<Notification, int>(_context);
+            NotificationPreferences = new LMPRepositoy<NotificationPreference, int>(_context);
             LoanApplications = new LMPRepositoy<LoanApplicationBase, int>(_context);
             LoanAccounts = new LMPRepositoy<LoanAccount, int>(_context);
             PaymentTransactions = new LMPRepositoy<PaymentTransaction, int>(_context);
@@ -34,8 +34,8 @@ namespace Kanini.LMP.Data.UnitOfWork
 
         public ILMPRepository<User, int> Users { get; }
         public ILMPRepository<Customer, int> Customers { get; }
-        public INotificationRepository Notifications { get; }
-        public INotificationPreferenceRepository NotificationPreferences { get; }
+        public ILMPRepository<Notification, int> Notifications { get; }
+        public ILMPRepository<NotificationPreference, int> NotificationPreferences { get; }
         public ILMPRepository<LoanApplicationBase, int> LoanApplications { get; }
         public ILMPRepository<LoanAccount, int> LoanAccounts { get; }
         public ILMPRepository<PaymentTransaction, int> PaymentTransactions { get; }

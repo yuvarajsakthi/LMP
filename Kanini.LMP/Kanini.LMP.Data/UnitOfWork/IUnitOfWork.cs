@@ -12,8 +12,8 @@ namespace Kanini.LMP.Data.UnitOfWork
     {
         ILMPRepository<User, int> Users { get; }
         ILMPRepository<Customer, int> Customers { get; }
-        INotificationRepository Notifications { get; }
-        INotificationPreferenceRepository NotificationPreferences { get; }
+        ILMPRepository<Notification, int> Notifications { get; }
+        ILMPRepository<NotificationPreference, int> NotificationPreferences { get; }
         ILMPRepository<LoanApplicationBase, int> LoanApplications { get; }
         ILMPRepository<LoanAccount, int> LoanAccounts { get; }
         ILMPRepository<PaymentTransaction, int> PaymentTransactions { get; }
