@@ -142,6 +142,12 @@ namespace Kanini.LMP.Data.Migrations
                     Message = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     IsRead = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Channel = table.Column<int>(type: "int", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    Priority = table.Column<int>(type: "int", nullable: false),
+                    IsSent = table.Column<bool>(type: "bit", nullable: false),
+                    SentAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ExternalId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId1 = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -488,8 +494,12 @@ namespace Kanini.LMP.Data.Migrations
                 {
                     LoanApplicationBaseId = table.Column<int>(type: "int", nullable: false),
                     DocumentId = table.Column<int>(type: "int", nullable: false),
-                    DocumentRequirementType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LinkedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    DocumentRequirementType = table.Column<int>(type: "int", nullable: false),
+                    LinkedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    VerificationNotes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    VerifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    VerifiedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -769,21 +779,21 @@ namespace Kanini.LMP.Data.Migrations
 
             migrationBuilder.InsertData(
                 table: "Notifications",
-                columns: new[] { "NotificationId", "CreatedAt", "IsRead", "Message", "Title", "UserId", "UserId1" },
+                columns: new[] { "NotificationId", "Channel", "CreatedAt", "ExternalId", "IsRead", "IsSent", "Message", "Priority", "SentAt", "Title", "Type", "UserId", "UserId1" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 2, 2, 9, 30, 0, 0, DateTimeKind.Utc), false, "Your Personal Loan application has been approved and funds have been disbursed to your account.", "Loan Disbursed Successfully", 1, null },
-                    { 2, new DateTime(2025, 10, 15, 14, 0, 0, 0, DateTimeKind.Utc), true, "A payment of ₹4,403.95 is due in 5 days for your Car Loan.", "Payment Due Reminder", 2, null },
-                    { 3, new DateTime(2025, 1, 1, 10, 0, 0, 0, DateTimeKind.Utc), true, "Thank you for registering with our loan management system.", "Welcome to Loan Management Portal", 1, null }
+                    { 1, 4, new DateTime(2025, 2, 2, 9, 30, 0, 0, DateTimeKind.Utc), null, false, false, "Your Personal Loan application has been approved and funds have been disbursed to your account.", 1, null, "Loan Disbursed Successfully", 8, 1, null },
+                    { 2, 4, new DateTime(2025, 10, 15, 14, 0, 0, 0, DateTimeKind.Utc), null, true, false, "A payment of ₹4,403.95 is due in 5 days for your Car Loan.", 1, null, "Payment Due Reminder", 8, 2, null },
+                    { 3, 4, new DateTime(2025, 1, 1, 10, 0, 0, 0, DateTimeKind.Utc), null, true, false, "Thank you for registering with our loan management system.", 1, null, "Welcome to Loan Management Portal", 8, 1, null }
                 });
 
             migrationBuilder.InsertData(
                 table: "ApplicationDocumentLinks",
-                columns: new[] { "DocumentId", "LoanApplicationBaseId", "DocumentRequirementType", "LinkedAt" },
+                columns: new[] { "DocumentId", "LoanApplicationBaseId", "DocumentRequirementType", "LinkedAt", "Status", "VerificationNotes", "VerifiedAt", "VerifiedBy" },
                 values: new object[,]
                 {
-                    { 1, 1, "AddressProof-UtilityBill", new DateTime(2025, 1, 10, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 2, 2, "IncomeProof-PayStub", new DateTime(2025, 10, 17, 0, 0, 0, 0, DateTimeKind.Utc) }
+                    { 1, 1, 6, new DateTime(2025, 1, 10, 0, 0, 0, 0, DateTimeKind.Utc), 0, null, null, null },
+                    { 2, 2, 6, new DateTime(2025, 10, 17, 0, 0, 0, 0, DateTimeKind.Utc), 0, null, null, null }
                 });
 
             migrationBuilder.InsertData(
@@ -957,6 +967,12 @@ namespace Kanini.LMP.Data.Migrations
                 name: "IX_LoanOriginationWorkflows_LoanApplicationBaseId",
                 table: "LoanOriginationWorkflows",
                 column: "LoanApplicationBaseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LoanProducts_LoanProductName",
+                table: "LoanProducts",
+                column: "LoanProductName",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Notifications_UserId",

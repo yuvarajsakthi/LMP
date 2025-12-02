@@ -4,12 +4,11 @@
     border: 1px solid #EDF1F5;
     background: #FFF;
     box-shadow: 0px 4px 14px 0px rgba(86, 86, 86, 0.07);
-    /* padding: 20px; */
     margin: 20px;
-    background-color: #fff;
-    margin-left: 25%;
-    width: 1148px;
-    height: 384px;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    min-height: 400px;
   }
   
   .Appstatushead {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, Button, Radio, Space, Divider, Card, message } from 'antd';
+import { Form, Input, Button, Radio, Divider, Card, message } from 'antd';
 import { NextButtonArrow } from '../../../assets';
 import styles from './FinancialInfo.module.css';
 

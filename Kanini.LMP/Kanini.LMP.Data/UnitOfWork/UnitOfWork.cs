@@ -4,6 +4,7 @@ using Kanini.LMP.Data.Repositories.Implementations;
 using Kanini.LMP.Database.Entities;
 using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable;
+using Kanini.LMP.Database.Entities.LoanProductEntities;
 using Kanini.LMP.Database.Entities.ManagerEntities;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -28,6 +29,7 @@ namespace Kanini.LMP.Data.UnitOfWork
             ApplicationDocuments = new LMPRepositoy<ApplicationDocumentLink, int>(_context);
             LoanWorkflows = new LMPRepositoy<LoanOriginationWorkflow, int>(_context);
             LoanApplicants = new LMPRepositoy<LoanApplicant, int>(_context);
+            LoanProducts = new LMPRepositoy<LoanProduct, int>(_context);
         }
 
         public ILMPRepository<User, int> Users { get; }
@@ -41,6 +43,7 @@ namespace Kanini.LMP.Data.UnitOfWork
         public ILMPRepository<ApplicationDocumentLink, int> ApplicationDocuments { get; }
         public ILMPRepository<LoanOriginationWorkflow, int> LoanWorkflows { get; }
         public ILMPRepository<LoanApplicant, int> LoanApplicants { get; }
+        public ILMPRepository<LoanProduct, int> LoanProducts { get; }
 
         public async Task<int> SaveChangesAsync()
         {

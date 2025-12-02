@@ -109,6 +109,7 @@ export const authAPI = {
   logout(): void {
     try {
       secureStorage.removeToken();
+      sessionStorage.removeItem('eligibilityModalShown');
     } catch (error) {
       console.error('Logout error:', error);
     }

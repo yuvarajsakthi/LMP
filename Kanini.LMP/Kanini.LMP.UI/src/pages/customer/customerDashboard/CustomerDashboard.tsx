@@ -1,46 +1,97 @@
 
-import Sidebar from "../../../layout/sidebar/Sidebar";
+import { useState, useEffect } from "react";
+import { Row, Col, Card, Typography } from "antd";
+import { motion } from "framer-motion";
+import Layout from "../../../layout/Layout";
 import EmiCalculator from "../../../components/dashboard/emiCalculator/EmiCalculator";
 import LoanReco from "../../../components/dashboard/loanRecommendation/LoanRecommendation";
 import EligibilityScore from "../../../components/dashboard/eligibilityScore/EligibilityScore";
 import ApplicationStatus from "../../../components/dashboard/applicationStatus/ApplicationStatus";
 import ApplicationProfile from "../../../components/dashboard/applicationProfile/ApplicationProfile";
+import EligibilityModal from "../../../components/eligibilityModal/EligibilityModal";
 import { useAuth } from "../../../context";
-import './CustomerDashboard.css';
+import styles from './CustomerDashboard.module.css';
+
+const { Title, Text } = Typography;
 
 const CustomerDashboard = () => {
   const { token } = useAuth();
+  const [showEligibilityModal, setShowEligibilityModal] = useState(false);
+
+  useEffect(() => {
+    const hasShownModal = sessionStorage.getItem('eligibilityModalShown');
+    if (!hasShownModal) {
+      setShowEligibilityModal(true);
+      sessionStorage.setItem('eligibilityModalShown', 'true');
+    }
+  }, []);
 
   return (
-    <div className="dshboard">
-      <div className="maindashboard123">
-        <div>
-          <Sidebar />
-        </div>
+    <Layout>
+      <div className={styles.dashboard}>
+        <motion.div 
+          className={styles.header}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Title level={2} className={styles.welcome}>
+            Hi {token?.FullName || 'User'}!
+          </Title>
+          <Text className={styles.subtitle}>
+            Manage your loans and explore new opportunities
+          </Text>
+        </motion.div>
 
-        <div className="dashhome234">
-          <div id="namecontent">
-            <p className="nameshown"> Hi {token?.FullName || 'User'} </p>
-            <p className="statusshown">Have you applied for any loan yet!</p>
-          </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Row gutter={[24, 24]} className={styles.topRow}>
+            <Col xs={24} lg={8}>
+              <Card className={styles.card}>
+                <LoanReco />
+              </Card>
+            </Col>
+            <Col xs={24} lg={8}>
+              <Card className={styles.card}>
+                <EmiCalculator />
+              </Card>
+            </Col>
+            <Col xs={24} lg={8}>
+              <Card className={styles.card}>
+                <EligibilityScore />
+              </Card>
+            </Col>
+          </Row>
+        </motion.div>
 
-          <div className="boxes">
-            <LoanReco />
-            <EmiCalculator />
-            <EligibilityScore />
-          </div>
-
-          <div className="row2">
-            <div id="application">
-              <ApplicationStatus />
-            </div>
-            <div className="appprofileres">
-              <ApplicationProfile />
-            </div>
-          </div>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <Row gutter={[24, 24]} className={styles.bottomRow}>
+            <Col xs={24} xl={14}>
+              <Card className={styles.card}>
+                <ApplicationStatus />
+              </Card>
+            </Col>
+            <Col xs={24} xl={10}>
+              <Card className={styles.card}>
+                <ApplicationProfile />
+              </Card>
+            </Col>
+          </Row>
+        </motion.div>
       </div>
-    </div>
+      
+      <EligibilityModal 
+        visible={showEligibilityModal} 
+        onClose={() => setShowEligibilityModal(false)} 
+      />
+    </Layout>
   );
 };
 

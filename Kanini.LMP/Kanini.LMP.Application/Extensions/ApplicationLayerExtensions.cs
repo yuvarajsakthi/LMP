@@ -23,6 +23,7 @@ namespace Kanini.LMP.Application.Extensions
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IEligibilityService, EligibilityService>();
             services.AddScoped<ILoanApplicationService, LoanApplicationService>();
+            services.AddScoped<ILoanProductService, LoanProductService>();
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IEmiCalculatorService, EmiCalculatorService>();
             services.AddScoped<IManagerWorkflowService, ManagerWorkflowService>();

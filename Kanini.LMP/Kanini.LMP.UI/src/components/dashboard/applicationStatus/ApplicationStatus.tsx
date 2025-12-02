@@ -41,7 +41,7 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ data }) => {
     if (data) return; // Use provided data if available
     
     try {
-      const res = await axios.get("/loans/ApplicationStatus", {
+      const res = await axios.get("https://localhost:7297/api/LoanApplication/customer-applications", {
         headers: { Authorization: `Bearer ${token}` }
       });
       const formattedData = res.data.map((item: any) => ({
@@ -163,7 +163,9 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ data }) => {
         <Table
           dataSource={applicationData}
           columns={columns}
-          pagination={{ pageSize: 3 }}
+          pagination={{ pageSize: 5 }}
+          scroll={{ x: 'max-content' }}
+          size="middle"
         />
       </Card>
     </div>

@@ -430,14 +430,9 @@ namespace Kanini.LMP.Data.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("UserId1")
-                        .HasColumnType("int");
-
                     b.HasKey("DocumentId");
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("UserId1");
 
                     b.ToTable("DocumentUploads");
 
@@ -789,6 +784,9 @@ namespace Kanini.LMP.Data.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("LoanProductId");
+
+                    b.HasIndex("LoanProductName")
+                        .IsUnique();
 
                     b.ToTable("LoanProducts");
 
@@ -1224,14 +1222,9 @@ namespace Kanini.LMP.Data.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("UserId1")
-                        .HasColumnType("int");
-
                     b.HasKey("NotificationId");
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("UserId1");
 
                     b.ToTable("Notifications");
 
@@ -1275,6 +1268,42 @@ namespace Kanini.LMP.Data.Migrations
                             Type = 8,
                             UserId = 1
                         });
+                });
+
+            modelBuilder.Entity("Kanini.LMP.Database.Entities.NotificationPreference", b =>
+                {
+                    b.Property<int>("PreferenceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PreferenceId"));
+
+                    b.Property<bool>("EmailEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("InAppEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("PushEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("SMSEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("WhatsAppEnabled")
+                        .HasColumnType("bit");
+
+                    b.HasKey("PreferenceId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("NotificationPreferences");
                 });
 
             modelBuilder.Entity("Kanini.LMP.Database.Entities.PaymentTransaction", b =>
@@ -1560,16 +1589,11 @@ namespace Kanini.LMP.Data.Migrations
 
             modelBuilder.Entity("Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities.DocumentUpload", b =>
                 {
-                    b.HasOne("Kanini.LMP.Database.Entities.User", null)
+                    b.HasOne("Kanini.LMP.Database.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("Kanini.LMP.Database.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId1")
-                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
                 });
@@ -1697,16 +1721,22 @@ namespace Kanini.LMP.Data.Migrations
 
             modelBuilder.Entity("Kanini.LMP.Database.Entities.Notification", b =>
                 {
-                    b.HasOne("Kanini.LMP.Database.Entities.User", null)
+                    b.HasOne("Kanini.LMP.Database.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Kanini.LMP.Database.Entities.NotificationPreference", b =>
+                {
                     b.HasOne("Kanini.LMP.Database.Entities.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId1")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

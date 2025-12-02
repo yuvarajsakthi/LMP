@@ -21,11 +21,13 @@ const RegisterComponent = () => {
   const [nameError, setNameError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [gender, setGender] = useState(0);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [phoneError, setPhoneError] = useState("");
 
 
@@ -49,6 +51,23 @@ const RegisterComponent = () => {
     setPassword(passwordValue);
     const error = await validateField('password', passwordValue, 'register');
     setPasswordError(error);
+    
+    if (confirmPassword && passwordValue !== confirmPassword) {
+      setConfirmPasswordError('Passwords do not match');
+    } else {
+      setConfirmPasswordError('');
+    }
+  };
+
+  const handleConfirmPasswordChange = (e: InputChangeEvent) => {
+    const confirmPasswordValue = e.target.value;
+    setConfirmPassword(confirmPasswordValue);
+    
+    if (password !== confirmPasswordValue) {
+      setConfirmPasswordError('Passwords do not match');
+    } else {
+      setConfirmPasswordError('');
+    }
   };
 
   const handlePhoneChange = (e: InputChangeEvent) => {
@@ -62,8 +81,13 @@ const RegisterComponent = () => {
   };
 
   const handleSubmit = async () => {
-    if (nameError || emailError || passwordError || phoneError || !dateOfBirth || !phoneNumber) {
+    if (nameError || emailError || passwordError || confirmPasswordError || phoneError || !dateOfBirth || !phoneNumber) {
       message.error('Please fill all fields correctly');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      message.error('Passwords do not match');
       return;
     }
 
@@ -144,6 +168,21 @@ const RegisterComponent = () => {
           />
           {passwordError && (
             <div className={RegisterCss.errorMessage}>{passwordError}</div>
+          )}
+        </div>
+
+        <div className={RegisterCss.inputGroup}>
+          <label className={RegisterCss.label}>Confirm Password</label>
+          <Input.Password
+            className={RegisterCss.input}
+            name="ConfirmPassword"
+            value={confirmPassword}
+            onChange={handleConfirmPasswordChange}
+            status={confirmPasswordError ? "error" : ""}
+            placeholder="confirm your password"
+          />
+          {confirmPasswordError && (
+            <div className={RegisterCss.errorMessage}>{confirmPasswordError}</div>
           )}
         </div>
 

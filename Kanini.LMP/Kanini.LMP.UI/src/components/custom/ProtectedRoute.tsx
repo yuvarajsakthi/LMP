@@ -8,9 +8,12 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, token } = useAuth();
   
-  if (!isAuthenticated) {
+  // Check both context state and actual token validity
+  const hasValidToken = isAuthenticated && token;
+  
+  if (!hasValidToken) {
     return <Navigate to={ROUTES.LOGIN} replace />;
   }
   

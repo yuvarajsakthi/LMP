@@ -8,11 +8,10 @@ export const authMiddleware = {
   },
 
   setToken: (token: string): void => {
-    if (!token || typeof token !== 'string' || !/^[A-Za-z0-9._-]+$/.test(token)) {
+    if (!token || typeof token !== 'string') {
       throw new Error('Invalid token format');
     }
-    const sanitizedToken = token.replace(/[^A-Za-z0-9._-]/g, '');
-    secureStorage.setToken(sanitizedToken);
+    secureStorage.setToken(token);
   },
 
   removeToken: (): void => {
@@ -25,8 +24,13 @@ export const authMiddleware = {
     
     try {
       const decoded: DecodedToken = jwtDecode(token);
-      return decoded.exp ? decoded.exp > Date.now() / 1000 : true;
+      if (decoded.exp && decoded.exp <= Date.now() / 1000) {
+        authMiddleware.removeToken();
+        return false;
+      }
+      return true;
     } catch {
+      authMiddleware.removeToken();
       return false;
     }
   },

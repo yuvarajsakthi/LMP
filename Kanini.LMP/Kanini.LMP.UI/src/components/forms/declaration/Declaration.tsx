@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Input, Checkbox, Space, Button, Form, Card } from "antd";
+import { Input, Checkbox, Space, Button, Card } from "antd";
 import { ArrowLeftOutlined, DollarOutlined } from '@ant-design/icons';
 import { useSnackbar } from 'notistack';
 import styles from './Declaration.module.css';
@@ -23,7 +23,6 @@ interface DeclarationProps {
 }
 
 const Declaration: React.FC<DeclarationProps> = ({
-  loanId,
   fullname,
   amount,
   onBackStep,
@@ -34,7 +33,6 @@ const Declaration: React.FC<DeclarationProps> = ({
   onSubmit
 }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const [form] = Form.useForm();
   const [purpose, setPurpose] = useState(initialData?.purpose || '');
   const [expectedAmount, setExpectedAmount] = useState(initialData?.expectedAmount || 0);
   const [termsAccepted, setTermsAccepted] = useState(initialData?.termsAccepted || false);

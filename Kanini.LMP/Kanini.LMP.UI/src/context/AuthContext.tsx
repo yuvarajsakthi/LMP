@@ -16,11 +16,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const storedToken = authMiddleware.getDecodedToken();
-    if (storedToken && authMiddleware.isAuthenticated()) {
-      setToken(storedToken);
-      setIsAuthenticated(true);
-    }
+    const checkAuth = () => {
+      const storedToken = authMiddleware.getDecodedToken();
+      if (storedToken && authMiddleware.isAuthenticated()) {
+        setToken(storedToken);
+        setIsAuthenticated(true);
+      } else {
+        setToken(null);
+        setIsAuthenticated(false);
+      }
+    };
+    
+    checkAuth();
+    
+    // Check auth status periodically
+    const interval = setInterval(checkAuth, 60000); // Check every minute
+    
+    return () => clearInterval(interval);
   }, []);
 
   const handleSetToken = (newToken: DecodedToken | null) => {
@@ -40,10 +52,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     try {
       authMiddleware.removeToken();
+      sessionStorage.clear();
       setToken(null);
       setIsAuthenticated(false);
     } catch (error) {
       console.error('Logout failed:', error);
+      sessionStorage.clear();
       setToken(null);
       setIsAuthenticated(false);
     }

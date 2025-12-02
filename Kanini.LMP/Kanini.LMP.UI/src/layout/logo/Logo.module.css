@@ -1,0 +1,18 @@
+.logoContainer {
+  padding: 0;
+  margin: 0;
+}
+
+.logoWrapper {
+  background-color: #2C76C9;
+  width: 90px;
+  height: 61px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logoImage {
+  width: 25px;
+  height: 26px;
+}
