@@ -23,9 +23,9 @@ namespace Kanini.LMP.Data.Extensions
             services.AddScoped(typeof(ILMPRepository<,>), typeof(LMPRepositoy<,>));
             services.AddScoped<IDocumentRepository, DocumentRepository>();
             services.AddScoped<IApplicationDocumentLinkRepository, ApplicationDocumentLinkRepository>();
-            services.AddScoped<IEMIRepository, EMIRepository>();
+
             services.AddScoped<IManagerAnalyticsRepository, ManagerAnalyticsRepository>();
-            services.AddScoped<IPdfRepository, PdfRepository>();
+
             services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
 
             return services;

@@ -7,9 +7,14 @@ using System.Threading.Tasks;
 
 namespace Kanini.LMP.Application.Services.Interfaces
 {
-    public interface ICustomerService : ILMPService<CustomerDto, int>
+    public interface ICustomerService
     {
         Task<CustomerDto?> GetByUserIdAsync(int userId);
+        Task<IReadOnlyList<CustomerDto>> GetAll();
+        Task<CustomerDto?> GetById(int id);
+        Task<CustomerDto> Add(CustomerDto entity);
+        Task<CustomerDto> Update(CustomerDto entity);
+        Task Delete(int id);
     }
 }
 

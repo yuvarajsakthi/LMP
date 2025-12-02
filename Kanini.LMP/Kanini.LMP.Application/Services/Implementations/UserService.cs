@@ -150,6 +150,16 @@ namespace Kanini.LMP.Application.Services.Implementations
             return true;
         }
 
+        public async Task<User?> GetByIdAsync(int userId)
+        {
+            return await _userRepository.GetByIdAsync(userId);
+        }
+
+        public async Task<User?> GetByEmailAsync(string email)
+        {
+            return await _userRepository.GetAsync(u => u.Email == email);
+        }
+
         private UserDTO MapToDto(User user)
         {
             return new UserDTO

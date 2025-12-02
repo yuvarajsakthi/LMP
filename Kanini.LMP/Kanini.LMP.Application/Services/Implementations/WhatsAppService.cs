@@ -22,17 +22,22 @@ namespace Kanini.LMP.Application.Services.Implementations
             _logger = logger;
             _accessToken = _configuration["WhatsApp:AccessToken"] ?? "";
             _phoneNumberId = _configuration["WhatsApp:PhoneNumberId"] ?? "";
-            _baseUrl = $"https://graph.facebook.com/v18.0/{_phoneNumberId}/messages";
+            var apiVersion = _configuration["WhatsApp:ApiVersion"] ?? "v18.0";
+            var baseUrl = _configuration["WhatsApp:BaseUrl"] ?? "https://graph.facebook.com";
+            _baseUrl = $"{baseUrl}/{apiVersion}/{_phoneNumberId}/messages";
         }
 
         public async Task<bool> SendWhatsAppMessageAsync(string phoneNumber, string message)
         {
             try
             {
+                // Format phone number (remove + and ensure country code)
+                var formattedPhone = FormatPhoneNumber(phoneNumber);
+                
                 var payload = new
                 {
                     messaging_product = "whatsapp",
-                    to = phoneNumber,
+                    to = formattedPhone,
                     type = "text",
                     text = new { body = message }
                 };
@@ -84,6 +89,20 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             var message = $"💰 *Loan Disbursed*\n\nDear {customerName},\n\nGreat news! Your loan amount of ₹{amount:N0} has been disbursed to your registered bank account.\n\nPlease check your bank statement.\n\nThank you for choosing LMP! 🏦";
             return await SendWhatsAppMessageAsync(phoneNumber, message);
+        }
+
+        private string FormatPhoneNumber(string phoneNumber)
+        {
+            // Remove all non-numeric characters
+            var cleaned = new string(phoneNumber.Where(char.IsDigit).ToArray());
+            
+            // Add country code if missing (assuming India +91)
+            if (cleaned.Length == 10)
+            {
+                cleaned = "91" + cleaned;
+            }
+            
+            return cleaned;
         }
     }
 }

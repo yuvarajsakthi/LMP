@@ -1,5 +1,6 @@
-﻿using Kanini.LMP.Api.Constants;
+using Kanini.LMP.Api.Constants;
 using Kanini.LMP.Application.Constants;
+using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Data.Repositories.Interfaces;
 using Kanini.LMP.Data.UnitOfWork;
 using Kanini.LMP.Database.EntitiesDtos;
@@ -15,180 +16,199 @@ namespace Kanini.LMP.Api.Controllers
         private readonly ITokenService _tokenService;
         private readonly IUser _userService;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<TokenController> _logger;
+        private readonly IOTPService _otpService;
 
-        public TokenController(IUser userService, ITokenService tokenService, IUnitOfWork unitOfWork, ILogger<TokenController> logger)
+        public TokenController(ITokenService tokenService, IUser userService, IUnitOfWork unitOfWork, IOTPService otpService)
         {
             _tokenService = tokenService;
             _userService = userService;
             _unitOfWork = unitOfWork;
-            _logger = logger;
+            _otpService = otpService;
         }
 
-        [HttpPost(ApiConstants.Routes.TokenController.Login)]
+        [HttpPost("login")]
         public async Task<ActionResult<ApiResponse<object>>> Login([FromBody] LoginDTO loginDto)
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingLogin, loginDto?.Username ?? "unknown");
-
                 if (loginDto == null || string.IsNullOrEmpty(loginDto.Username) || string.IsNullOrEmpty(loginDto.Password))
-                {
-                    _logger.LogWarning(ApplicationConstants.Messages.LoginValidationFailed);
-                    return BadRequest(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.UsernamePasswordRequired));
-                }
+                    return BadRequest(ApiResponse<object>.ErrorResponse("Email and password are required"));
 
                 var token = await _tokenService.AuthenticateAsync(loginDto.Username, loginDto.Password);
-
                 if (token == null)
-                {
-                    _logger.LogWarning(ApplicationConstants.Messages.LoginFailed, loginDto.Username);
-                    return Unauthorized(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.InvalidCredentials));
-                }
+                    return Unauthorized(ApiResponse<object>.ErrorResponse("Invalid credentials"));
 
                 var user = await _userService.GetByUsernameAsync(loginDto.Username);
-                if (user == null)
-                {
-                    _logger.LogWarning(ApplicationConstants.Messages.LoginFailed, loginDto.Username);
-                    return Unauthorized(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.InvalidCredentials));
-                }
-                var loginResponse = new
+                return Ok(ApiResponse<object>.SuccessResponse(new
                 {
                     token,
-                    username = user.FullName,
+                    username = user!.FullName,
                     role = user.Roles.ToString()
-                };
-
-                _logger.LogInformation(ApplicationConstants.Messages.LoginCompleted, loginDto.Username);
-                return Ok(ApiResponse<object>.SuccessResponse(loginResponse, ApplicationConstants.Messages.Success));
+                }));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.LoginProcessingFailed);
-                return BadRequest(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.LoginProcessingFailed));
+                return BadRequest(ApiResponse<object>.ErrorResponse("Login failed"));
             }
         }
 
-        [HttpPost(ApiConstants.Routes.TokenController.Register)]
+        [HttpPost("register")]
         public async Task<ActionResult<ApiResponse<object>>> RegisterCustomer([FromBody] CustomerRegistrationDTO registrationDto)
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingRegistration, registrationDto?.Email ?? "unknown");
-
                 if (!ModelState.IsValid)
-                {
-                    _logger.LogWarning(ApplicationConstants.Messages.RegistrationValidationFailed);
-                    return BadRequest(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.RegistrationFailed, 
-                        ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)).ToList()));
-                }
+                    return BadRequest(ApiResponse<object>.ErrorResponse("Invalid registration data"));
 
                 await _unitOfWork.BeginTransactionAsync();
                 var userDto = await _userService.RegisterCustomerAsync(registrationDto!);
+                await _otpService.SendOTPAsync(userDto.UserId, registrationDto.PhoneNumber, userDto.Email, "REGISTRATION");
                 await _unitOfWork.CommitTransactionAsync();
 
-                var registrationResponse = new
-                {
-                    message = ApplicationConstants.Messages.CustomerRegisteredSuccessfully,
-                    userId = userDto.UserId,
-                    email = userDto.Email,
-                    fullName = userDto.FullName
-                };
-
-                _logger.LogInformation(ApplicationConstants.Messages.RegistrationCompleted, registrationDto?.Email ?? "unknown");
-                return Ok(ApiResponse<object>.SuccessResponse(registrationResponse, ApplicationConstants.Messages.CustomerRegisteredSuccessfully));
+                return Ok(ApiResponse<object>.SuccessResponse(new { 
+                    message = "Registration successful. OTP sent for verification.",
+                    userId = userDto.UserId
+                }));
             }
-            catch (InvalidOperationException ex)
+            catch (Exception)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                _logger.LogWarning(ex, ApplicationConstants.ErrorMessages.RegistrationFailed);
-                return BadRequest(ApiResponse<object>.ErrorResponse(ex.Message));
-            }
-            catch (Exception ex)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.RegistrationFailed);
-                return BadRequest(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.RegistrationFailed));
+                return BadRequest(ApiResponse<object>.ErrorResponse("Registration failed"));
             }
         }
 
-        [HttpPost(ApiConstants.Routes.TokenController.ForgotPassword)]
+        [HttpPost("verify-otp")]
+        public async Task<ActionResult<ApiResponse<object>>> VerifyOTP([FromBody] VerifyOTPRequest request)
+        {
+            try
+            {
+                var isValid = await _otpService.VerifyOTPAsync(request.UserId, request.OTP, "REGISTRATION");
+                if (!isValid)
+                    return BadRequest(ApiResponse<object>.ErrorResponse("Invalid or expired OTP"));
+
+                return Ok(ApiResponse<object>.SuccessResponse(new { message = "Account verified successfully" }));
+            }
+            catch (Exception)
+            {
+                return BadRequest(ApiResponse<object>.ErrorResponse("OTP verification failed"));
+            }
+        }
+
+        [HttpPost("login-otp")]
+        public async Task<ActionResult<ApiResponse<object>>> LoginWithOTP([FromBody] OTPLoginRequest request)
+        {
+            try
+            {
+                var user = await _userService.GetByUsernameAsync(request.Email);
+                if (user == null)
+                    return Unauthorized(ApiResponse<object>.ErrorResponse("Email not found"));
+
+                await _otpService.SendOTPAsync(user.UserId, "", user.Email, "LOGIN");
+                return Ok(ApiResponse<object>.SuccessResponse(new { 
+                    message = "OTP sent to your email",
+                    userId = user.UserId
+                }));
+            }
+            catch (Exception)
+            {
+                return BadRequest(ApiResponse<object>.ErrorResponse("Failed to send OTP"));
+            }
+        }
+
+        [HttpPost("verify-login-otp")]
+        public async Task<ActionResult<ApiResponse<object>>> VerifyLoginOTP([FromBody] VerifyOTPRequest request)
+        {
+            try
+            {
+                var isValid = await _otpService.VerifyOTPAsync(request.UserId, request.OTP, "LOGIN");
+                if (!isValid)
+                    return BadRequest(ApiResponse<object>.ErrorResponse("Invalid or expired OTP"));
+
+                var user = await _userService.GetByIdAsync(request.UserId);
+                var token = _tokenService.GenerateToken(user!);
+
+                return Ok(ApiResponse<object>.SuccessResponse(new {
+                    token,
+                    username = user!.FullName,
+                    role = user.Roles.ToString()
+                }));
+            }
+            catch (Exception)
+            {
+                return BadRequest(ApiResponse<object>.ErrorResponse("Login verification failed"));
+            }
+        }
+
+        [HttpPost("forgot-password")]
         public async Task<ActionResult<ApiResponse<object>>> ForgotPassword([FromBody] ForgotPasswordRequest dto)
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingForgotPassword, dto?.Email ?? "unknown");
-
                 if (string.IsNullOrEmpty(dto?.Email))
-                {
-                    _logger.LogWarning(ApplicationConstants.Messages.ForgotPasswordValidationFailed);
-                    return BadRequest(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.EmailRequired));
-                }
+                    return BadRequest(ApiResponse<object>.ErrorResponse("Email is required"));
 
-                var success = await _userService.ForgotPasswordAsync(dto.Email);
+                var user = await _userService.GetByEmailAsync(dto.Email);
+                if (user == null)
+                    return NotFound(ApiResponse<object>.ErrorResponse("Email not found"));
 
-                if (!success)
-                {
-                    _logger.LogWarning(ApplicationConstants.Messages.ForgotPasswordEmailNotFound, dto.Email);
-                    return NotFound(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.EmailNotFound));
-                }
-
-                _logger.LogInformation(ApplicationConstants.Messages.ForgotPasswordCompleted, dto.Email);
-                return Ok(ApiResponse<object>.SuccessResponse(new { }, ApplicationConstants.Messages.PasswordResetEmailSent));
+                await _otpService.SendOTPAsync(user.UserId, "", user.Email, "PASSWORD_RESET");
+                return Ok(ApiResponse<object>.SuccessResponse(new { 
+                    message = "OTP sent to your email",
+                    userId = user.UserId
+                }));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.ForgotPasswordFailed);
-                return BadRequest(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.ForgotPasswordFailed));
+                return BadRequest(ApiResponse<object>.ErrorResponse("Failed to send OTP"));
             }
         }
 
-        [HttpPost(ApiConstants.Routes.TokenController.ResetPassword)]
-        public async Task<ActionResult<ApiResponse<object>>> ResetPassword([FromBody] ResetPasswordRequest request)
+        [HttpPost("reset-password")]
+        public async Task<ActionResult<ApiResponse<object>>> ResetPassword([FromBody] ResetPasswordOTPRequest request)
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingResetPassword, request?.Email ?? "unknown");
+                var isValid = await _otpService.VerifyOTPAsync(request.UserId, request.OTP, "PASSWORD_RESET");
+                if (!isValid)
+                    return BadRequest(ApiResponse<object>.ErrorResponse("Invalid or expired OTP"));
 
-                if (string.IsNullOrEmpty(request?.Email) || string.IsNullOrEmpty(request?.ResetToken) || string.IsNullOrEmpty(request?.NewPassword))
-                {
-                    _logger.LogWarning(ApplicationConstants.Messages.ResetPasswordValidationFailed);
-                    return BadRequest(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.ResetPasswordFieldsRequired));
-                }
+                var user = await _userService.GetByIdAsync(request.UserId);
+                if (user == null)
+                    return BadRequest(ApiResponse<object>.ErrorResponse("User not found"));
 
-                var success = await _userService.ResetPasswordAsync(request.Email, request.ResetToken, request.NewPassword);
-
+                var success = await _userService.ResetPasswordAsync(user.Email, "", request.NewPassword);
                 if (!success)
-                {
-                    _logger.LogWarning(ApplicationConstants.Messages.ResetPasswordTokenInvalid, request.Email);
-                    return BadRequest(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.InvalidOrExpiredResetToken));
-                }
+                    return BadRequest(ApiResponse<object>.ErrorResponse("Password reset failed"));
 
-                _logger.LogInformation(ApplicationConstants.Messages.ResetPasswordCompleted, request.Email);
-                return Ok(ApiResponse<object>.SuccessResponse(new { }, ApplicationConstants.Messages.PasswordResetSuccessfully));
+                return Ok(ApiResponse<object>.SuccessResponse(new { message = "Password reset successfully" }));
             }
-            catch (ArgumentException ex)
+            catch (Exception)
             {
-                _logger.LogWarning(ex, ApplicationConstants.ErrorMessages.ResetPasswordFailed);
-                return BadRequest(ApiResponse<object>.ErrorResponse(ex.Message));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.ResetPasswordFailed);
-                return BadRequest(ApiResponse<object>.ErrorResponse(ApplicationConstants.ErrorMessages.ResetPasswordFailed));
+                return BadRequest(ApiResponse<object>.ErrorResponse("Password reset failed"));
             }
         }
+    }
+
+    public class VerifyOTPRequest
+    {
+        public int UserId { get; set; }
+        public string OTP { get; set; } = null!;
+    }
+
+    public class OTPLoginRequest
+    {
+        public string Email { get; set; } = null!;
+    }
+
+    public class ResetPasswordOTPRequest
+    {
+        public int UserId { get; set; }
+        public string OTP { get; set; } = null!;
+        public string NewPassword { get; set; } = null!;
     }
 
     public class ForgotPasswordRequest
     {
         public string Email { get; set; } = null!;
-    }
-
-    public class ResetPasswordRequest
-    {
-        public string Email { get; set; } = null!;
-        public string ResetToken { get; set; } = null!;
-        public string NewPassword { get; set; } = null!;
     }
 }
