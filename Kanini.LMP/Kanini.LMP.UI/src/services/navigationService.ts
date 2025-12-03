@@ -9,7 +9,23 @@ export const navigationService = {
 
   navigateTo: (path: string, replace = false) => {
     if (navigate) {
-      navigate(path, { replace });
+      try {
+        navigate(path, { replace });
+      } catch (error) {
+        console.error('Navigation error:', error);
+      }
+    } else {
+      console.warn('Navigation function not set');
     }
+  },
+
+  goBack: () => {
+    if (navigate) {
+      navigate(-1);
+    }
+  },
+
+  isNavigateReady: () => {
+    return navigate !== null;
   }
 };

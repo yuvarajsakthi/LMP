@@ -3,7 +3,7 @@ import { Menu } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import SideNavBarCss from './SideNavBar.module.css';
 import { Logo1, FaqIcon, Emi, LogOut, ChartEdit, Arrow, Dashboard, Status, Settings } from '../../assets';
-import { ROUTES } from '../../config';
+import { COMMON_ROUTES, CUSTOMER_ROUTES } from '../../config';
 import { useAuth } from '../../context';
 import { authMiddleware } from '../../middleware';
 
@@ -26,12 +26,12 @@ const SideNavBar = () => {
         setSelectedKey(e.key);
         
         const routes = {
-            '1': ROUTES.CUSTOMER_DASHBOARD,
-            '2': '/apply-loan',
-            '3': '/view-status',
-            '4': '/emi-calculator',
-            '5': '/faq',
-            '6': '/settings'
+            '1': CUSTOMER_ROUTES.CUSTOMER_DASHBOARD,
+            '2': CUSTOMER_ROUTES.LOAN_TYPES,
+            '3': CUSTOMER_ROUTES.VIEWSTATUS,
+            '4': CUSTOMER_ROUTES.EMI_CALCULATOR,
+            '5': CUSTOMER_ROUTES.FAQ,
+            '6': CUSTOMER_ROUTES.SETTINGS
         };
         
         const route = routes[e.key as keyof typeof routes];
@@ -43,7 +43,7 @@ const SideNavBar = () => {
     const handleLogout = () => {
         authMiddleware.removeToken();
         contextLogout();
-        navigate(ROUTES.LOGIN);
+        navigate(COMMON_ROUTES.LOGIN);
     };
 
     return (

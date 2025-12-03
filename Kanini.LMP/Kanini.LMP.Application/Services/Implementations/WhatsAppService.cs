@@ -31,7 +31,12 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             try
             {
-                // Format phone number (remove + and ensure country code)
+                if (string.IsNullOrEmpty(_accessToken) || string.IsNullOrEmpty(_phoneNumberId))
+                {
+                    _logger.LogError("WhatsApp configuration missing: AccessToken or PhoneNumberId not set");
+                    return false;
+                }
+
                 var formattedPhone = FormatPhoneNumber(phoneNumber);
                 
                 var payload = new
@@ -51,7 +56,13 @@ namespace Kanini.LMP.Application.Services.Implementations
                 var response = await _httpClient.PostAsync(_baseUrl, content);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
-                _logger.LogInformation($"WhatsApp message sent to {phoneNumber}: {response.IsSuccessStatusCode}");
+                _logger.LogInformation($"WhatsApp API Response - Status: {response.StatusCode}, Content: {responseContent}");
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError($"WhatsApp API Error - Status: {response.StatusCode}, Response: {responseContent}");
+                }
+
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex)

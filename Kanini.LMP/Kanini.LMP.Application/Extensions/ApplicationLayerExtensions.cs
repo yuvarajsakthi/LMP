@@ -36,7 +36,7 @@ namespace Kanini.LMP.Application.Extensions
             services.AddScoped<IKYCService, KYCService>();
             services.AddScoped<IDocumentService, DocumentService>();
 
-            services.AddScoped<IWhatsAppService, WhatsAppService>();
+            services.AddScoped<IWhatsAppService, MockWhatsAppService>();
 
             services.AddScoped<IOTPService, OTPService>();
             services.AddHostedService<EMINotificationBackgroundService>();

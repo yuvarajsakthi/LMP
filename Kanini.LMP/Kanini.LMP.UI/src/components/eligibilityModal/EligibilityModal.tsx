@@ -3,7 +3,7 @@ import { Modal, Form, Input, Select, Button, Radio, InputNumber, Divider, Card, 
 import { CheckCircleOutlined, CloseCircleOutlined, BankOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
 import { useApi } from '../../hooks';
-import axiosInstance from '../../services/api/axiosInstance';
+import { loanAPI } from '../../services/api/loanAPI';
 import styles from './EligibilityModal.module.css';
 
 interface EligibilityModalProps {
@@ -12,7 +12,6 @@ interface EligibilityModalProps {
 }
 
 const EligibilityModal: React.FC<EligibilityModalProps> = ({ visible, onClose }) => {
-  console.log('EligibilityModal rendered, visible:', visible);
   const [form] = Form.useForm();
   const [isExisting, setIsExisting] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -25,7 +24,7 @@ const EligibilityModal: React.FC<EligibilityModalProps> = ({ visible, onClose })
     };
 
     const response = await execute(() => 
-      axiosInstance.post('/api/Eligibility/check', request)
+      loanAPI.checkEligibility(request)
     );
 
     if (response) {

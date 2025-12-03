@@ -7,9 +7,12 @@ import type { LoginCredentials, RegisterCredentials, DecodedToken, ApiResponse }
 
 // Backend response types (matching C# controller responses)
 interface LoginResponseData {
-  token: string;
-  username: string;
-  role: string;
+  token?: string;
+  username?: string;
+  role?: string;
+  requiresVerification?: boolean;
+  message?: string;
+  userId?: number;
 }
 
 interface RegisterResponseData {
@@ -40,7 +43,9 @@ const processTokenResponse = (responseData: LoginResponseData): { token: string;
     
     const user: DecodedToken = {
       role: userRole,
-      FullName: username,
+      FullName: username || decodedToken.name || decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
+      username: username,
+      email: decodedToken.email,
       ...decodedToken
     };
     
@@ -53,7 +58,7 @@ const processTokenResponse = (responseData: LoginResponseData): { token: string;
 };
 
 export const authAPI = {
-  async login(credentials: LoginCredentials): Promise<{ token: string; user: DecodedToken }> {
+  async login(credentials: LoginCredentials): Promise<{ token?: string; user?: DecodedToken; requiresVerification?: boolean; message?: string; userId?: number }> {
     if (!credentials?.username || !credentials?.password) {
       throw new Error('Authentication credentials are required');
     }
@@ -65,10 +70,23 @@ export const authAPI = {
       );
       return response;
     }).then(loginData => {
+      if (loginData.requiresVerification) {
+        return {
+          requiresVerification: true,
+          message: loginData.message,
+          userId: loginData.userId
+        };
+      }
+      
       if (!loginData.token) {
         throw new Error('No token received from server');
       }
-      return processTokenResponse(loginData);
+      
+      const tokenResponse = processTokenResponse(loginData as LoginResponseData & { token: string; username: string; role: string });
+      return {
+        requiresVerification: false,
+        ...tokenResponse
+      };
     });
   },
 
@@ -82,28 +100,76 @@ export const authAPI = {
     });
   },
 
-  async forgotPassword(email: string): Promise<{ message: string }> {
-    return ApiService.execute(async () => {
-      const response = await axiosInstance.post<ApiResponse<{}>>(
-        API_ENDPOINTS.FORGOT_PASSWORD, 
-        { email }
-      );
-      return response;
-    }).then(() => ({ message: 'Password reset email sent successfully' }));
-  },
+
 
   async resetPassword(data: { 
-    email: string; 
-    resetToken: string; 
+    userId: number; 
+    otp: string; 
     newPassword: string 
   }): Promise<{ message: string }> {
     return ApiService.execute(async () => {
-      const response = await axiosInstance.post<ApiResponse<{}>>(
+      const response = await axiosInstance.post<ApiResponse<{ message: string }>>(
         API_ENDPOINTS.RESET_PASSWORD, 
         data
       );
       return response;
-    }).then(() => ({ message: 'Password reset successfully' }));
+    });
+  },
+
+  async sendOTP(data: {
+    email: string;
+    phoneNumber?: string;
+    purpose: 'LOGIN' | 'REGISTRATION' | 'PASSWORD_RESET';
+  }): Promise<{ message: string; userId: number }> {
+    return ApiService.execute(async () => {
+      const response = await axiosInstance.post<ApiResponse<{ message: string; userId: number }>>(
+        API_ENDPOINTS.SEND_OTP,
+        data
+      );
+      return response;
+    });
+  },
+
+  async verifyOTP(data: {
+    userId: number;
+    otp: string;
+  }): Promise<{ message: string; token?: string; user?: DecodedToken }> {
+    return ApiService.execute(async () => {
+      const response = await axiosInstance.post<ApiResponse<LoginResponseData & { message: string }>>(
+        API_ENDPOINTS.VERIFY_OTP,
+        data
+      );
+      return response;
+    }).then(verifyData => {
+      if (verifyData.token) {
+        const tokenResponse = processTokenResponse(verifyData as LoginResponseData & { token: string; username: string; role: string });
+        return {
+          message: verifyData.message || 'Account verified successfully',
+          ...tokenResponse
+        };
+      }
+      return {
+        message: verifyData.message || 'Account verified successfully'
+      };
+    });
+  },
+
+  async verifyLoginOTP(data: {
+    userId: number;
+    otp: string;
+  }): Promise<{ token: string; user: DecodedToken }> {
+    return ApiService.execute(async () => {
+      const response = await axiosInstance.post<ApiResponse<LoginResponseData>>(
+        API_ENDPOINTS.VERIFY_LOGIN_OTP,
+        data
+      );
+      return response;
+    }).then(loginData => {
+      if (!loginData.token) {
+        throw new Error('No token received from server');
+      }
+      return processTokenResponse(loginData);
+    });
   },
 
   logout(): void {

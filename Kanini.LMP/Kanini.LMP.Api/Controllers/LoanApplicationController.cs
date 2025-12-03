@@ -146,6 +146,25 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
+        [HttpGet("customer-applications")]
+        public async Task<ActionResult<IReadOnlyList<PersonalLoanApplicationDTO>>> GetCustomerApplications()
+        {
+            try
+            {
+                _logger.LogInformation("Processing customer applications retrieval");
+
+                var loans = await _loanApplicationService.GetAllPersonalLoansAsync();
+
+                _logger.LogInformation("Customer applications retrieval completed, found {0} applications", loans.Count);
+                return Ok(loans);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to retrieve customer applications");
+                return BadRequest(new { message = "Failed to retrieve customer applications" });
+            }
+        }
+
         // Home Loan Endpoints
         [HttpPost(ApplicationConstants.Routes.Home)]
         public async Task<ActionResult<HomeLoanApplicationDTO>> CreateHomeLoan(int customerId, HomeLoanApplicationCreateDTO dto)

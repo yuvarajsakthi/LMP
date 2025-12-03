@@ -12,7 +12,6 @@ import HL from '../../assets/images/Housing Loan.svg';
 import note from '../../assets/images/note.svg';
 import bell from '../../assets/images/bell.svg';
 import arrow from '../../assets/images/NextButtonArrow.svg';
-import Sidenav from '../../layout/sidebar/Sidebar';
 import { Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../services/api/axiosInstance';
@@ -92,17 +91,7 @@ const LoanTypes = () => {
         <div>
 
             <div className={`${style.firstcolumn} ${style.grey}`}>
-
-
-                <div>
-                    <Sidenav />
-                </div>
-
                 <div className={style.column}>
-
-                    <div>
-                        {/* <Navbar /> */}
-                    </div>
                     <div className={`${style.newcolumn} ${style.grey}`}>
                         <div className={`${style.column} ${style.div2}`}>
                             <div className={style.div21}>

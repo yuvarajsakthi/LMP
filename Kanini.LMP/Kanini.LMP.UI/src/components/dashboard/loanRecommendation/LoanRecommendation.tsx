@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './LoanRecommendation.module.css';
 import { Card, Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../../../config';
+import { CUSTOMER_ROUTES } from '../../../config';
 
 interface LoanRecommendationProps {
   title?: string;
@@ -25,7 +25,7 @@ const LoanRecommendation: React.FC<LoanRecommendationProps> = ({
     if (onApplyClick) {
       onApplyClick();
     } else {
-      navigate(ROUTES.LOAN_TYPES);
+      navigate(CUSTOMER_ROUTES.LOAN_TYPES);
     }
   };
 

@@ -12,7 +12,7 @@ import {
 import styles from './Sidebar.module.css';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context';
-import { ROUTES } from '../../config';
+import { COMMON_ROUTES, CUSTOMER_ROUTES } from '../../config';
 
 interface SidebarProps {
   collapsed?: boolean;
@@ -25,18 +25,18 @@ const Sidebar = ({ collapsed = false }: SidebarProps) => {
 
     const handleLogout = useCallback(() => {
         logout();
-        navigate(ROUTES.LOGIN);
+        navigate(COMMON_ROUTES.LOGIN);
     }, [logout, navigate]);
 
     const handleNavigation = useCallback((path: string) => () => navigate(path), [navigate]);
 
     const menuItems = [
-        { key: ROUTES.CUSTOMER_DASHBOARD, icon: <DashboardOutlined />, label: 'Dashboard', onClick: handleNavigation(ROUTES.CUSTOMER_DASHBOARD) },
-        { key: ROUTES.LOAN_TYPES, icon: <FileTextOutlined />, label: 'Apply Loan', onClick: handleNavigation(ROUTES.LOAN_TYPES) },
-        { key: ROUTES.INTEGRATION, icon: <CheckCircleOutlined />, label: 'View Status', onClick: handleNavigation(ROUTES.INTEGRATION) },
-        { key: ROUTES.EMI_CALCULATOR, icon: <CalculatorOutlined />, label: 'EMI Calculator', onClick: handleNavigation(ROUTES.EMI_CALCULATOR) },
-        { key: ROUTES.FAQ, icon: <QuestionCircleOutlined />, label: "FAQ's", onClick: handleNavigation(ROUTES.FAQ) },
-        { key: ROUTES.SETTINGS, icon: <SettingOutlined />, label: 'Settings', onClick: handleNavigation(ROUTES.SETTINGS) }
+        { key: CUSTOMER_ROUTES.CUSTOMER_DASHBOARD, icon: <DashboardOutlined />, label: 'Dashboard', onClick: handleNavigation(CUSTOMER_ROUTES.CUSTOMER_DASHBOARD) },
+        { key: CUSTOMER_ROUTES.LOAN_TYPES, icon: <FileTextOutlined />, label: 'Apply Loan', onClick: handleNavigation(CUSTOMER_ROUTES.LOAN_TYPES) },
+        { key: CUSTOMER_ROUTES.INTEGRATION, icon: <CheckCircleOutlined />, label: 'View Status', onClick: handleNavigation(CUSTOMER_ROUTES.INTEGRATION) },
+        { key: CUSTOMER_ROUTES.EMI_CALCULATOR, icon: <CalculatorOutlined />, label: 'EMI Calculator', onClick: handleNavigation(CUSTOMER_ROUTES.EMI_CALCULATOR) },
+        { key: CUSTOMER_ROUTES.FAQ, icon: <QuestionCircleOutlined />, label: "FAQ's", onClick: handleNavigation(CUSTOMER_ROUTES.FAQ) },
+        { key: CUSTOMER_ROUTES.SETTINGS, icon: <SettingOutlined />, label: 'Settings', onClick: handleNavigation(CUSTOMER_ROUTES.SETTINGS) }
     ];
 
     return (

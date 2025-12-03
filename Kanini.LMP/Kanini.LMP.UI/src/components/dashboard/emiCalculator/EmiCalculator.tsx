@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styles from './EmiCalculator.module.css';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { Card, Select, Input } from 'antd';
-import axiosInstance from '../../../services/api/axiosInstance';
+import { emiAPI } from '../../../services';
 
 interface LoanTypeRates {
   [key: string]: number;
@@ -55,10 +55,11 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
 
   const fetchLoanProducts = async () => {
     try {
-      const response = await axiosInstance.get('/api/Eligibility/check');
-      if (response.data?.products) {
-        setLoanProducts(response.data.products);
-      }
+      // For now, use static loan products since we need eligibility data
+      setLoanProducts(Object.keys(loanTypeInterestRates).map(type => ({
+        productName: type,
+        interestRate: loanTypeInterestRates[type]
+      })));
     } catch (error) {
       console.error('Failed to fetch loan products:', error);
     }

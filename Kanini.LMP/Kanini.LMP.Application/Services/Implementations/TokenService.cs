@@ -53,6 +53,10 @@ namespace Kanini.LMP.Data.Repositories.Implementations
             if (user == null)
                 return null;
 
+            // Check if user account is verified/active
+            if (user.Status != Database.Enums.UserStatus.Active)
+                return null;
+
             // For OTP-based authentication, password can be empty
             if (!string.IsNullOrEmpty(password) && !PasswordService.VerifyPassword(password, user.PasswordHash))
                 return null;
