@@ -1,5 +1,12 @@
 ﻿namespace Kanini.LMP.Database.Enums
 {
+    public enum LoanType
+    {
+        Personal = 1,
+        Vehicle = 2,
+        Home = 3
+    }
+
     public enum PropertyType
     {
         Residential,

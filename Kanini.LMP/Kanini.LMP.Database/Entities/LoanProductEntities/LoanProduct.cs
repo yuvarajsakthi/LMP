@@ -1,20 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Kanini.LMP.Database.Enums;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace Kanini.LMP.Database.Entities.LoanProductEntities
 {
-    [Index(nameof(LoanProductName), IsUnique = true)]
+    [Index(nameof(LoanType), IsUnique = true)]
     public class LoanProduct
     {
         [Key]
-        public int LoanProductId { get; set; } // Primary Key
+        public int LoanProductId { get; set; }
         [Required]
-        [MaxLength(100)]
-        public string LoanProductName { get; set; } = null!;// Name of the loan product
+        public LoanType LoanType { get; set; }
         [Required]
-        [MaxLength(500)]
-        public string LoanProductDescription { get; set; } = null!; // Description of the loan product
-        [Required]
-        public bool IsActive { get; set; } = true; //status of the loan product
+        public bool IsActive { get; set; } = true;
     }
 }

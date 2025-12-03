@@ -1,130 +1,55 @@
-using Kanini.LMP.Application.Constants;
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Database.EntitiesDto;
-using Kanini.LMP.Database.Enums;
+using Kanini.LMP.Database.EntitiesDtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 
 namespace Kanini.LMP.Api.Controllers
 {
-    [Route(ApplicationConstants.Routes.NotificationController)]
+    [Route("api/[controller]")]
     [ApiController]
     [Authorize]
     public class NotificationController : ControllerBase
     {
         private readonly INotificationService _notificationService;
-        private readonly ILogger<NotificationController> _logger;
 
-        public NotificationController(
-            INotificationService notificationService,
-            ILogger<NotificationController> logger)
+        public NotificationController(INotificationService notificationService)
         {
             _notificationService = notificationService;
-            _logger = logger;
         }
 
-        [HttpGet(ApplicationConstants.Routes.MyNotifications)]
-        public async Task<ActionResult<IEnumerable<NotificationDTO>>> GetMyNotifications()
+        [HttpGet]
+        public async Task<ActionResult<ApiResponse<IEnumerable<NotificationDTO>>>> GetAllNotifications()
         {
             try
             {
                 var userId = GetCurrentUserId();
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingNotificationsRetrieval);
-
                 var notifications = await _notificationService.GetUserNotificationsAsync(userId);
-
-                _logger.LogInformation(ApplicationConstants.Messages.NotificationsRetrievalCompleted);
-                return Ok(notifications);
+                return Ok(ApiResponse<IEnumerable<NotificationDTO>>.SuccessResponse(notifications));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                var userId = GetCurrentUserId();
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.NotificationsRetrievalFailed);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.NotificationsRetrievalFailed });
+                return BadRequest(ApiResponse<IEnumerable<NotificationDTO>>.ErrorResponse("Failed to retrieve notifications"));
             }
         }
 
-        [HttpGet(ApplicationConstants.Routes.Unread)]
-        public async Task<ActionResult<IEnumerable<NotificationDTO>>> GetUnreadNotifications()
+        [HttpDelete("{notificationId}")]
+        public async Task<ActionResult<ApiResponse<object>>> DeleteNotification(int notificationId)
         {
             try
             {
                 var userId = GetCurrentUserId();
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingUnreadNotifications);
-
-                var notifications = await _notificationService.GetUnreadNotificationsAsync(userId);
-
-                _logger.LogInformation(ApplicationConstants.Messages.UnreadNotificationsCompleted);
-                return Ok(notifications);
+                var result = await _notificationService.DeleteNotificationAsync(notificationId, userId);
+                
+                if (!result)
+                    return NotFound(ApiResponse<object>.ErrorResponse("Notification not found"));
+                
+                return Ok(ApiResponse<object>.SuccessResponse(new { message = "Notification deleted successfully" }));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                var userId = GetCurrentUserId();
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.UnreadNotificationsFailed);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.UnreadNotificationsFailed });
-            }
-        }
-
-        [HttpGet(ApplicationConstants.Routes.UnreadCount)]
-        public async Task<ActionResult<int>> GetUnreadCount()
-        {
-            try
-            {
-                var userId = GetCurrentUserId();
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingUnreadCount);
-
-                var count = await _notificationService.GetUnreadCountAsync(userId);
-
-                _logger.LogInformation(ApplicationConstants.Messages.UnreadCountCompleted);
-                return Ok(new { count });
-            }
-            catch (Exception ex)
-            {
-                var userId = GetCurrentUserId();
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.UnreadCountFailed);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.UnreadCountFailed });
-            }
-        }
-
-        [HttpPut(ApplicationConstants.Routes.MarkRead)]
-        public async Task<ActionResult<NotificationDTO>> MarkAsRead(int notificationId)
-        {
-            try
-            {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingMarkAsRead);
-
-                var notification = await _notificationService.MarkAsReadAsync(notificationId);
-
-                _logger.LogInformation(ApplicationConstants.Messages.MarkAsReadCompleted);
-                return Ok(notification);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.MarkAsReadFailed);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.MarkAsReadFailed });
-            }
-        }
-
-        [HttpPut(ApplicationConstants.Routes.MarkAllRead)]
-        public async Task<ActionResult> MarkAllAsRead()
-        {
-            try
-            {
-                var userId = GetCurrentUserId();
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingMarkAllAsRead);
-
-                var result = await _notificationService.MarkAllAsReadAsync(userId);
-
-                _logger.LogInformation(ApplicationConstants.Messages.MarkAllAsReadCompleted);
-                return Ok(new { success = result, message = ApplicationConstants.ErrorMessages.AllNotificationsMarkedAsRead });
-            }
-            catch (Exception ex)
-            {
-                var userId = GetCurrentUserId();
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.MarkAllAsReadFailed);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.MarkAllAsReadFailed });
+                return BadRequest(ApiResponse<object>.ErrorResponse("Failed to delete notification"));
             }
         }
 
