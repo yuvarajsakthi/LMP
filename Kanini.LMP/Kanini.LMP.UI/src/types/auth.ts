@@ -19,3 +19,7 @@ export interface User {
   role: string;
   FullName?: string;
 }
+
+export interface GuardProps {
+  children: React.ReactNode;
+}

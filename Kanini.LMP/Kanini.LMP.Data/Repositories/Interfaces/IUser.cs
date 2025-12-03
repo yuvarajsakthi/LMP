@@ -16,5 +16,6 @@ namespace Kanini.LMP.Data.Repositories.Interfaces
         Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword);
         Task<User?> GetByIdAsync(int userId);
         Task<User?> GetByEmailAsync(string email);
+        Task<bool> ActivateUserAsync(int userId);
     }
 }

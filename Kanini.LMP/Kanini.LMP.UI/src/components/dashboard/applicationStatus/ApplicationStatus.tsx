@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Table, Card, Button } from "antd";
 import styles from './ApplicationStatus.module.css';
-import axios from "axios";
 import { useAuth } from "../../../context";
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "../../../config";
+import { CUSTOMER_ROUTES } from "../../../config";
+import { loanAPI } from "../../../services";
 
 interface ApplicationData {
   loanType: string;
@@ -41,23 +41,22 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ data }) => {
     if (data) return; // Use provided data if available
     
     try {
-      const res = await axios.get("https://localhost:7297/api/LoanApplication/customer-applications", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const formattedData = res.data.map((item: any) => ({
-        loanType: item.loanCategory,
-        applicationID: item.applicationId,
-        loanAmount: item.appliedAmount,
-        interest: item.interest ?? "-",
-        startDate: item.appliedDate ? new Date(item.appliedDate).toLocaleDateString("en-IN").replace(/\//g, "-") : "-",
-        endDate: addMonthsToDate(item.approvedDate ? new Date(item.approvedDate).toLocaleDateString("en-IN").replace(/\//g, "-") : "-", item.requestedTenure),
-        loanTenure: item.requestedTenure,
-        status: item.status,
-        stage: item.stage,
+      const loans = await loanAPI.getCustomerApplications();
+      const formattedData = loans.map((item: any) => ({
+        loanType: item.loanType || 'Personal Loan',
+        applicationID: item.loanApplicationBaseId?.toString() || '-',
+        loanAmount: item.loanAmount || 0,
+        interest: item.interestRate || '-',
+        startDate: item.createdAt ? new Date(item.createdAt).toLocaleDateString("en-IN").replace(/\//g, "-") : "-",
+        endDate: item.expectedEndDate ? new Date(item.expectedEndDate).toLocaleDateString("en-IN").replace(/\//g, "-") : "-",
+        loanTenure: item.tenure || 0,
+        status: item.status || 'Pending',
+        stage: item.stage || 'Application',
       }));
       setApplicationData(formattedData);
     } catch (error) {
-      console.error('Failed to fetch application status:', error);
+      // Set empty data when API is unavailable
+      setApplicationData([]);
     }
   };
   useEffect(() => {
@@ -132,7 +131,7 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ data }) => {
                 borderRadius,
                 border: "none",
               }}
-              onClick={() => navigate(ROUTES.INTEGRATION)}
+              onClick={() => navigate(CUSTOMER_ROUTES.INTEGRATION)}
             >
               {text}
             </Button>
@@ -166,6 +165,7 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ data }) => {
           pagination={{ pageSize: 5 }}
           scroll={{ x: 'max-content' }}
           size="middle"
+          rowKey={(record) => record.applicationID || Math.random().toString()}
         />
       </Card>
     </div>

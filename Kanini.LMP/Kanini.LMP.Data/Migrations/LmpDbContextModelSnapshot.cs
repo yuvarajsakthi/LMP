@@ -1427,7 +1427,7 @@ namespace Kanini.LMP.Data.Migrations
                             FullName = "Alex Johnson",
                             PasswordHash = "hashedpassword_alex",
                             Roles = 0,
-                            Status = 0
+                            Status = 1
                         },
                         new
                         {
@@ -1437,7 +1437,7 @@ namespace Kanini.LMP.Data.Migrations
                             FullName = "Emma Brown",
                             PasswordHash = "hashedpassword_emma",
                             Roles = 0,
-                            Status = 0
+                            Status = 1
                         },
                         new
                         {
@@ -1447,7 +1447,7 @@ namespace Kanini.LMP.Data.Migrations
                             FullName = "Alice Smith (Credit)",
                             PasswordHash = "hashedpassword_alice",
                             Roles = 1,
-                            Status = 0
+                            Status = 1
                         },
                         new
                         {
@@ -1457,7 +1457,7 @@ namespace Kanini.LMP.Data.Migrations
                             FullName = "Bob Davis (Verification)",
                             PasswordHash = "hashedpassword_bob",
                             Roles = 1,
-                            Status = 0
+                            Status = 1
                         });
                 });
 

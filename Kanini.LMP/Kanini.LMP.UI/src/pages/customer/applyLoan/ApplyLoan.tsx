@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Typography, Spin } from 'antd';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   MedicineBoxOutlined,
   ReadOutlined,
@@ -35,6 +36,7 @@ const getIconForCategory = (categoryName: string): React.ReactNode => {
 };
 
 const ApplyLoan: React.FC = () => {
+  const navigate = useNavigate();
   const [loanCategories, setLoanCategories] = useState<LoanCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,8 +64,7 @@ const ApplyLoan: React.FC = () => {
   const handleNext = () => {
     if (selectedCategory) {
       const category = loanCategories.find(c => c.loanProductId === selectedCategory);
-      console.log('Selected category:', category);
-      // TODO: Navigate to next step or show application form
+      navigate('/loan-application-form', { state: { selectedCategory: category } });
     }
   };
 
@@ -71,7 +72,7 @@ const ApplyLoan: React.FC = () => {
     <Layout>
       <div className={styles.container}>
         <div className={styles.contentWrapper}>
-          {/* Left Sidebar */}
+          {/* Left Sidebar - Intro */}
           <motion.div
             className={styles.sidebar}
             initial={{ opacity: 0, x: -50 }}
@@ -98,7 +99,7 @@ const ApplyLoan: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Right Section */}
+          {/* Right Section - Category Selection */}
           <motion.div
             className={styles.mainContent}
             initial={{ opacity: 0, x: 50 }}
@@ -164,5 +165,7 @@ const ApplyLoan: React.FC = () => {
     </Layout>
   );
 };
+
+
 
 export default ApplyLoan;

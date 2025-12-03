@@ -1,21 +1,16 @@
-import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 import { Navigate } from 'react-router-dom';
+import { useAuth } from '../context';
 import { USER_ROLES, ROUTES } from '../config';
-import type { GuardProps, User } from '../types';
+import type { GuardProps } from '../types';
 
 const CustomerGuard = ({ children }: GuardProps) => {
-  try {
-    const auth = useAuthUser();
-    const user = auth as User | null;
+  const { isAuthenticated, token } = useAuth();
 
-    if (!user || user.role?.toLowerCase() !== USER_ROLES.CUSTOMER.toLowerCase()) {
-      return <Navigate to={ROUTES.UNAUTHORIZED} replace />;
-    }
-
-    return <>{children}</>;
-  } catch (error) {
-    return <Navigate to={ROUTES.LOGIN} replace />;
+  if (!isAuthenticated || !token || token.role?.toLowerCase() !== USER_ROLES.CUSTOMER.toLowerCase()) {
+    return <Navigate to={ROUTES.UNAUTHORIZED} replace />;
   }
+
+  return <>{children}</>;
 };
 
 export default CustomerGuard;

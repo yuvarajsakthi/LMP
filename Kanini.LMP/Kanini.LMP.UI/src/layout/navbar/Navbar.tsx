@@ -2,7 +2,7 @@ import { Avatar, Dropdown, Space, Typography } from "antd";
 import { UserOutlined, BellOutlined, LogoutOutlined, SettingOutlined } from "@ant-design/icons";
 import { useAuth } from "../../context";
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "../../config";
+import { COMMON_ROUTES, CUSTOMER_ROUTES } from "../../config";
 import styles from "./Navbar.module.css";
 
 const { Text } = Typography;
@@ -13,7 +13,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
-    navigate(ROUTES.LOGIN);
+    navigate(COMMON_ROUTES.LOGIN);
   };
 
   const userMenuItems = [
@@ -21,13 +21,13 @@ const Navbar = () => {
       key: 'profile',
       icon: <UserOutlined />,
       label: 'Profile',
-      onClick: () => navigate(ROUTES.SETTINGS)
+      onClick: () => navigate(CUSTOMER_ROUTES.SETTINGS)
     },
     {
       key: 'settings',
       icon: <SettingOutlined />,
       label: 'Settings',
-      onClick: () => navigate(ROUTES.SETTINGS)
+      onClick: () => navigate(CUSTOMER_ROUTES.SETTINGS)
     },
     {
       type: 'divider' as const
@@ -47,7 +47,7 @@ const Navbar = () => {
         <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
           <Space className={styles.userSection}>
             <Avatar icon={<UserOutlined />} className={styles.avatar} />
-            <Text className={styles.userName}>{token?.FullName || 'User'}</Text>
+            <Text className={styles.userName}>{token?.FullName || token?.name || token?.username || token?.email || 'User'}</Text>
           </Space>
         </Dropdown>
       </div>

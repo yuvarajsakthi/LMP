@@ -8,6 +8,7 @@
 
     public enum UserStatus
     {
+        Pending,
         Active,
         InActive
     }

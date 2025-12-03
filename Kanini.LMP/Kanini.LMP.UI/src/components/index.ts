@@ -11,4 +11,7 @@ export { default as ForgotPasswordComponent } from './forgotPasswordComponent/Fo
 // Navigation Components
 export { default as SideNavBar } from './sideNavBar/SideNavBar';
 
+// Loan Components
+export { default as LoanTypes } from './loanTypes/LoanTypes';
+
 

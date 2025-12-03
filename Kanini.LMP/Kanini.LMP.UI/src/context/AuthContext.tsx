@@ -1,6 +1,9 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { useDispatch } from 'react-redux';
 import type { DecodedToken } from '../types';
 import { authMiddleware } from '../middleware';
+import { setToken as setReduxToken } from '../store/slices/authSlice';
+import type { AppDispatch } from '../store';
 
 interface AuthContextType {
   token: DecodedToken | null;
@@ -14,26 +17,42 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<DecodedToken | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    const checkAuth = () => {
-      const storedToken = authMiddleware.getDecodedToken();
-      if (storedToken && authMiddleware.isAuthenticated()) {
-        setToken(storedToken);
-        setIsAuthenticated(true);
+    const initializeAuth = () => {
+      const rawToken = authMiddleware.getToken();
+      
+      if (rawToken && authMiddleware.isAuthenticated()) {
+        const storedToken = authMiddleware.getDecodedToken();
+        if (storedToken) {
+          // Enhance token with proper name extraction
+          const enhancedToken = {
+            ...storedToken,
+            FullName: storedToken.FullName || storedToken.name || storedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']
+          };
+          setToken(enhancedToken);
+          setIsAuthenticated(true);
+          // Sync with Redux store
+          dispatch(setReduxToken({ token: rawToken, user: enhancedToken }));
+        } else {
+          setToken(null);
+          setIsAuthenticated(false);
+          authMiddleware.removeToken();
+        }
       } else {
         setToken(null);
         setIsAuthenticated(false);
+        authMiddleware.removeToken();
       }
+      setIsInitialized(true);
     };
     
-    checkAuth();
+    initializeAuth();
     
-    // Check auth status periodically
-    const interval = setInterval(checkAuth, 60000); // Check every minute
-    
-    return () => clearInterval(interval);
-  }, []);
+
+  }, [dispatch]);
 
   const handleSetToken = (newToken: DecodedToken | null) => {
     try {
@@ -42,6 +61,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       setToken(newToken);
       setIsAuthenticated(!!newToken);
+      
+      // Store token in localStorage when setting
+      if (newToken) {
+        const rawToken = authMiddleware.getToken();
+        if (rawToken) {
+          dispatch(setReduxToken({ token: rawToken, user: newToken }));
+        }
+      }
     } catch (error) {
       console.error('Failed to set token:', error);
       setToken(null);
@@ -62,6 +89,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsAuthenticated(false);
     }
   };
+
+  // Don't render children until auth is initialized to prevent flash
+  if (!isInitialized) {
+    return null; // or a loading spinner
+  }
 
   return (
     <AuthContext.Provider value={{ token, setToken: handleSetToken, isAuthenticated, logout }}>

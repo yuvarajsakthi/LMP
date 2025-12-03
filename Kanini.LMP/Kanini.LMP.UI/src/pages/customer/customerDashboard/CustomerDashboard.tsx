@@ -36,7 +36,7 @@ const CustomerDashboard = () => {
           transition={{ duration: 0.5 }}
         >
           <Title level={2} className={styles.welcome}>
-            Hi {token?.FullName || 'User'}!
+            Hi {token?.FullName || token?.name || token?.username || token?.email || 'User'}!
           </Title>
           <Text className={styles.subtitle}>
             Manage your loans and explore new opportunities

@@ -5,10 +5,10 @@ import { LoanAcceleratorLogo } from "../../assets";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import RegisterCss from "./RegisterComponent.module.css";
 import type { RegisterCredentials, InputChangeEvent } from "../../types";
-import { ROUTES, SUCCESS_MESSAGES, ERROR_MESSAGES } from "../../config";
+import { COMMON_ROUTES, ERROR_MESSAGES } from "../../config";
 import { validateField } from "../../utils";
 import { useAuth } from "../../context";
-import { registerUser } from "../../store/slices/authSlice";
+import { registerUser, verifyOTP } from "../../store/slices/authSlice";
 import type { RootState, AppDispatch } from "../../store";
 const { Title } = Typography;
 
@@ -29,6 +29,9 @@ const RegisterComponent = () => {
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [phoneError, setPhoneError] = useState("");
+  const [showOTPVerification, setShowOTPVerification] = useState(false);
+  const [otp, setOTP] = useState("");
+  const [userId, setUserId] = useState<number | null>(null);
 
 
 
@@ -101,13 +104,78 @@ const RegisterComponent = () => {
     };
     
     try {
-      await dispatch(registerUser(registerData)).unwrap();
-      message.success(SUCCESS_MESSAGES.REGISTER_SUCCESS);
-      navigate(ROUTES.LOGIN);
+      const result = await dispatch(registerUser(registerData)).unwrap();
+      setUserId(result.userId);
+      setShowOTPVerification(true);
+      message.success('Registration successful! Please verify your account with the OTP sent to your email.');
     } catch (error: any) {
       message.error(error || ERROR_MESSAGES.REGISTRATION_FAILED);
     }
   };
+
+  const handleVerifyOTP = async () => {
+    if (!otp || otp.length !== 6) {
+      message.error('Please enter valid 6-digit OTP');
+      return;
+    }
+    
+    try {
+      await dispatch(verifyOTP({ 
+        userId: userId!, 
+        otp 
+      })).unwrap();
+      message.success('Account verified successfully!');
+      navigate(COMMON_ROUTES.LOGIN);
+    } catch (error: any) {
+      message.error('OTP verification failed. Please try again.');
+    }
+  };
+
+  if (showOTPVerification) {
+    return (
+      <div className={RegisterCss.registerContainer}>
+        <div className={RegisterCss.header}>
+          <img src={LoanAcceleratorLogo} alt="Loan Accelerator" className={RegisterCss.logo} />
+          <h2 className={RegisterCss.brandName}>
+            <span className={RegisterCss.brandHighlight}>Loan</span> Accelerator
+          </h2>
+        </div>
+
+        <Title level={3} className={RegisterCss.title}>
+          Verify Your Account
+        </Title>
+
+        <div className={RegisterCss.form}>
+          <div className={RegisterCss.inputGroup}>
+            <label className={RegisterCss.label}>Enter OTP sent to {email}</label>
+            <Input
+              className={RegisterCss.input}
+              value={otp}
+              onChange={(e) => setOTP(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              placeholder="6-digit OTP"
+              maxLength={6}
+            />
+          </div>
+
+          <Button
+            type="primary"
+            className={RegisterCss.submitButton}
+            onClick={handleVerifyOTP}
+            loading={isLoading}
+          >
+            VERIFY ACCOUNT
+          </Button>
+
+          <Typography className={RegisterCss.existingUserText}>
+            Already verified?{" "}
+            <RouterLink to={COMMON_ROUTES.LOGIN}>
+              Login Here{" "}
+            </RouterLink>
+          </Typography>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={RegisterCss.registerContainer}>
@@ -236,7 +304,7 @@ const RegisterComponent = () => {
 
         <Typography className={RegisterCss.existingUserText}>
           Existing User?{" "}
-          <RouterLink to={ROUTES.LOGIN}>
+          <RouterLink to={COMMON_ROUTES.LOGIN}>
             Login Here{" "}
           </RouterLink>
         </Typography>

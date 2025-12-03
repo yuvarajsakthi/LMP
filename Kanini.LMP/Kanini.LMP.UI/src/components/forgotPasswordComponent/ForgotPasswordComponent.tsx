@@ -5,8 +5,8 @@ import { LeftOutlined } from '@ant-design/icons';
 import { LoanAcceleratorLogo } from '../../assets';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import ForgotPassword from "./ForgotPasswordComponent.module.css";
-import { ROUTES, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../../config';
-import { forgotPassword, resetPassword } from '../../store/slices/authSlice';
+import { COMMON_ROUTES, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../../config';
+import { sendOTP, resetPassword } from '../../store/slices/authSlice';
 import type { RootState, AppDispatch } from '../../store';
 import type { InputRef } from 'antd';
 
@@ -23,6 +23,7 @@ const ForgotPasswordComponent = () => {
     const [email, setEmail] = useState('');
     const [otp, setOTP] = useState<string[]>(Array(6).fill(''));
     const [status, setStatus] = useState('');
+    const [userId, setUserId] = useState<number | null>(null);
     const inputRefs = useRef<(InputRef | null)[]>([]);
     const handleSendOTP = async () => {
         if (emailError) {
@@ -30,7 +31,11 @@ const ForgotPasswordComponent = () => {
             return;
         }
         try {
-            await dispatch(forgotPassword(email)).unwrap();
+            const result = await dispatch(sendOTP({ 
+                email, 
+                purpose: 'PASSWORD_RESET' 
+            })).unwrap();
+            setUserId(result.userId);
             setShowOTPInput(true);
             setStatus(SUCCESS_MESSAGES.OTP_SENT);
             setOTP(Array(6).fill(''));
@@ -118,13 +123,13 @@ const ForgotPasswordComponent = () => {
 
         try {
             await dispatch(resetPassword({
-                email: email,
-                resetToken: otp.join(''),
+                userId: userId!,
+                otp: otp.join(''),
                 newPassword: password,
             })).unwrap();
             
             message.success(SUCCESS_MESSAGES.PASSWORD_UPDATED);
-            navigate(ROUTES.LOGIN);
+            navigate(COMMON_ROUTES.LOGIN);
         } catch (error: any) {
             message.error(error || ERROR_MESSAGES.PASSWORD_UPDATE_FAILED);
         }
@@ -141,7 +146,7 @@ const ForgotPasswordComponent = () => {
             </div>
 
             <div className={ForgotPassword.backButton}>
-                <RouterLink to={ROUTES.LOGIN}>
+                <RouterLink to={COMMON_ROUTES.LOGIN}>
                     <LeftOutlined /> Back to Login
                 </RouterLink>
             </div>
@@ -185,7 +190,7 @@ const ForgotPasswordComponent = () => {
                             </div>
                             <div className={ForgotPassword.buttonGroup}>
                                 <Button type="primary" onClick={handleSubmit} className={ForgotPassword.verifyButton} loading={isLoading}>Submit</Button>
-                                <RouterLink to={ROUTES.LOGIN}>
+                                <RouterLink to={COMMON_ROUTES.LOGIN}>
                                     <Button className={ForgotPassword.cancelButton}>Cancel</Button>
                                 </RouterLink>
                             </div>

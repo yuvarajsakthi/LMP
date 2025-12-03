@@ -24,7 +24,6 @@ export const loginUser = createAsyncThunk(
       const response = await authAPI.login(credentials);
       return response;
     } catch (error: any) {
-      // Error is already handled by ApiService and shown to user
       return rejectWithValue({
         message: error.message || 'Login failed',
         statusCode: error.statusCode || 500,
@@ -51,16 +50,47 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-export const forgotPassword = createAsyncThunk(
-  'auth/forgotPassword',
-  async (email: string, { rejectWithValue }) => {
+export const sendOTP = createAsyncThunk(
+  'auth/sendOTP',
+  async (data: { email: string; phoneNumber?: string; purpose: 'LOGIN' | 'REGISTRATION' | 'PASSWORD_RESET' }, { rejectWithValue }) => {
     try {
-      const response = await authAPI.forgotPassword(email);
-      return response.message || 'Password reset email sent successfully';
+      const response = await authAPI.sendOTP(data);
+      return response;
     } catch (error: any) {
-      // Error is already handled by ApiService and shown to user
       return rejectWithValue({
-        message: error.message || 'Failed to send reset email',
+        message: error.message || 'Failed to send OTP',
+        statusCode: error.statusCode || 500,
+        errors: error.errors || []
+      });
+    }
+  }
+);
+
+export const verifyOTP = createAsyncThunk(
+  'auth/verifyOTP',
+  async (data: { userId: number; otp: string }, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.verifyOTP(data);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue({
+        message: error.message || 'OTP verification failed',
+        statusCode: error.statusCode || 500,
+        errors: error.errors || []
+      });
+    }
+  }
+);
+
+export const verifyLoginOTP = createAsyncThunk(
+  'auth/verifyLoginOTP',
+  async (data: { userId: number; otp: string }, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.verifyLoginOTP(data);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue({
+        message: error.message || 'Login OTP verification failed',
         statusCode: error.statusCode || 500,
         errors: error.errors || []
       });
@@ -70,12 +100,11 @@ export const forgotPassword = createAsyncThunk(
 
 export const resetPassword = createAsyncThunk(
   'auth/resetPassword',
-  async (data: { email: string; resetToken: string; newPassword: string }, { rejectWithValue }) => {
+  async (data: { userId: number; otp: string; newPassword: string }, { rejectWithValue }) => {
     try {
       const response = await authAPI.resetPassword(data);
       return response.message || 'Password reset successfully';
     } catch (error: any) {
-      // Error is already handled by ApiService and shown to user
       return rejectWithValue({
         message: error.message || 'Failed to reset password',
         statusCode: error.statusCode || 500,
@@ -101,6 +130,10 @@ const authSlice = createSlice({
     setToken: (state, action) => {
       state.token = action.payload.token;
       state.user = action.payload.user;
+      // Store token in localStorage when setting via reducer
+      if (action.payload.token) {
+        secureStorage.setToken(action.payload.token);
+      }
     },
   },
   extraReducers: (builder) => {
@@ -111,9 +144,18 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.token = action.payload.token;
-        state.user = action.payload.user;
-        state.error = null;
+        if (action.payload.requiresVerification) {
+          // Don't set token/user for unverified accounts
+          state.error = null;
+        } else {
+          state.token = action.payload.token;
+          state.user = action.payload.user;
+          state.error = null;
+          // Store token in localStorage
+          if (action.payload.token) {
+            secureStorage.setToken(action.payload.token);
+          }
+        }
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -133,18 +175,56 @@ const authSlice = createSlice({
         const error = action.payload as any;
         state.error = error?.message || 'Registration failed';
       })
-      .addCase(forgotPassword.pending, (state) => {
+      .addCase(sendOTP.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(forgotPassword.fulfilled, (state) => {
+      .addCase(sendOTP.fulfilled, (state) => {
         state.isLoading = false;
         state.error = null;
       })
-      .addCase(forgotPassword.rejected, (state, action) => {
+      .addCase(sendOTP.rejected, (state, action) => {
         state.isLoading = false;
         const error = action.payload as any;
-        state.error = error?.message || 'Failed to send reset email';
+        state.error = error?.message || 'Failed to send OTP';
+      })
+      .addCase(verifyOTP.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(verifyOTP.fulfilled, (state, action) => {
+        state.isLoading = false;
+        if (action.payload.token && action.payload.user) {
+          state.token = action.payload.token;
+          state.user = action.payload.user;
+          // Store token in localStorage
+          secureStorage.setToken(action.payload.token);
+        }
+        state.error = null;
+      })
+      .addCase(verifyOTP.rejected, (state, action) => {
+        state.isLoading = false;
+        const error = action.payload as any;
+        state.error = error?.message || 'OTP verification failed';
+      })
+      .addCase(verifyLoginOTP.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(verifyLoginOTP.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.token = action.payload.token;
+        state.user = action.payload.user;
+        state.error = null;
+        // Store token in localStorage
+        if (action.payload.token) {
+          secureStorage.setToken(action.payload.token);
+        }
+      })
+      .addCase(verifyLoginOTP.rejected, (state, action) => {
+        state.isLoading = false;
+        const error = action.payload as any;
+        state.error = error?.message || 'Login OTP verification failed';
       })
       .addCase(resetPassword.pending, (state) => {
         state.isLoading = true;

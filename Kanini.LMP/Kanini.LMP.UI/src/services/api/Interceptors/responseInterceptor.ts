@@ -1,15 +1,9 @@
-import axios, { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
+import { AxiosError, type AxiosResponse } from "axios";
 import { enqueueSnackbar } from "notistack";
-import { API_ENDPOINTS, ROUTES } from '../../../config';
+import { COMMON_ROUTES } from '../../../config';
 import { navigationService } from '../..';
 import { secureStorage } from '../../../utils/secureStorage';
 import type { ApiResponse } from '../../../types';
-
-interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
-  _retry?: boolean;
-}
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5156";
 
 export const responseInterceptor = (response: AxiosResponse<ApiResponse>) => {
   // Handle structured API responses from backend
@@ -25,27 +19,8 @@ export const responseInterceptor = (response: AxiosResponse<ApiResponse>) => {
 };
 
 export const responseErrorHandler = async (error: AxiosError) => {
-  const originalRequest = error.config as ExtendedAxiosRequestConfig;
-
-  // Handle 401 Unauthorized - Token refresh logic
-  if (error.response?.status === 401 && !originalRequest?._retry) {
-    originalRequest._retry = true;
-
-    try {
-      const refreshToken = secureStorage.getRefreshToken();
-      if (refreshToken) {
-        const { data } = await axios.post(`${BASE_URL}${API_ENDPOINTS.REFRESH_TOKEN}`, { refreshToken });
-        const sanitizedToken = data.accessToken?.replace(/[^A-Za-z0-9._-]/g, '') || '';
-        secureStorage.setToken(sanitizedToken);
-        originalRequest.headers.Authorization = `Bearer ${sanitizedToken}`;
-        return axios(originalRequest);
-      }
-    } catch (refreshError) {
-      console.error("Token refresh failed:", refreshError);
-      handleAuthFailure();
-      return Promise.reject(error);
-    }
-    
+  // Handle 401 Unauthorized
+  if (error.response?.status === 401) {
     handleAuthFailure();
     return Promise.reject(error);
   }
@@ -59,7 +34,7 @@ function handleAuthFailure(): void {
   try {
     secureStorage.removeToken();
     enqueueSnackbar('Session expired. Please login again.', { variant: 'warning' });
-    navigationService.navigateTo(ROUTES.LOGIN, true);
+    navigationService.navigateTo(COMMON_ROUTES.LOGIN, true);
   } catch (error) {
     console.error("Failed to handle auth failure:", error);
   }

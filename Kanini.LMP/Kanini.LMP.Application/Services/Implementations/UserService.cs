@@ -72,7 +72,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                 Email = registrationDto.Email,
                 PasswordHash = PasswordService.HashPassword(registrationDto.Password),
                 Roles = UserEnums.Customer,
-                Status = UserStatus.Active,
+                Status = UserStatus.Pending,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -158,6 +158,17 @@ namespace Kanini.LMP.Application.Services.Implementations
         public async Task<User?> GetByEmailAsync(string email)
         {
             return await _userRepository.GetAsync(u => u.Email == email);
+        }
+
+        public async Task<bool> ActivateUserAsync(int userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null) return false;
+
+            user.Status = UserStatus.Active;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _userRepository.UpdateAsync(user);
+            return true;
         }
 
         private UserDTO MapToDto(User user)
