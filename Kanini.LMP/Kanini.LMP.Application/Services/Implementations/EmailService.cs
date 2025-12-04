@@ -153,5 +153,14 @@ namespace Kanini.LMP.Application.Services.Implementations
             var emailDto = new EmailDto { ToEmail = customerEmail, ToName = customerName, Subject = subject, Body = body };
             return await SendEmailAsync(emailDto);
         }
+
+        public async Task<bool> SendOTPEmailAsync(string email, string name, string otp, string purpose)
+        {
+            var subject = $"Your OTP for {purpose}";
+            var body = $"Dear {name},\n\nYour OTP is: {otp}\n\nThis OTP is valid for 5 minutes.\n\nBest regards,\nLMP Team";
+
+            var emailDto = new EmailDto { ToEmail = email, ToName = name, Subject = subject, Body = body };
+            return await SendEmailAsync(emailDto);
+        }
     }
 }

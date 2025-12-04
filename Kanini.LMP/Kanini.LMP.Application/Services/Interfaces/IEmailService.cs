@@ -14,5 +14,6 @@ namespace Kanini.LMP.Application.Services.Interfaces
         Task<bool> SendOverduePaymentEmailAsync(string customerEmail, string customerName, decimal amount, int daysPastDue);
         Task<bool> SendLoanDisbursedEmailAsync(string customerEmail, string customerName, decimal amount, int loanAccountId, DateTime disbursementDate);
         Task<bool> SendLoanFullyPaidEmailAsync(string customerEmail, string customerName, int loanAccountId, decimal totalAmountPaid);
+        Task<bool> SendOTPEmailAsync(string email, string name, string otp, string purpose);
     }
 }

@@ -16,7 +16,6 @@ namespace Kanini.LMP.Application.Services.Implementations
 
         public async Task<byte[]> GenerateLoanApplicationPdfAsync(int applicationId)
         {
-            // Get application details
             var application = await _context.LoanApplicationBases
                 .Include(app => app.LoanDetails)
                 .FirstOrDefaultAsync(app => app.LoanApplicationBaseId == applicationId);
