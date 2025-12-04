@@ -19,7 +19,7 @@ namespace Kanini.LMP.Application.Extensions
 
             // Service registrations
             services.AddScoped<ITokenService, TokenService>();
-            services.AddScoped<IUser, UserService>();
+
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IEligibilityService, EligibilityService>();
             services.AddScoped<ILoanApplicationService, LoanApplicationService>();
@@ -39,6 +39,7 @@ namespace Kanini.LMP.Application.Extensions
             services.AddScoped<IWhatsAppService, MockWhatsAppService>();
 
             services.AddScoped<IOTPService, OTPService>();
+            services.AddScoped<IUserService, UserService>();
             services.AddHostedService<EMINotificationBackgroundService>();
 
             return services;
