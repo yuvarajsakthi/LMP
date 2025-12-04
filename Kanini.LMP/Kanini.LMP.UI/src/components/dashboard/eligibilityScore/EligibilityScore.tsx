@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styles from './EligibilityScore.module.css';
 import { Card } from "antd";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useAuth } from "../../../context";
+import { customerDashboardAPI } from "../../../services/api/customerDashboardAPI";
 
 interface EligibilityScoreProps {
   score?: number;
@@ -10,7 +11,22 @@ interface EligibilityScoreProps {
 
 const EligibilityScore: React.FC<EligibilityScoreProps> = ({ score }) => {
   const { token } = useAuth();
-  const eScore = score || token?.EligibilityScore || 750;
+  const [eligibilityData, setEligibilityData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchEligibility = async () => {
+      try {
+        const data = await customerDashboardAPI.getEligibilityScore();
+        setEligibilityData(data);
+      } catch (error: any) {
+        // Use default score if API fails
+        setEligibilityData({ eligibilityScore: 750 });
+      }
+    };
+    fetchEligibility();
+  }, []);
+
+  const eScore = score || eligibilityData?.eligibilityScore || token?.EligibilityScore || 750;
   const eligibilityPercentage = eScore / 1000;
 
   const gaugeData = [

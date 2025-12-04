@@ -19,10 +19,15 @@ export const responseInterceptor = (response: AxiosResponse<ApiResponse>) => {
 };
 
 export const responseErrorHandler = async (error: AxiosError) => {
-  // Handle 401 Unauthorized
+  // Handle 401 Unauthorized (but not for login/register endpoints)
   if (error.response?.status === 401) {
-    handleAuthFailure();
-    return Promise.reject(error);
+    const url = error.config?.url || '';
+    const isAuthEndpoint = url.includes('/login') || url.includes('/register') || url.includes('/otp');
+    
+    if (!isAuthEndpoint) {
+      handleAuthFailure();
+      return Promise.reject(error);
+    }
   }
 
   // Handle structured error responses
@@ -41,6 +46,9 @@ function handleAuthFailure(): void {
 }
 
 function handleApiError(error: AxiosError): void {
+  const url = error.config?.url || '';
+  const isAuthEndpoint = url.includes('/login') || url.includes('/register') || url.includes('/otp') || url.includes('/reset-password');
+  
   let errorMessage = "An unexpected error occurred";
   let errors: string[] = [];
   
@@ -49,7 +57,7 @@ function handleApiError(error: AxiosError): void {
     
     if (responseData) {
       errorMessage = responseData.message || errorMessage;
-      errors = responseData.errors || [];
+      errors = Array.isArray(responseData.errors) ? responseData.errors : [];
     } else {
       errorMessage = error.message || errorMessage;
     }
@@ -58,15 +66,18 @@ function handleApiError(error: AxiosError): void {
     errorMessage = error.message || errorMessage;
   }
   
-  // Show main error message
-  enqueueSnackbar(errorMessage, { variant: 'error' });
-  
-  // Show additional error details
-  errors.forEach(err => {
-    if (err !== errorMessage) {
-      enqueueSnackbar(err, { variant: 'error' });
+  // Don't show notifications for auth endpoints (handled by components)
+  if (!isAuthEndpoint) {
+    enqueueSnackbar(errorMessage, { variant: 'error' });
+    
+    if (Array.isArray(errors)) {
+      errors.forEach(err => {
+        if (err !== errorMessage) {
+          enqueueSnackbar(err, { variant: 'error' });
+        }
+      });
     }
-  });
+  }
   
   console.error("API Error:", {
     message: errorMessage,

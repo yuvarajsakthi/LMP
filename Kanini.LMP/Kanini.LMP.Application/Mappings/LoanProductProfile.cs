@@ -1,9 +1,6 @@
 ﻿using AutoMapper;
 using Kanini.LMP.Database.Entities.LoanProductEntities;
 using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
-using Kanini.LMP.Database.Entities.LoanProductEntities.HomeLoanEntities;
-using Kanini.LMP.Database.Entities.LoanProductEntities.PersonalLoanEntities;
-using Kanini.LMP.Database.Entities.LoanProductEntities.VehicleLoanEntities;
 using Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto;
 using Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.CommonLoanProductEntiesDto;
 using Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.CommonLoanProductEntiesDto.AddressInformation;
@@ -47,29 +44,11 @@ namespace Kanini.LMP.Application.Mappings
             CreateMap<AddressInformationUpdateDTO, AddressInformation>();
             CreateMap<AddressInformation, AddressInformationResponseDTO>();
 
-            CreateMap<EmploymentDetailsDTO, EmploymentDetails>().ReverseMap();
-            CreateMap<FinancialInformationDTO, FinancialInformation>().ReverseMap();
-            #endregion
-
-            #region 11. Home-loan specific nested DTOs
-            CreateMap<BuilderInformationDTO, BuilderInformation>().ReverseMap();
-            CreateMap<HomeLoanDetailsDTO, HomeLoanDetails>().ReverseMap();
-            CreateMap<PropertyDetailsDTO, PropertyDetails>().ReverseMap();
-            #endregion
-
-            #region 12. Vehicle-loan specific nested DTOs
-            CreateMap<DealerInformationDTO, DealerInformation>().ReverseMap();
-            CreateMap<VehicleInformationDTO, VehicleInformation>().ReverseMap();
-            CreateMap<VehicleLoanDetailsDTO, VehicleLoanDetails>().ReverseMap();
             #endregion
 
             #region 13. Loan Product master
             CreateMap<LoanProductDTO, LoanProduct>().ReverseMap();
-            CreateMap<LoanProductDto, LoanProduct>()
-                .ForMember(d => d.LoanProductName, o => o.MapFrom(s => s.LoanProductName))
-                .ForMember(d => d.LoanProductDescription, o => o.MapFrom(s => s.LoanProductDescription))
-                .ForMember(d => d.IsActive, o => o.MapFrom(s => s.IsActive))
-                .ReverseMap();
+            CreateMap<LoanProductDto, LoanProduct>().ReverseMap();
             #endregion
         }
     }

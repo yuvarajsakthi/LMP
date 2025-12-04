@@ -1,10 +1,10 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Kanini.LMP.Application.Constants;
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Data.Repositories.Interfaces;
 using Kanini.LMP.Data.UnitOfWork;
 using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
-using Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable;
+using Kanini.LMP.Database.Entities.LoanApplicationEntites;
 using Kanini.LMP.Database.EntitiesDtos.DocumentDtos;
 using Kanini.LMP.Database.Enums;
 using Microsoft.Extensions.Logging;
@@ -15,14 +15,14 @@ namespace Kanini.LMP.Application.Services.Implementations
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IDocumentRepository _documentRepository;
-        private readonly IApplicationDocumentLinkRepository _documentLinkRepository;
+        private readonly ILMPRepository<ApplicationDocumentLink, int> _documentLinkRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<DocumentService> _logger;
 
         public DocumentService(
             IUnitOfWork unitOfWork,
             IDocumentRepository documentRepository,
-            IApplicationDocumentLinkRepository documentLinkRepository,
+            ILMPRepository<ApplicationDocumentLink, int> documentLinkRepository,
             IMapper mapper,
             ILogger<DocumentService> logger)
         {
@@ -130,7 +130,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             {
                 _logger.LogInformation("Retrieving documents by application");
 
-                var documentLinks = await _documentLinkRepository.GetLinksByApplicationAsync(loanApplicationBaseId);
+                var documentLinks = await _documentLinkRepository.GetAllAsync(dl => dl.LoanApplicationBaseId == loanApplicationBaseId);
                 var result = new List<DocumentUploadDto>();
 
                 foreach (var link in documentLinks)
@@ -161,8 +161,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                 {
                     try
                     {
-                        var documentLink = await _documentLinkRepository.GetLinkByApplicationAndDocumentAsync(
-                            request.LoanApplicationBaseId, request.DocumentId);
+                        var documentLink = await _documentLinkRepository.GetByIdAsync(request.DocumentId);
 
                         if (documentLink == null)
                         {
@@ -240,7 +239,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             {
                 _logger.LogInformation(ApplicationConstants.Messages.RetrievingPendingDocuments);
 
-                var pendingLinks = await _documentLinkRepository.GetPendingLinksAsync();
+                var pendingLinks = await _documentLinkRepository.GetAllAsync(dl => dl.Status == DocumentStatus.Pending);
                 var result = new List<DocumentUploadDto>();
 
                 foreach (var link in pendingLinks)
@@ -273,3 +272,4 @@ namespace Kanini.LMP.Application.Services.Implementations
         }
     }
 }
+

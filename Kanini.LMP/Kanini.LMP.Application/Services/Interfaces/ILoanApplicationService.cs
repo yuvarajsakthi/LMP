@@ -30,5 +30,9 @@ namespace Kanini.LMP.Application.Services.Interfaces
         // Junction table methods
         Task<IReadOnlyList<int>> GetApplicantsByLoanAsync(int loanApplicationBaseId);
         Task<IReadOnlyList<int>> GetDocumentsByLoanAsync(int loanApplicationBaseId);
+
+        // Customer Dashboard methods
+        Task<IEnumerable<dynamic>> GetRecentApplicationsAsync(int customerId, int count);
+        Task<IEnumerable<dynamic>> GetCustomerApplicationsAsync(int customerId);
     }
 }

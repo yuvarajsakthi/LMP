@@ -7,5 +7,6 @@ namespace Kanini.LMP.Database.EntitiesDtos
         public int LoanProductId { get; set; }
         public LoanType LoanType { get; set; }
         public bool IsActive { get; set; }
+        public decimal InterestRate { get; set; }
     }
 }

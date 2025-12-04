@@ -32,6 +32,17 @@ namespace Kanini.LMP.Application.Services.Implementations
             return otp;
         }
 
+        public async Task<string> GenerateOTPAsync(string email, string purpose)
+        {
+            var otp = new Random().Next(100000, 999999).ToString();
+            var cacheKey = $"OTP_{email}_{purpose}";
+            
+            _cache.Set(cacheKey, otp, TimeSpan.FromMinutes(5));
+            
+            _logger.LogInformation($"OTP generated for email {email}, purpose: {purpose}");
+            return otp;
+        }
+
         public async Task<bool> VerifyOTPAsync(int userId, string otp, string purpose)
         {
             var cacheKey = $"OTP_{userId}_{purpose}";
@@ -47,17 +58,40 @@ namespace Kanini.LMP.Application.Services.Implementations
             return false;
         }
 
+        public async Task<bool> VerifyOTPAsync(string email, string otp, string purpose)
+        {
+            var cacheKey = $"OTP_{email}_{purpose}";
+            
+            if (_cache.TryGetValue(cacheKey, out string? cachedOtp) && cachedOtp == otp)
+            {
+                _cache.Remove(cacheKey);
+                _logger.LogInformation($"OTP verified successfully for email {email}, purpose: {purpose}");
+                return true;
+            }
+            
+            _logger.LogWarning($"OTP verification failed for email {email}, purpose: {purpose}");
+            return false;
+        }
+
         public async Task<bool> SendOTPAsync(int userId, string phoneNumber, string email, string purpose)
         {
             try
             {
-                var otp = await GenerateOTPAsync(userId, purpose);
+                string otp;
+                if (userId == 0 && !string.IsNullOrEmpty(email))
+                {
+                    otp = await GenerateOTPAsync(email, purpose);
+                }
+                else
+                {
+                    otp = await GenerateOTPAsync(userId, purpose);
+                }
                 
                 var message = purpose switch
                 {
-                    "REGISTRATION" => $"Your registration OTP: {otp}. Valid for 5 minutes.",
+                    "REGISTER" => $"Your registration OTP: {otp}. Valid for 5 minutes.",
                     "LOGIN" => $"Your login OTP: {otp}. Valid for 5 minutes.",
-                    "PASSWORD_RESET" => $"Your password reset OTP: {otp}. Valid for 5 minutes.",
+                    "FORGETPASSWORD" => $"Your password reset OTP: {otp}. Valid for 5 minutes.",
                     _ => $"Your OTP: {otp}. Valid for 5 minutes."
                 };
 

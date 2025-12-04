@@ -3,6 +3,7 @@ using Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.CommonLoanProductEn
 using Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.CommonLoanProductEntiesDto.PersonalDetails;
 using Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.PersonalLoanEntitiesDto;
 using Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.VehicleLoanEntitiesDto;
+using Kanini.LMP.Database.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -16,7 +17,7 @@ namespace Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.VehicleLoan
     {
         // Basic Application Info
         [Required(ErrorMessage = "Loan product type is required.")]
-        public string LoanProductType { get; set; } = null!;
+        public LoanType LoanProductType { get; set; } = LoanType.Vehicle;
 
         // Loan Details
         [Required(ErrorMessage = "Loan details are required.")]

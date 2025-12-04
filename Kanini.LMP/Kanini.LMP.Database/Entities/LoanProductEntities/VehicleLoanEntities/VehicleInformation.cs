@@ -1,5 +1,4 @@
-﻿using Kanini.LMP.Database.Entities.CustomerEntities;
-using Kanini.LMP.Database.Enums;
+using Kanini.LMP.Database.Entities.CustomerEntities;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -9,36 +8,30 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.VehicleLoanEntities
     {
         [Key]
         public int VehicleInformationId { get; set; }
-
+        [Required]
         [ForeignKey(nameof(LoanApplicationBase))]
         public int LoanApplicationBaseId { get; set; }
-
-        // FK → Linked User
         [Required]
-        [ForeignKey(nameof(User))]
         public int UserId { get; set; }
-        // Vehicle characteristics
         [Required]
-
-        public VehicleType VehicleType { get; set; }  // Car, Bike, SUV, etc.
+        [MaxLength(100)]
+        public string VehicleType { get; set; } = null!;
         [Required]
         [MaxLength(100)]
         public string Manufacturer { get; set; } = null!;
         [Required]
         [MaxLength(100)]
         public string Model { get; set; } = null!;
-        [Required]
         [MaxLength(100)]
-        public string Variant { get; set; } = null!;
+        public string? Variant { get; set; }
         [Required]
-        [Range(1900, 2100, ErrorMessage = "Enter a valid manufacturing year")]
         public int ManufacturingYear { get; set; }
         [Required]
-        public LoanPurposeVehicle VehicleCondition { get; set; } // New or Used
+        [MaxLength(50)]
+        public string VehicleCondition { get; set; } = null!;
         [Required]
         [Column(TypeName = "decimal(18,2)")]
-        [Range(0, double.MaxValue, ErrorMessage = "Ex-showroom price must be greater than zero")]
         public decimal ExShowroomPrice { get; set; }
+        public LoanApplicationBase? LoanApplicationBase { get; set; }
     }
-
 }

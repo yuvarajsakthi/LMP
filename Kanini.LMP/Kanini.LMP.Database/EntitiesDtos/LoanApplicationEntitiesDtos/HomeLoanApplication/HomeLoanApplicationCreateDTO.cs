@@ -3,6 +3,7 @@ using Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.CommonLoanProductEn
 using Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.CommonLoanProductEntiesDto.PersonalDetails;
 using Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.HomeLoanEntitiesDto;
 using Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.PersonalLoanEntitiesDto;
+using Kanini.LMP.Database.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -15,8 +16,7 @@ namespace Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.HomeLoanApp
     public class HomeLoanApplicationCreateDTO
     {
         [Required]
-        [MaxLength(100)]
-        public string LoanProductType { get; set; } = "HomeLoan";
+        public LoanType LoanProductType { get; set; } = LoanType.Home;
 
         [Required]
         public DateOnly SubmissionDate { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);

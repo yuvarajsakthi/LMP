@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Kanini.LMP.Database.Entities;
 using Kanini.LMP.Database.Entities.CustomerEntities;
-using Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable;
 using Kanini.LMP.Database.Entities.LoanApplicationEntites;
 using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
 using Kanini.LMP.Database.Entities.ManagerEntities;
@@ -62,7 +61,6 @@ namespace Kanini.LMP.Application.Mappings
             CreateMap<LoanAccount, LoanAccountDto>().ReverseMap();
 
             // Document mappings
-            CreateMap<ApplicationDocumentLink, DocumentDto>().ReverseMap();
             CreateMap<DocumentUpload, DocumentUploadDto>()
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.VerificationNotes, opt => opt.Ignore())

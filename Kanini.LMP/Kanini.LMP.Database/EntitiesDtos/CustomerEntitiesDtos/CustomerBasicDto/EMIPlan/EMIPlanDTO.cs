@@ -11,10 +11,8 @@ namespace Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto.CustomerBasicDto.E
     public class EMIPlanDTO
     {
         public int EMIId { get; set; }
-
-        public int LoanAppicationBaseId { get; set; }
-
-        public int LoanAccountId { get; set; }
+        public int LoanApplicationBaseId { get; set; }
+        public int CustomerId { get; set; }
 
         [Display(Name = "Principal Amount (₹)")]
         public decimal PrincipleAmount { get; set; }
@@ -29,7 +27,7 @@ namespace Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto.CustomerBasicDto.E
         public decimal MonthlyEMI { get; set; }
 
         [Display(Name = "Total Interest Paid (₹)")]
-        public decimal TotalInerestPaid { get; set; }
+        public decimal TotalInterestPaid { get; set; }
 
         [Display(Name = "Total Repayment (₹)")]
         public decimal TotalRepaymentAmount { get; set; }

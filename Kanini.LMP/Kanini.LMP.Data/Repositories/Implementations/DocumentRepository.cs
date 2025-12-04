@@ -1,8 +1,6 @@
 ﻿using Kanini.LMP.Data.Data;
 using Kanini.LMP.Data.Repositories.Interfaces;
 using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
-using Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable;
-using Kanini.LMP.Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kanini.LMP.Data.Repositories.Implementations
@@ -33,32 +31,6 @@ namespace Kanini.LMP.Data.Repositories.Implementations
         {
             return await _dbSet.AsNoTracking()
                 .AnyAsync(d => d.DocumentId == documentId && d.UserId == userId);
-        }
-    }
-
-    public class ApplicationDocumentLinkRepository : LMPRepositoy<ApplicationDocumentLink, int>, IApplicationDocumentLinkRepository
-    {
-        public ApplicationDocumentLinkRepository(LmpDbContext context) : base(context) { }
-
-        public async Task<IReadOnlyList<ApplicationDocumentLink>> GetLinksByApplicationAsync(int loanApplicationBaseId)
-        {
-            return await _dbSet.AsNoTracking()
-                .Where(l => l.LoanApplicationBaseId == loanApplicationBaseId)
-                .ToListAsync();
-        }
-
-        public async Task<ApplicationDocumentLink?> GetLinkByApplicationAndDocumentAsync(int loanApplicationBaseId, int documentId)
-        {
-            return await _dbSet.FirstOrDefaultAsync(l =>
-                l.LoanApplicationBaseId == loanApplicationBaseId &&
-                l.DocumentId == documentId);
-        }
-
-        public async Task<IReadOnlyList<ApplicationDocumentLink>> GetPendingLinksAsync()
-        {
-            return await _dbSet.AsNoTracking()
-                .Where(l => l.Status == DocumentStatus.Pending)
-                .ToListAsync();
         }
     }
 }

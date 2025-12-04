@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './ApplicationProfile.module.css';
 import { Card } from 'antd';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { customerDashboardAPI } from '../../../services/api/customerDashboardAPI';
 
 interface LoanData {
   name: string;
@@ -15,12 +16,31 @@ interface ApplicationProfileProps {
   loans?: LoanData[];
 }
 
-const ApplicationProfile: React.FC<ApplicationProfileProps> = ({ 
-  loans = [
+const ApplicationProfile: React.FC<ApplicationProfileProps> = ({ loans: providedLoans }) => {
+  const [loans, setLoans] = useState<LoanData[]>(providedLoans || [
     { name: 'Car loan', amount: 25540, percentage: 25, remainingYears: 4, color: '#FBB851' },
     { name: 'Personal loan', amount: 9540, percentage: 60, remainingYears: 2, color: '#F37E20' }
-  ]
-}) => {
+  ]);
+
+  useEffect(() => {
+    if (providedLoans) return;
+    const fetchRecentLoans = async () => {
+      try {
+        const recentLoans = await customerDashboardAPI.getRecentAppliedLoans();
+        const formattedLoans = recentLoans.map((loan: any, index: number) => ({
+          name: loan.loanName || 'Loan',
+          amount: loan.amountToBePaid || 0,
+          percentage: 60,
+          remainingYears: loan.yearsRemaining || 0,
+          color: index === 0 ? '#FBB851' : '#F37E20'
+        }));
+        if (formattedLoans.length > 0) setLoans(formattedLoans);
+      } catch (error) {
+        console.error('Failed to fetch recent loans:', error);
+      }
+    };
+    fetchRecentLoans();
+  }, [providedLoans]);
 
   return (
     <div className={styles.box5}>

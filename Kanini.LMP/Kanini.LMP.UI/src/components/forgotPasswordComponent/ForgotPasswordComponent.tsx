@@ -6,7 +6,7 @@ import { LoanAcceleratorLogo } from '../../assets';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import ForgotPassword from "./ForgotPasswordComponent.module.css";
 import { COMMON_ROUTES, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../../config';
-import { sendOTP, resetPassword } from '../../store/slices/authSlice';
+import { resetPassword } from '../../store/slices/authSlice';
 import type { RootState, AppDispatch } from '../../store';
 import type { InputRef } from 'antd';
 
@@ -23,7 +23,6 @@ const ForgotPasswordComponent = () => {
     const [email, setEmail] = useState('');
     const [otp, setOTP] = useState<string[]>(Array(6).fill(''));
     const [status, setStatus] = useState('');
-    const [userId, setUserId] = useState<number | null>(null);
     const inputRefs = useRef<(InputRef | null)[]>([]);
     const handleSendOTP = async () => {
         if (emailError) {
@@ -31,11 +30,8 @@ const ForgotPasswordComponent = () => {
             return;
         }
         try {
-            const result = await dispatch(sendOTP({ 
-                email, 
-                purpose: 'PASSWORD_RESET' 
-            })).unwrap();
-            setUserId(result.userId);
+            const { authAPI } = await import('../../services');
+            await authAPI.sendForgetPasswordOTP({ email });
             setShowOTPInput(true);
             setStatus(SUCCESS_MESSAGES.OTP_SENT);
             setOTP(Array(6).fill(''));
@@ -123,7 +119,7 @@ const ForgotPasswordComponent = () => {
 
         try {
             await dispatch(resetPassword({
-                userId: userId!,
+                email,
                 otp: otp.join(''),
                 newPassword: password,
             })).unwrap();

@@ -16,17 +16,12 @@ namespace Kanini.LMP.Database.Entities.ManagerEntities
         [Key]
         public int WorkflowId { get; set; }
 
-        // LINK CHANGE: Reference the base class ID, not a specific product ID.
-        // This ensures this workflow tracker works for HomeLoanApplication, PersonalLoanApplication, etc.
         [ForeignKey(nameof(LoanApplicationBase))]
         public int LoanApplicationBaseId { get; set; } // Renamed from LoanApplicationId
 
         [Required]
         public ManagerEnum StepName { get; set; } // Assuming ManagerEnum is defined elsewhere
 
-        /// <summary>
-        /// Status of the step: Completed, OnHold, Failed, InProgress.
-        /// </summary>
         [Required]
         public StepStatus StepStatus { get; set; } = StepStatus.InProgress; // Assuming StepStatus enum is defined elsewhere
 

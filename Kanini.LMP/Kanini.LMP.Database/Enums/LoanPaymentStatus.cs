@@ -2,12 +2,6 @@
 {
     public enum LoanPaymentStatus
     {
-        /// <summary>
-        /// Enum defining the payment status for an active loan account.
-        /// This status is updated by the servicing system, not by a manager's approval action.
-        /// </summary>
-
-
         Active = 0,             // Loan is current and on schedule
         InGracePeriod = 1,      // Payment missed, but within a grace period (not yet officially late)
         Late30Days = 2,         // 1-30 days past due

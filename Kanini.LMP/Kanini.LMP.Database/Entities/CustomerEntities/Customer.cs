@@ -1,5 +1,4 @@
-﻿using Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable;
-using Kanini.LMP.Database.Enums;
+﻿using Kanini.LMP.Database.Enums;
 using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -15,8 +14,7 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         [Required]
         [ForeignKey(nameof(User))]
         public int UserId { get; set; }
-        // ADDED: Navigation property to the M:M Join Entity
-        public ICollection<LoanApplicant> Applications { get; set; } = new List<LoanApplicant>();
+
         [Required]
         public DateOnly DateOfBirth { get; set; }
         [Required]
@@ -37,49 +35,19 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         [Required]
         [Range(0, 900)]
         [Column(TypeName = "decimal(5,2)")]
-        public decimal CreditScore { get; set; } = 0; // Will be updated with real CIBIL data
+        public decimal CreditScore { get; set; } = 0;
 
         [Required]
         public byte[] ProfileImage { get; set; } = null!;
         public DateTime? UpdatedAt { get; set; }
 
         public HomeOwnershipStatus? HomeOwnershipStatus { get; set; }
+        public string AadhaarNumber { get; set; } = null!;
+        public string PANNumber { get; set; } = null!;
 
-        // Computed field — not stored in DB
         [NotMapped]
         public int Age => DateTime.Today.Year - DateOfBirth.Year -
                          (DateTime.Today < DateOfBirth.ToDateTime(TimeOnly.MinValue).AddYears(DateTime.Today.Year - DateOfBirth.Year) ? 1 : 0);
-
-        // [MaxLength(250)]
-        // [DisplayName("Address")]
-        // public string? Address { get; set; }
-
-        // [MaxLength(100)]
-        // [DisplayName("City")]
-        // public string? City { get; set; }
-
-        // [MaxLength(100)]
-        // [DisplayName("State")]
-        // public string? State { get; set; }
-
-        // [MaxLength(10)]
-        // [DisplayName("Postal Code")]
-        // public string? PostalCode { get; set; }
-
-        // public string AadhaarNumber { get; set; } = null!;
-
-        // public string PANNumber { get; set; } = null!;
-
-
-
-        // public byte[] PANCardImage { get; set; } = null!;
-
-        // public byte[] AadhaarFrontImage { get; set; } = null!;
-
-        // public byte[] AadhaarBackImage { get; set; } = null!;
-
-        // public byte[] IncomeProofDocument {  get; set; } = null!;
-
-
+        public ICollection<LoanApplicationBase> LoanApplications { get; set; } = new List<LoanApplicationBase>();
     }
 }

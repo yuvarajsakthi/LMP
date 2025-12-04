@@ -1,6 +1,6 @@
-﻿using Kanini.LMP.Database.EntitiesDto.PaymentTransaction;
+using Kanini.LMP.Database.EntitiesDto.PaymentTransaction;
 using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto.CustomerBasicDto.EMIPlan;
-using EntityPaymentStatus = Kanini.LMP.Database.Entities.PaymentStatus;
+using EntityPaymentStatus = Kanini.LMP.Database.Enums.PaymentStatus;
 
 namespace Kanini.LMP.Application.Services.Interfaces
 {

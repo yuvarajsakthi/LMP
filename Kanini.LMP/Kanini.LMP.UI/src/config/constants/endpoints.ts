@@ -18,6 +18,8 @@ export const API_ENDPOINTS = {
   GET_CUSTOMERS: validateEndpoint('/api/Customer'),
   GET_CUSTOMER_BY_ID: validateEndpoint('/api/Customer'),
   UPDATE_CUSTOMER: validateEndpoint('/api/Customer'),
+  GET_CUSTOMER_SETTINGS: validateEndpoint('/api/Customer/settings'),
+  UPDATE_CUSTOMER_SETTINGS: validateEndpoint('/api/Customer/settings'),
   
   // Eligibility Controller endpoints
   CHECK_ELIGIBILITY: validateEndpoint('/api/Eligibility/check'),

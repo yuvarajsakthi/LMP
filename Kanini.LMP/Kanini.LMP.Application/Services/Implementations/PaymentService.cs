@@ -1,11 +1,12 @@
-﻿using Kanini.LMP.Application.Services.Interfaces;
+using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Data.Repositories.Interfaces;
 using Kanini.LMP.Database.Entities;
 using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.EntitiesDto.PaymentTransaction;
 using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto.CustomerBasicDto.EMIPlan;
-using EntityPaymentStatus = Kanini.LMP.Database.Entities.PaymentStatus;
-using EntityPaymentMethod = Kanini.LMP.Database.Entities.PaymentMethod;
+using Kanini.LMP.Database.Enums;
+using EntityPaymentStatus = Kanini.LMP.Database.Enums.PaymentStatus;
+using EntityPaymentMethod = Kanini.LMP.Database.Enums.PaymentMethod;
 using DtoPaymentStatus = Kanini.LMP.Database.EntitiesDto.PaymentTransaction.PaymentStatus;
 using DtoPaymentMethod = Kanini.LMP.Database.EntitiesDto.PaymentTransaction.PaymentMethod;
 
@@ -63,7 +64,7 @@ namespace Kanini.LMP.Application.Services.Implementations
 
         public async Task<IReadOnlyList<EMIPlanDTO>> GetEMIPlansByLoanAccountAsync(int loanAccountId)
         {
-            var emiPlans = await _emiRepository.GetAllAsync(e => e.LoanAccountId == loanAccountId);
+            var emiPlans = await _emiRepository.GetAllAsync(e => e.LoanApplicationBaseId == loanAccountId);
             return emiPlans.Select(MapEMIToDto).ToList();
         }
 
@@ -91,7 +92,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             {
                 EMIId = emi.EMIId,
                 LoanAppicationBaseId = emi.LoanApplicationBaseId,
-                LoanAccountId = emi.LoanAccountId,
+                LoanAccountId = emi.LoanApplicationBaseId,
                 PrincipleAmount = emi.PrincipleAmount,
                 TermMonths = emi.TermMonths,
                 RateOfInterest = emi.RateOfInterest,
