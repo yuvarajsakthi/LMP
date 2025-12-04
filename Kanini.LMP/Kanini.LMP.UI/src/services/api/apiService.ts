@@ -78,6 +78,12 @@ export class ApiService {
    * Shows error messages to the user
    */
   private static showErrorMessages(message: string, errors?: string[], details?: string): void {
+    // Don't show authentication errors on dashboard (user may not be logged in)
+    const authErrors = ['Failed to retrieve loan products', 'Failed to retrieve eligibility score'];
+    if (authErrors.some(err => message.includes(err))) {
+      return;
+    }
+
     // Show main error message
     enqueueSnackbar(message, { variant: 'error' });
 

@@ -1,26 +1,60 @@
 ﻿using Kanini.LMP.Database.Entities.CustomerEntities;
-using Kanini.LMP.Database.Entities.LoanProductEntities;
-using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
-using Kanini.LMP.Database.Entities.LoanProductEntities.HomeLoanEntities;
 using Kanini.LMP.Database.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Kanini.LMP.Database.Entities.LoanApplicationEntites
 {
-    public class HomeLoanApplication: LoanApplicationBase
+    public class HomeLoanApplication : LoanApplicationBase
     {
-         
-        
-            // Product-specific details for Home Loans:
-            [Required]
-            public BuilderInformation BuilderInformation { get; set; } = null!;
-            [Required]
-            public HomeLoanDetails HomeLoanDetails { get; set; } = null!;
-            [Required]
-            public PropertyDetails PropertyDetails { get; set; } = null!;
-
-            // NOTE: DocumentUpload in the original HomeLoan model is now handled by the DocumentLinks collection in the Base class.
-        }
+        [Required]
+        public PropertyType PropertyType { get; set; }
+        [Required]
+        [MaxLength(250)]
+        public string PropertyAddress { get; set; } = null!;
+        [Required]
+        [MaxLength(100)]
+        public string City { get; set; } = null!;
+        [Required]
+        [MaxLength(100)]
+        public string State { get; set; } = null!;
+        [Required]
+        public int ZipCode { get; set; }
+        [Required]
+        public OwnershipType OwnershipType { get; set; }
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal PropertyCost { get; set; }
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal DownPayment { get; set; }
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal RequestedLoanAmount { get; set; }
+        [Required]
+        [Range(1, 360)]
+        public int TenureMonths { get; set; }
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal? InterestRate { get; set; }
+        [Required]
+        public LoanPurposeHome LoanPurpose { get; set; }
+        [Required]
+        [MaxLength(100)]
+        public string BuilderName { get; set; } = null!;
+        [Required]
+        [MaxLength(100)]
+        public string ProjectName { get; set; } = null!;
+        [Required]
+        [MaxLength(50)]
+        public string BuilderRegistrationNo { get; set; } = null!;
+        [Required]
+        [Phone]
+        [MaxLength(15)]
+        public string BuilderContactNumber { get; set; } = null!;
+        [Required]
+        [EmailAddress]
+        [MaxLength(100)]
+        public string BuilderEmail { get; set; } = null!;
     }
+}
 

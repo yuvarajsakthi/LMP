@@ -60,7 +60,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                             ApplicationId = app.LoanApplicationBaseId,
                             CustomerId = customer?.CustomerId ?? 0,
                             CustomerFullName = user?.FullName ?? ApplicationConstants.Messages.Unknown,
-                            LoanProductType = app.LoanProductType,
+                            LoanProductType = app.LoanProductType.ToString(),
                             ApplicationNumber = $"LMP{app.LoanApplicationBaseId:D6}",
                             RequestedLoanAmount = 0, // Should come from LoanDetails repository
                             SubmissionDate = app.SubmissionDate.ToDateTime(TimeOnly.MinValue),
@@ -100,7 +100,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                 {
                     LoanApplicationId = applicationId,
                     ApplicationNumber = $"LMP{applicationId:D6}",
-                    LoanProductType = application?.LoanProductType ?? "PersonalLoan",
+                    LoanProductType = application?.LoanProductType.ToString() ?? "Personal",
                     CurrentStatus = application?.Status ?? ApplicationStatus.Pending,
                     CustomerFullName = user?.FullName ?? ApplicationConstants.Messages.Unknown,
                     CustomerId = customer?.CustomerId.ToString() ?? "0",

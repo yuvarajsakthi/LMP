@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import styles from './EmiCalculator.module.css';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { Card, Select, Input } from 'antd';
-import { emiAPI } from '../../../services';
 
 interface LoanTypeRates {
   [key: string]: number;
@@ -17,7 +16,6 @@ interface EmiCalculatorProps {
 const EmiCalculator: React.FC<EmiCalculatorProps> = ({
   defaultLoanAmount = 10000,
   defaultTenure = 3,
-  loanTypes
 }) => {
   const [loanAmount, setLoanAmount] = useState(defaultLoanAmount);
   const [interestRate, setInterestRate] = useState(3.5);
@@ -27,15 +25,6 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
   const [totalInterest, setTotalInterest] = useState(0);
   const [selectedLoanType, setSelectedLoanType] = useState('Personal Loan');
   const [loanProducts, setLoanProducts] = useState<any[]>([]);
-
-  const loanTypeInterestRates: LoanTypeRates = loanTypes || {
-    'Personal Loan': 10.5,
-    'Vehicle Loan': 8.5,
-    'Home Loan': 8.0,
-    'Education Loan': 7.5,
-    'Medical Loan': 12.0,
-    'Business Loan': 11.0
-  };
 
   const chartData = [
     { name: 'Interest', value: parseFloat(totalInterest.toString()) },
@@ -55,13 +44,16 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
 
   const fetchLoanProducts = async () => {
     try {
-      // For now, use static loan products since we need eligibility data
-      setLoanProducts(Object.keys(loanTypeInterestRates).map(type => ({
-        productName: type,
-        interestRate: loanTypeInterestRates[type]
-      })));
+      const { customerDashboardAPI } = await import('../../../services/api/customerDashboardAPI');
+      const products = await customerDashboardAPI.getLoanProducts();
+      setLoanProducts(products);
+      if (products.length > 0) {
+        setSelectedLoanType(products[0].loanType);
+        setInterestRate(products[0].interestRate);
+      }
     } catch (error) {
       console.error('Failed to fetch loan products:', error);
+      setLoanProducts([]);
     }
   };
 
@@ -81,7 +73,10 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
 
   const handleLoanTypeChange = (value: string) => {
     setSelectedLoanType(value);
-    setInterestRate(loanTypeInterestRates[value] || 3.5);
+    const product = loanProducts.find(p => p.loanType === value);
+    if (product) {
+      setInterestRate(product.interestRate);
+    }
   };
 
 
@@ -112,16 +107,10 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
               value={selectedLoanType}
               onChange={handleLoanTypeChange}
               className={styles.select1}
-              options={loanProducts.length > 0 
-                ? loanProducts.map(product => ({
-                    label: product.productName,
-                    value: product.productName
-                  }))
-                : Object.keys(loanTypeInterestRates).map(type => ({
-                    label: type,
-                    value: type
-                  }))
-              }
+              options={loanProducts.map(product => ({
+                label: `${product.loanType} Loan`,
+                value: product.loanType
+              }))}
             />
             
             <Input

@@ -32,6 +32,7 @@ namespace Kanini.LMP.Api.Controllers
         }
 
         [HttpGet("loanproducts")]
+        [AllowAnonymous]
         public async Task<ActionResult<ApiResponse<IReadOnlyList<LoanProductDto>>>> GetLoanProducts()
         {
             try
@@ -83,11 +84,11 @@ namespace Kanini.LMP.Api.Controllers
                 var result = new
                 {
                     CustomerId = customerId,
-                    EligibilityScore = eligibility.EligibilityScore,
-                    CreditScore = eligibility.CreditScore,
-                    Status = eligibility.EligibilityStatus.ToString(),
-                    Rating = GetCreditRating(eligibility.CreditScore),
-                    LastUpdated = eligibility.CalculatedOn
+                    EligibilityScore = eligibility?.EligibilityScore ?? 0,
+                    CreditScore = eligibility?.CreditScore ?? 0,
+                    Status = eligibility?.EligibilityStatus?.ToString() ?? "Unknown",
+                    Rating = GetCreditRating(eligibility?.CreditScore ?? 0),
+                    LastUpdated = eligibility?.CalculatedOn ?? DateTime.UtcNow
                 };
 
                 return Ok(ApiResponse<object>.SuccessResponse(result));
@@ -111,11 +112,11 @@ namespace Kanini.LMP.Api.Controllers
                 var result = new
                 {
                     CustomerId = customerId,
-                    EligibilityScore = eligibility.EligibilityScore,
-                    CreditScore = eligibility.CreditScore,
-                    Status = eligibility.EligibilityStatus.ToString(),
-                    Rating = GetCreditRating(eligibility.CreditScore),
-                    LastUpdated = eligibility.CalculatedOn
+                    EligibilityScore = eligibility?.EligibilityScore ?? 0,
+                    CreditScore = eligibility?.CreditScore ?? 0,
+                    Status = eligibility?.EligibilityStatus?.ToString() ?? "Unknown",
+                    Rating = GetCreditRating(eligibility?.CreditScore ?? 0),
+                    LastUpdated = eligibility?.CalculatedOn ?? DateTime.UtcNow
                 };
 
                 return Ok(ApiResponse<object>.SuccessResponse(result));

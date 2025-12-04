@@ -38,24 +38,25 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ data }) => {
   };
   const [applicationData, setApplicationData] = useState<ApplicationData[]>(data || []);
   const getApplicationStatus = async () => {
-    if (data) return; // Use provided data if available
+    if (data) return;
     
     try {
-      const loans = await loanAPI.getCustomerApplications();
+      const { customerDashboardAPI } = await import('../../../services/api/customerDashboardAPI');
+      const loans = await customerDashboardAPI.getApplicationStatus();
       const formattedData = loans.map((item: any) => ({
         loanType: item.loanType || 'Personal Loan',
-        applicationID: item.loanApplicationBaseId?.toString() || '-',
-        loanAmount: item.loanAmount || 0,
-        interest: item.interestRate || '-',
-        startDate: item.createdAt ? new Date(item.createdAt).toLocaleDateString("en-IN").replace(/\//g, "-") : "-",
-        endDate: item.expectedEndDate ? new Date(item.expectedEndDate).toLocaleDateString("en-IN").replace(/\//g, "-") : "-",
-        loanTenure: item.tenure || 0,
+        applicationID: item.applicationId?.toString() || '-',
+        loanAmount: item.amount || 0,
+        interest: '-',
+        startDate: item.appliedDate ? new Date(item.appliedDate).toLocaleDateString("en-IN").replace(/\//g, "-") : "-",
+        endDate: "-",
+        loanTenure: 0,
         status: item.status || 'Pending',
-        stage: item.stage || 'Application',
+        stage: 'Application',
       }));
       setApplicationData(formattedData);
     } catch (error) {
-      // Set empty data when API is unavailable
+      console.error('Failed to fetch application status:', error);
       setApplicationData([]);
     }
   };

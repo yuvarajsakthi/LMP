@@ -52,4 +52,22 @@
         Minivan
     }
 
+    public enum EmploymentType
+    {
+        Salaried,
+        SelfEmployed,
+        Business,
+        Professional
+    }
+
+    public enum LoanPurposePersonal
+    {
+        Medical,
+        Education,
+        Travel,
+        Wedding,
+        DebtConsolidation,
+        HomeRenovation,
+        Other
+    }
 }

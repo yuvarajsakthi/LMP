@@ -30,6 +30,17 @@ namespace Kanini.LMP.Application.Services.Implementations
 
                 var loanProducts = await _unitOfWork.LoanProducts.GetAllAsync(lp => lp.IsActive);
                 var loanProductDtos = _mapper.Map<List<LoanProductDto>>(loanProducts);
+                
+                foreach (var dto in loanProductDtos)
+                {
+                    dto.InterestRate = dto.LoanType switch
+                    {
+                        Database.Enums.LoanType.Personal => 10.5m,
+                        Database.Enums.LoanType.Vehicle => 8.5m,
+                        Database.Enums.LoanType.Home => 7.5m,
+                        _ => 10.0m
+                    };
+                }
 
                 _logger.LogInformation("Retrieved {Count} active loan products", loanProductDtos.Count);
                 return loanProductDtos;

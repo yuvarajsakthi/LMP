@@ -1,6 +1,5 @@
 import axiosInstance from './axiosInstance';
 import { jwtDecode } from 'jwt-decode';
-import { API_ENDPOINTS } from '../../config';
 import { secureStorage } from '../../utils/secureStorage';
 import { ApiService } from './apiService';
 import type { LoginCredentials, RegisterCredentials, DecodedToken, ApiResponse } from '../../types';
@@ -13,13 +12,6 @@ interface LoginResponseData {
   requiresVerification?: boolean;
   message?: string;
   userId?: number;
-}
-
-interface RegisterResponseData {
-  message: string;
-  userId: number;
-  email: string;
-  fullName: string;
 }
 
 const processTokenResponse = (responseData: LoginResponseData): { token: string; user: DecodedToken } => {
@@ -58,117 +50,160 @@ const processTokenResponse = (responseData: LoginResponseData): { token: string;
 };
 
 export const authAPI = {
-  async login(credentials: LoginCredentials): Promise<{ token?: string; user?: DecodedToken; requiresVerification?: boolean; message?: string; userId?: number }> {
+  async login(credentials: LoginCredentials): Promise<{ token: string; user: DecodedToken } | { requiresVerification: boolean; email: string; message: string }> {
     if (!credentials?.username || !credentials?.password) {
       throw new Error('Authentication credentials are required');
     }
     
     return ApiService.execute(async () => {
+      const formData = new FormData();
+      formData.append('Username', credentials.username);
+      formData.append('Password', credentials.password);
+      
       const response = await axiosInstance.post<ApiResponse<LoginResponseData>>(
-        API_ENDPOINTS.USER_LOGIN, 
-        credentials
+        '/auth/login', 
+        formData
       );
       return response;
     }).then(loginData => {
       if (loginData.requiresVerification) {
         return {
           requiresVerification: true,
-          message: loginData.message,
-          userId: loginData.userId
+          email: (loginData as any).email || credentials.username,
+          message: loginData.message || 'Account not verified'
         };
       }
-      
       if (!loginData.token) {
         throw new Error('No token received from server');
       }
-      
-      const tokenResponse = processTokenResponse(loginData as LoginResponseData & { token: string; username: string; role: string });
-      return {
-        requiresVerification: false,
-        ...tokenResponse
-      };
+      return processTokenResponse(loginData as LoginResponseData & { token: string; username: string; role: string });
     });
   },
 
-  async register(credentials: RegisterCredentials): Promise<RegisterResponseData> {
-    return ApiService.execute(async () => {
-      const response = await axiosInstance.post<ApiResponse<RegisterResponseData>>(
-        API_ENDPOINTS.USER_REGISTER, 
-        credentials
-      );
-      return response;
-    });
-  },
-
-
-
-  async resetPassword(data: { 
-    userId: number; 
-    otp: string; 
-    newPassword: string 
-  }): Promise<{ message: string }> {
-    return ApiService.execute(async () => {
-      const response = await axiosInstance.post<ApiResponse<{ message: string }>>(
-        API_ENDPOINTS.RESET_PASSWORD, 
-        data
-      );
-      return response;
-    });
-  },
-
-  async sendOTP(data: {
+  async sendLoginOTP(data: {
     email: string;
     phoneNumber?: string;
-    purpose: 'LOGIN' | 'REGISTRATION' | 'PASSWORD_RESET';
   }): Promise<{ message: string; userId: number }> {
     return ApiService.execute(async () => {
+      const formData = new FormData();
+      formData.append('Email', data.email);
+      if (data.phoneNumber) formData.append('PhoneNumber', data.phoneNumber);
+      
       const response = await axiosInstance.post<ApiResponse<{ message: string; userId: number }>>(
-        API_ENDPOINTS.SEND_OTP,
-        data
+        '/auth/sendotp/login',
+        formData
       );
       return response;
     });
   },
 
-  async verifyOTP(data: {
-    userId: number;
-    otp: string;
-  }): Promise<{ message: string; token?: string; user?: DecodedToken }> {
+  async sendRegisterOTP(data: {
+    email: string;
+    phoneNumber?: string;
+  }): Promise<{ message: string; userId: number }> {
     return ApiService.execute(async () => {
-      const response = await axiosInstance.post<ApiResponse<LoginResponseData & { message: string }>>(
-        API_ENDPOINTS.VERIFY_OTP,
-        data
+      const formData = new FormData();
+      formData.append('Email', data.email);
+      if (data.phoneNumber) formData.append('PhoneNumber', data.phoneNumber);
+      
+      const response = await axiosInstance.post<ApiResponse<{ message: string; userId: number }>>(
+        '/auth/sendotp/register',
+        formData
       );
       return response;
-    }).then(verifyData => {
-      if (verifyData.token) {
-        const tokenResponse = processTokenResponse(verifyData as LoginResponseData & { token: string; username: string; role: string });
-        return {
-          message: verifyData.message || 'Account verified successfully',
-          ...tokenResponse
-        };
-      }
-      return {
-        message: verifyData.message || 'Account verified successfully'
-      };
     });
   },
 
-  async verifyLoginOTP(data: {
-    userId: number;
+  async sendForgetPasswordOTP(data: {
+    email: string;
+    phoneNumber?: string;
+  }): Promise<{ message: string; userId: number }> {
+    return ApiService.execute(async () => {
+      const formData = new FormData();
+      formData.append('Email', data.email);
+      if (data.phoneNumber) formData.append('PhoneNumber', data.phoneNumber);
+      
+      const response = await axiosInstance.post<ApiResponse<{ message: string; userId: number }>>(
+        '/auth/sendotp/forgetpassword',
+        formData
+      );
+      return response;
+    });
+  },
+
+  async loginWithOTP(data: {
+    email: string;
     otp: string;
   }): Promise<{ token: string; user: DecodedToken }> {
     return ApiService.execute(async () => {
+      const formData = new FormData();
+      formData.append('Email', data.email);
+      formData.append('OTP', data.otp);
+      
       const response = await axiosInstance.post<ApiResponse<LoginResponseData>>(
-        API_ENDPOINTS.VERIFY_LOGIN_OTP,
-        data
+        '/auth/login/otp',
+        formData
       );
       return response;
     }).then(loginData => {
       if (!loginData.token) {
         throw new Error('No token received from server');
       }
-      return processTokenResponse(loginData);
+      return processTokenResponse(loginData as LoginResponseData & { token: string; username: string; role: string });
+    });
+  },
+
+  async register(data: RegisterCredentials): Promise<{ message: string; userId: number }> {
+    return ApiService.execute(async () => {
+      const formData = new FormData();
+      formData.append('FullName', data.fullName);
+      formData.append('Email', data.email);
+      formData.append('Password', data.password);
+      formData.append('DateOfBirth', data.dateOfBirth);
+      formData.append('Gender', data.gender.toString());
+      formData.append('PhoneNumber', data.phoneNumber);
+      
+      const response = await axiosInstance.post<ApiResponse<{ message: string; userId: number }>>(
+        '/auth/register',
+        formData
+      );
+      return response;
+    });
+  },
+
+  async verifyOTP(data: {
+    email: string;
+    otp: string;
+  }): Promise<{ message: string }> {
+    return ApiService.execute(async () => {
+      const formData = new FormData();
+      formData.append('Email', data.email);
+      formData.append('OTP', data.otp);
+      
+      const response = await axiosInstance.post<ApiResponse<{ message: string }>>(
+        '/auth/verify/otp',
+        formData
+      );
+      return response;
+    });
+  },
+
+  async resetPassword(data: { 
+    email: string; 
+    otp: string; 
+    newPassword: string 
+  }): Promise<{ message: string }> {
+    return ApiService.execute(async () => {
+      const formData = new FormData();
+      formData.append('Email', data.email);
+      formData.append('OTP', data.otp);
+      formData.append('NewPassword', data.newPassword);
+      
+      const response = await axiosInstance.post<ApiResponse<{ message: string }>>(
+        '/auth/reset-password', 
+        formData
+      );
+      return response;
     });
   },
 

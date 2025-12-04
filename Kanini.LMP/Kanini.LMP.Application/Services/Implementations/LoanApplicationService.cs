@@ -7,7 +7,7 @@ using Kanini.LMP.Database.Entities.LoanApplicationEntites;
 using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
 using Kanini.LMP.Database.Entities.LoanProductEntities.HomeLoanEntities;
 using Kanini.LMP.Database.Entities.LoanProductEntities.VehicleLoanEntities;
-using Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable;
+using Kanini.LMP.Database.Entities.LoanApplicationEntites;
 using Kanini.LMP.Database.Entities;
 using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.PersonalLoanApplication;
 using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.HomeLoanApplication;
@@ -432,5 +432,48 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             return _mapper.Map<VehicleLoanApplicationDTO>(application);
         }
+
+        public async Task<IEnumerable<dynamic>> GetRecentApplicationsAsync(int customerId, int count)
+        {
+            var applicants = await _loanApplicantRepository.GetAllAsync(la => la.CustomerId == customerId);
+            var loanIds = applicants.Select(a => a.LoanApplicationBaseId).ToList();
+            var applications = await _loanAppRepository.GetAllAsync(app => loanIds.Contains(app.LoanApplicationBaseId));
+            var loanDetails = await _loanDetailsRepository.GetAllAsync(ld => loanIds.Contains(ld.LoanApplicationBaseId));
+
+            return applications.OrderByDescending(a => a.SubmissionDate).Take(count).Select(app =>
+            {
+                var details = loanDetails.FirstOrDefault(ld => ld.LoanApplicationBaseId == app.LoanApplicationBaseId);
+                return new
+                {
+                    LoanApplicationBaseId = app.LoanApplicationBaseId,
+                    LoanType = app.LoanProductType,
+                    LoanAmount = details?.RequestedAmount ?? 0,
+                    Status = app.Status
+                };
+            });
+        }
+
+        public async Task<IEnumerable<dynamic>> GetCustomerApplicationsAsync(int customerId)
+        {
+            var applicants = await _loanApplicantRepository.GetAllAsync(la => la.CustomerId == customerId);
+            var loanIds = applicants.Select(a => a.LoanApplicationBaseId).ToList();
+            var applications = await _loanAppRepository.GetAllAsync(app => loanIds.Contains(app.LoanApplicationBaseId));
+            var loanDetails = await _loanDetailsRepository.GetAllAsync(ld => loanIds.Contains(ld.LoanApplicationBaseId));
+
+            return applications.Select(app =>
+            {
+                var details = loanDetails.FirstOrDefault(ld => ld.LoanApplicationBaseId == app.LoanApplicationBaseId);
+                return new
+                {
+                    LoanApplicationBaseId = app.LoanApplicationBaseId,
+                    LoanType = app.LoanProductType,
+                    LoanAmount = details?.RequestedAmount ?? 0,
+                    Status = app.Status,
+                    SubmissionDate = app.SubmissionDate
+                };
+            });
+        }
     }
 }
+
+

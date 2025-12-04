@@ -13,11 +13,11 @@ namespace Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto.CustomerBasicDto.E
         public int LoanApplicationBaseId { get; set; }
 
         [Required]
-        public int LoanAccountId { get; set; }
+        public int CustomerId { get; set; }
 
         [Required(ErrorMessage = "Principal Amount is required.")]
         [Range(1000, double.MaxValue, ErrorMessage = "Principal must be greater than ₹1,000.")]
-        public decimal PrincipalAmount { get; set; }
+        public decimal PrincipleAmount { get; set; }
 
         [Required(ErrorMessage = "Term (in months) is required.")]
         [Range(1, 360, ErrorMessage = "Loan term must be between 1 and 360 months.")]

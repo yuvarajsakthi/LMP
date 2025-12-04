@@ -29,12 +29,27 @@ namespace Kanini.LMP.Data.Repositories.Implementations
 
         public virtual async Task<IReadOnlyList<T>> GetAllAsync(Expression<Func<T, bool>>? predicate = null)
         {
-            var query = _dbSet.AsNoTracking();
+            var tableName = _context.Model.FindEntityType(typeof(T))?.GetTableName() ?? typeof(T).Name;
+            
+            try
+            {
+                var results = await _context.Set<T>()
+                    .FromSql($"EXEC sp_GetAllGeneric @TableName = {tableName}")
+                    .AsNoTracking()
+                    .ToListAsync();
 
-            if (predicate != null)
-                query = query.Where(predicate);
+                if (predicate != null)
+                    return results.AsQueryable().Where(predicate).ToList();
 
-            return await query.ToListAsync();
+                return results;
+            }
+            catch
+            {
+                var query = _dbSet.AsNoTracking();
+                if (predicate != null)
+                    query = query.Where(predicate);
+                return await query.ToListAsync();
+            }
         }
 
         public virtual async Task<T?> GetByIdAsync(TId id)

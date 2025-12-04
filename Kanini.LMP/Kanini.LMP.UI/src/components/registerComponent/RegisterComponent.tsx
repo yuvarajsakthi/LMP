@@ -4,11 +4,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { LoanAcceleratorLogo } from "../../assets";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import RegisterCss from "./RegisterComponent.module.css";
-import type { RegisterCredentials, InputChangeEvent } from "../../types";
+import type { InputChangeEvent } from "../../types";
 import { COMMON_ROUTES, ERROR_MESSAGES } from "../../config";
 import { validateField } from "../../utils";
 import { useAuth } from "../../context";
-import { registerUser, verifyOTP } from "../../store/slices/authSlice";
+import { registerUser } from "../../store/slices/authSlice";
 import type { RootState, AppDispatch } from "../../store";
 const { Title } = Typography;
 
@@ -31,7 +31,6 @@ const RegisterComponent = () => {
   const [phoneError, setPhoneError] = useState("");
   const [showOTPVerification, setShowOTPVerification] = useState(false);
   const [otp, setOTP] = useState("");
-  const [userId, setUserId] = useState<number | null>(null);
 
 
 
@@ -93,23 +92,20 @@ const RegisterComponent = () => {
       message.error('Passwords do not match');
       return;
     }
-
-    const registerData: RegisterCredentials = {
-      fullName: name,
-      email: email,
-      password: password,
-      dateOfBirth: dateOfBirth,
-      gender: gender,
-      phoneNumber: phoneNumber,
-    };
     
     try {
-      const result = await dispatch(registerUser(registerData)).unwrap();
-      setUserId(result.userId);
+      await dispatch(registerUser({
+        fullName: name,
+        email,
+        password,
+        dateOfBirth,
+        gender,
+        phoneNumber
+      })).unwrap();
       setShowOTPVerification(true);
-      message.success('Registration successful! Please verify your account with the OTP sent to your email.');
+      message.success('Registration successful! OTP sent to your email.');
     } catch (error: any) {
-      message.error(error || ERROR_MESSAGES.REGISTRATION_FAILED);
+      message.error(error.message || ERROR_MESSAGES.REGISTRATION_FAILED);
     }
   };
 
@@ -120,14 +116,12 @@ const RegisterComponent = () => {
     }
     
     try {
-      await dispatch(verifyOTP({ 
-        userId: userId!, 
-        otp 
-      })).unwrap();
-      message.success('Account verified successfully!');
+      const { authAPI } = await import('../../services');
+      await authAPI.verifyOTP({ email, otp });
+      message.success('Account verified successfully! You can now login.');
       navigate(COMMON_ROUTES.LOGIN);
     } catch (error: any) {
-      message.error('OTP verification failed. Please try again.');
+      message.error(error.message || 'Verification failed. Please try again.');
     }
   };
 

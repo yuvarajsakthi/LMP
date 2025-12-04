@@ -4,18 +4,12 @@ namespace Kanini.LMP.Application.Services.Implementations
 {
     public class PasswordService
     {
-        /// <summary>
-        /// Hash password using BCrypt with work factor 12 (secure)
-        /// </summary>
         public static string HashPassword(string password)
         {
             ValidatePassword(password);
             return BCrypt.Net.BCrypt.HashPassword(password, 12);
         }
 
-        /// <summary>
-        /// Verify password against BCrypt hash
-        /// </summary>
         public static bool VerifyPassword(string password, string hashedPassword)
         {
             try
@@ -28,9 +22,6 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
         }
 
-        /// <summary>
-        /// Validate password strength
-        /// </summary>
         public static void ValidatePassword(string password)
         {
             if (string.IsNullOrWhiteSpace(password))

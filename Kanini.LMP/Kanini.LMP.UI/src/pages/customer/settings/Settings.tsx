@@ -5,15 +5,14 @@ import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import Layout from '../../../layout/Layout';
 import { useAuth } from '../../../context';
-import axios from 'axios';
+import { customerAPI } from '../../../services/api/customerAPI';
 import styles from './Settings.module.css';
 
 interface FormData {
   fullName: string;
-  email: string;
   phoneNumber: string;
-  dateOfBirth: string;
-  customerId?: number;
+  occupation: string;
+  annualIncome: number;
 }
 
 const Settings: React.FC = () => {
@@ -27,18 +26,18 @@ const Settings: React.FC = () => {
 
   const fetchUserData = async () => {
     try {
-      const userIdClaim = token?.sub || token?.nameid;
-      const response = await axios.get(`https://localhost:7297/api/Customer/user/${userIdClaim}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (response.data.success) {
-        const data = response.data.data;
-        setValue('fullName', data.fullName);
-        setValue('email', data.email);
-        setValue('phoneNumber', data.phoneNumber);
-        setValue('dateOfBirth', data.dateOfBirth);
-        setValue('customerId', data.customerId);
+      const userIdClaim = token?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || token?.nameid;
+      
+      if (!userIdClaim) {
+        message.error('User not authenticated');
+        return;
       }
+
+      const data = await customerAPI.getCustomerSettings(parseInt(userIdClaim));
+      setValue('fullName', data.fullName);
+      setValue('phoneNumber', data.phoneNumber);
+      setValue('occupation', data.occupation);
+      setValue('annualIncome', data.annualIncome);
     } catch (error) {
       message.error('Failed to fetch user data');
     }
@@ -47,11 +46,14 @@ const Settings: React.FC = () => {
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     try {
-      const userIdClaim = token?.sub || token?.nameid;
-      const customerData = { ...data, userId: userIdClaim };
-      await axios.put(`https://localhost:7297/api/Customer/${data.customerId}`, customerData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const userIdClaim = token?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || token?.nameid;
+      
+      if (!userIdClaim) {
+        message.error('User not authenticated');
+        return;
+      }
+
+      await customerAPI.updateCustomerSettings(parseInt(userIdClaim), data);
       message.success('Profile updated successfully');
     } catch (error) {
       message.error('Failed to update profile');
@@ -88,16 +90,6 @@ const Settings: React.FC = () => {
               </div>
               
               <div className={styles.formGroup}>
-                <label>Email</label>
-                <input
-                  {...register('email')}
-                  placeholder="Enter your email"
-                  disabled
-                  className={styles.input}
-                />
-              </div>
-              
-              <div className={styles.formGroup}>
                 <label>Phone Number</label>
                 <input
                   {...register('phoneNumber', { required: 'Phone number is required' })}
@@ -108,12 +100,24 @@ const Settings: React.FC = () => {
               </div>
               
               <div className={styles.formGroup}>
-                <label>Date of Birth</label>
+                <label>Occupation</label>
                 <input
-                  {...register('dateOfBirth')}
-                  type="date"
+                  {...register('occupation', { required: 'Occupation is required' })}
+                  placeholder="Enter your occupation"
                   className={styles.input}
                 />
+                {errors.occupation && <span className={styles.error}>{errors.occupation.message}</span>}
+              </div>
+              
+              <div className={styles.formGroup}>
+                <label>Annual Income</label>
+                <input
+                  {...register('annualIncome', { required: 'Annual income is required', min: 0 })}
+                  type="number"
+                  placeholder="Enter your annual income"
+                  className={styles.input}
+                />
+                {errors.annualIncome && <span className={styles.error}>{errors.annualIncome.message}</span>}
               </div>
               
               <Button type="primary" htmlType="submit" loading={loading}>

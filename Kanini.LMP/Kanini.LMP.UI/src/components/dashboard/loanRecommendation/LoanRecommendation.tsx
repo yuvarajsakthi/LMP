@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './LoanRecommendation.module.css';
 import { Card, Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { CUSTOMER_ROUTES } from '../../../config';
+import { customerDashboardAPI } from '../../../services/api/customerDashboardAPI';
 
 interface LoanRecommendationProps {
   title?: string;
@@ -20,6 +21,19 @@ const LoanRecommendation: React.FC<LoanRecommendationProps> = ({
   onApplyClick
 }) => {
   const navigate = useNavigate();
+  const [loanProducts, setLoanProducts] = useState([]);
+
+  useEffect(() => {
+    const fetchLoanProducts = async () => {
+      try {
+        const products = await customerDashboardAPI.getLoanProducts();
+        setLoanProducts(products);
+      } catch (error: any) {
+        // Silently handle error - component works without API data
+      }
+    };
+    fetchLoanProducts();
+  }, []);
 
   const handleApplyClick = () => {
     if (onApplyClick) {

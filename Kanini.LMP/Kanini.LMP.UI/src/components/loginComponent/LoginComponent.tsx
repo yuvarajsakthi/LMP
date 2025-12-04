@@ -8,7 +8,7 @@ import { useAuth } from "../../context";
 import type { LoginCredentials, InputChangeEvent } from "../../types";
 import { COMMON_ROUTES, CUSTOMER_ROUTES, USER_ROLES } from "../../config";
 import { validateField } from "../../utils";
-import { loginUser, verifyOTP } from "../../store/slices/authSlice";
+import { loginUser } from "../../store/slices/authSlice";
 import type { RootState, AppDispatch } from "../../store";
 const { Title } = Typography;
 
@@ -21,10 +21,9 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [showOTPVerification, setShowOTPVerification] = useState(false);
   const [otp, setOTP] = useState("");
-  const [userId, setUserId] = useState<number | null>(null);
-  const [verificationMessage, setVerificationMessage] = useState("");
+  const [useOTPLogin, setUseOTPLogin] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
 
 
 
@@ -41,27 +40,43 @@ const Login = () => {
     const error = await validateField('password', passwordValue, 'login');
     setPasswordError(error);
   };
+  const handleSendOTP = async () => {
+    if (!email) {
+      message.error('Please enter your email');
+      return;
+    }
+    if (emailError) {
+      return;
+    }
+    try {
+      const { authAPI } = await import('../../services');
+      await authAPI.sendLoginOTP({ email });
+      setOtpSent(true);
+      message.success('OTP sent to your email');
+    } catch (error: any) {
+      console.error('Failed to send OTP:', error);
+    }
+  };
+
   const handleSubmit = async () => {
-    if (showOTPVerification) {
-      // Verify OTP and complete login
+    if (useOTPLogin) {
       if (!otp || otp.length !== 6) {
         message.error('Please enter valid 6-digit OTP');
         return;
       }
       try {
-        const result = await dispatch(verifyOTP({ 
-          userId: userId!, 
-          otp 
-        })).unwrap();
+        const { authAPI } = await import('../../services');
         
-        if (result.token && result.user) {
-          // Store token in localStorage first
+        await authAPI.verifyOTP({ email, otp });
+        message.success('Account verified! Logging you in...');
+        
+        const loginData: LoginCredentials = { username: email, password };
+        const result = await dispatch(loginUser(loginData)).unwrap();
+        
+        if ('token' in result && result.token) {
           const { authMiddleware } = await import('../../middleware');
           authMiddleware.setToken(result.token);
-          
-          // Then update context
           setToken(result.user);
-          message.success('Account verified and logged in successfully!');
           
           const userRole = result.user.role;
           if (userRole?.toLowerCase() === USER_ROLES.MANAGER.toLowerCase()) {
@@ -71,14 +86,12 @@ const Login = () => {
           }
         }
       } catch (error: any) {
-        console.error('OTP verification failed:', error);
+        message.error(error.message || 'Verification failed');
       }
     } else {
-      // Regular login
       if (emailError || passwordError) {
         return;
       }
-
       if (!email || !password) {
         message.error('Email and password are required');
         return;
@@ -92,22 +105,20 @@ const Login = () => {
       try {
         const result = await dispatch(loginUser(loginData)).unwrap();
         
-        if (result.requiresVerification) {
-          // Show OTP verification screen
-          setUserId(result.userId!);
-          setVerificationMessage(result.message!);
-          setShowOTPVerification(true);
-          message.info('Please verify your account with the OTP sent to your email');
-        } else {
-          // Normal login success - store token first
-          if (result.token) {
-            const { authMiddleware } = await import('../../middleware');
-            authMiddleware.setToken(result.token);
-          }
+        if ('requiresVerification' in result && result.requiresVerification) {
+          message.warning('Account not verified. OTP sent to your email.');
+          setUseOTPLogin(true);
+          setOtpSent(true);
+          return;
+        }
+        
+        if ('token' in result && result.token) {
+          const { authMiddleware } = await import('../../middleware');
+          authMiddleware.setToken(result.token);
+          setToken(result.user);
+          message.success('Logged in successfully!');
           
-          setToken(result.user!);
-          
-          const userRole = result.user!.role;
+          const userRole = result.user.role;
           if (userRole?.toLowerCase() === USER_ROLES.MANAGER.toLowerCase()) {
             navigate(COMMON_ROUTES.APPLIED_LOAN);
           } else if (userRole?.toLowerCase() === USER_ROLES.CUSTOMER.toLowerCase()) {
@@ -115,7 +126,7 @@ const Login = () => {
           }
         }
       } catch (error: any) {
-        console.error('Login failed:', error);
+        message.error(error.message || 'Invalid credentials');
       }
     }
   };
@@ -150,7 +161,26 @@ const Login = () => {
           )}
         </div>
 
-        {!showOTPVerification ? (
+        {useOTPLogin ? (
+          <div className={LoginComponentCss.inputGroup}>
+            <label className={LoginComponentCss.label}>Enter OTP</label>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <Input
+                className={LoginComponentCss.input}
+                value={otp}
+                onChange={(e) => setOTP(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="6-digit OTP"
+                maxLength={6}
+                disabled={!otpSent}
+              />
+              {!otpSent && (
+                <Button onClick={handleSendOTP} loading={isLoading}>
+                  Send OTP
+                </Button>
+              )}
+            </div>
+          </div>
+        ) : (
           <div className={LoginComponentCss.inputGroup}>
             <label className={LoginComponentCss.label}>Password</label>
             <Input.Password
@@ -165,25 +195,16 @@ const Login = () => {
               <div className={LoginComponentCss.errorMessage}>{passwordError}</div>
             )}
           </div>
-        ) : (
-          <div className={LoginComponentCss.inputGroup}>
-            <label className={LoginComponentCss.label}>Enter Verification OTP</label>
-            <p style={{ fontSize: '14px', color: '#666', margin: '5px 0' }}>{verificationMessage}</p>
-            <Input
-              className={LoginComponentCss.input}
-              value={otp}
-              onChange={(e) => setOTP(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              placeholder="6-digit OTP"
-              maxLength={6}
-            />
-          </div>
         )}
 
-        {!showOTPVerification && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <RouterLink to={COMMON_ROUTES.FORGOT_PASSWORD} className={LoginComponentCss.forgotPasswordLink}>
             Forgot your password?
           </RouterLink>
-        )}
+          <Button type="link" onClick={() => { setUseOTPLogin(!useOTPLogin); setOtpSent(false); setOTP(''); }}>
+            {useOTPLogin ? 'Use Password' : 'Use OTP'}
+          </Button>
+        </div>
 
         <Button
           type="primary"
@@ -191,7 +212,7 @@ const Login = () => {
           onClick={handleSubmit}
           loading={isLoading}
         >
-          {showOTPVerification ? 'VERIFY & LOGIN' : 'SIGN IN'}
+          {useOTPLogin ? 'LOGIN WITH OTP' : 'SIGN IN'}
         </Button>
 
         <Typography className={LoginComponentCss.newUserText}>

@@ -407,7 +407,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                     ApplicationId = x.Application.LoanApplicationBaseId,
                     CustomerId = x.Customer.CustomerId,
                     CustomerFullName = x.User.FullName,
-                    LoanProductType = x.Application.LoanProductType,
+                    LoanProductType = x.Application.LoanProductType.ToString(),
                     ApplicationNumber = $"APP-{x.Application.LoanApplicationBaseId}",
                     RequestedLoanAmount = 0, // Will be populated from LoanDetails if needed
                     SubmissionDate = x.Application.SubmissionDate.ToDateTime(TimeOnly.MinValue),
@@ -437,7 +437,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                 {
                     LoanApplicationId = applicationId,
                     ApplicationNumber = $"APP-{applicationId}",
-                    LoanProductType = application.LoanProductType,
+                    LoanProductType = application.LoanProductType.ToString(),
                     CurrentStatus = application.Status,
                     CustomerFullName = "", // Will need to join with customer data
                     CustomerId = "", // Will need to join with customer data
@@ -728,7 +728,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                     .GroupBy(x => x.Application.LoanProductType)
                     .Select(g => new PortfolioPerformanceDto
                     {
-                        LoanType = g.Key,
+                        LoanType = g.Key.ToString(),
                         ActiveLoans = g.Count(),
                         TotalAmount = g.Sum(x => x.Account.TotalLoanAmount),
                         CollectionRate = g.Count() > 0 ? (decimal)g.Count(x => x.Account.DaysPastDue == 0) / g.Count() * 100 : 0,

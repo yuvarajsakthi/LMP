@@ -17,12 +17,9 @@ namespace Kanini.LMP.Database.Entities.ManagerEntities
         [Key]
         public int LoanAccountId { get; set; }
 
-        // LINK CHANGE: Reference the base class ID, not a specific product ID.
-        // This allows a Home Loan, Personal Loan, or Vehicle Loan to link here.
         [ForeignKey(nameof(LoanApplicationBase))]
         public int LoanApplicationBaseId { get; set; } // Renamed from LoanApplicationId
 
-        // Link to the Customer (Note: This is now optional/redundant if you rely on the M:M LoanApplicant table)
         [ForeignKey(nameof(Customer))]
         public int CustomerId { get; set; }
 
@@ -54,9 +51,6 @@ namespace Kanini.LMP.Database.Entities.ManagerEntities
 
         public decimal TotalLateFeePaidAmount { get; set; } = 0m;
 
-        // Razorpay disbursement tracking
-        // [MaxLength(100)]
-        // public string? DisbursementTransactionId { get; set; } // Razorpay transaction ID when money sent to customer
     }
 }
 

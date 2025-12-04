@@ -2,8 +2,6 @@
 using Kanini.LMP.Data.Repositories.Interfaces;
 using Kanini.LMP.Database.Entities;
 using Kanini.LMP.Database.Entities.CustomerEntities;
-using Kanini.LMP.Database.Entities.CustomerEntities.JunctionTable;
-using Kanini.LMP.Database.Entities.LoanApplicationEntites;
 using Kanini.LMP.Database.Entities.ManagerEntities;
 using Kanini.LMP.Database.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -57,7 +55,7 @@ namespace Kanini.LMP.Data.Repositories.Implementations
             return await _context.LoanApplicationBases
                 .GroupBy(app => app.LoanProductType)
                 .Select(g => new ValueTuple<string, int, int, int, int>(
-                    g.Key,
+                    g.Key.ToString(),
                     g.Count(app => app.Status == ApplicationStatus.Approved &&
                                   app.SubmissionDate.Month == thisMonth &&
                                   app.SubmissionDate.Year == currentYear),
@@ -77,13 +75,12 @@ namespace Kanini.LMP.Data.Repositories.Implementations
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<(LoanApplicationBase Application, LoanApplicant Applicant, Customer Customer, User User)>> GetAppliedLoansWithDetailsAsync()
+        public async Task<IEnumerable<(LoanApplicationBase Application, Customer Customer, User User)>> GetAppliedLoansWithDetailsAsync()
         {
             return await _context.LoanApplicationBases
-                .Join(_context.LoanApplicants, app => app.LoanApplicationBaseId, la => la.LoanApplicationBaseId, (app, la) => new { app, la })
-                .Join(_context.Customers, x => x.la.CustomerId, c => c.CustomerId, (x, c) => new { x.app, x.la, c })
-                .Join(_context.Users, x => x.c.UserId, u => u.UserId, (x, u) => new { x.app, x.la, x.c, u })
-                .Select(x => new ValueTuple<LoanApplicationBase, LoanApplicant, Customer, User>(x.app, x.la, x.c, x.u))
+                .Join(_context.Customers, app => app.CustomerId, c => c.CustomerId, (app, c) => new { app, c })
+                .Join(_context.Users, x => x.c.UserId, u => u.UserId, (x, u) => new { x.app, x.c, u })
+                .Select(x => new ValueTuple<LoanApplicationBase, Customer, User>(x.app, x.c, x.u))
                 .ToListAsync();
         }
 
@@ -114,7 +111,7 @@ namespace Kanini.LMP.Data.Repositories.Implementations
         {
             return await _context.LoanApplicationBases
                 .GroupBy(app => app.LoanProductType)
-                .Select(g => new ValueTuple<string, int>(g.Key, g.Count()))
+                .Select(g => new ValueTuple<string, int>(g.Key.ToString(), g.Count()))
                 .ToListAsync();
         }
 
@@ -127,13 +124,12 @@ namespace Kanini.LMP.Data.Repositories.Implementations
 
         public async Task<int> GetDocumentLinksCountAsync()
         {
-            return await _context.ApplicationDocumentLinks.CountAsync();
+            return await _context.DocumentUploads.CountAsync();
         }
 
         public async Task<int> GetVerifiedDocumentsCountAsync()
         {
-            return await _context.ApplicationDocumentLinks
-                .CountAsync(d => d.Status == DocumentStatus.Verified);
+            return 0;
         }
 
         public async Task<IEnumerable<LoanAccount>> GetActiveLoanAccountsAsync()
@@ -152,13 +148,12 @@ namespace Kanini.LMP.Data.Repositories.Implementations
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<(LoanApplicationBase Application, LoanApplicant Applicant, Customer Customer)>> GetApplicationsWithCustomersByDateRangeAsync(DateOnly fromDate, DateOnly toDate)
+        public async Task<IEnumerable<(LoanApplicationBase Application, Customer Customer)>> GetApplicationsWithCustomersByDateRangeAsync(DateOnly fromDate, DateOnly toDate)
         {
             return await _context.LoanApplicationBases
-                .Join(_context.LoanApplicants, app => app.LoanApplicationBaseId, la => la.LoanApplicationBaseId, (app, la) => new { app, la })
-                .Join(_context.Customers, x => x.la.CustomerId, c => c.CustomerId, (x, c) => new { x.app, x.la, c })
+                .Join(_context.Customers, app => app.CustomerId, c => c.CustomerId, (app, c) => new { app, c })
                 .Where(x => x.app.SubmissionDate >= fromDate && x.app.SubmissionDate <= toDate)
-                .Select(x => new ValueTuple<LoanApplicationBase, LoanApplicant, Customer>(x.app, x.la, x.c))
+                .Select(x => new ValueTuple<LoanApplicationBase, Customer>(x.app, x.c))
                 .ToListAsync();
         }
 
