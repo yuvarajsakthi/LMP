@@ -39,7 +39,7 @@ namespace Kanini.LMP.Api.Controllers
 
                 if (user.Status == Database.Enums.UserStatus.Pending)
                 {
-                    await _otpService.SendOTPAsync(user.UserId, "", user.Email, "REGISTER");
+                    await _otpService.SendOTPAsync(user.Email, "", user.Email, "REGISTER");
                     return Ok(ApiResponse<object>.SuccessResponse(new
                     {
                         requiresVerification = true,
