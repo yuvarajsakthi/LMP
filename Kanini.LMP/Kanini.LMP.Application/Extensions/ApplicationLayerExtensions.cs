@@ -26,21 +26,12 @@ namespace Kanini.LMP.Application.Extensions
             services.AddScoped<ILoanProductService, LoanProductService>();
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IEmiCalculatorService, EmiCalculatorService>();
-            services.AddScoped<IManagerWorkflowService, ManagerWorkflowService>();
-            services.AddScoped<IManagerAnalyticsService, ManagerAnalyticsService>();
-            services.AddHttpClient<IRazorpayService, RazorpayService>();
-            services.AddScoped<IRazorpayService, RazorpayService>();
-            services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IPdfService, PdfService>();
-            services.AddScoped<IKYCService, KYCService>();
-            services.AddScoped<IDocumentService, DocumentService>();
-
-            services.AddScoped<IWhatsAppService, MockWhatsAppService>();
 
             services.AddScoped<IOTPService, OTPService>();
             services.AddScoped<IUserService, UserService>();
-            services.AddHostedService<EMINotificationBackgroundService>();
+            services.AddScoped<INotificationService, NotificationService>();
 
             return services;
         }

@@ -39,7 +39,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                 TermMonths = termMonths,
                 RateOfInterest = interestRate,
                 MonthlyEMI = Math.Round(emi, 2),
-                TotalInerestPaid = Math.Round(totalInterest, 2),
+                TotalInterestPaid = Math.Round(totalInterest, 2),
                 TotalRepaymentAmount = Math.Round(totalRepayment, 2),
                 Status = EMIPlanStatus.Active,
                 IsCompleted = false
@@ -56,27 +56,21 @@ namespace Kanini.LMP.Application.Services.Implementations
                 {
                     try
                     {
-                        var calculatedEmi = await CalculateEmiAsync(createDto.PrincipalAmount, createDto.RateOfInterest, createDto.TermMonths);
+                        var calculatedEmi = await CalculateEmiAsync(createDto.PrincipleAmount, createDto.RateOfInterest, createDto.TermMonths);
 
-                        var emiPlan = new EMIPlan
-                        {
-                            LoanApplicationBaseId = createDto.LoanApplicationBaseId,
-                            LoanAccountId = createDto.LoanAccountId,
-                            PrincipleAmount = createDto.PrincipalAmount,
-                            TermMonths = createDto.TermMonths,
-                            RateOfInterest = createDto.RateOfInterest,
-                            MonthlyEMI = calculatedEmi.MonthlyEMI,
-                            TotalInterestPaid = calculatedEmi.TotalInerestPaid,
-                            TotalRepaymentAmount = calculatedEmi.TotalRepaymentAmount,
-                            Status = EMIPlanStatus.Active,
-                            IsCompleted = false
-                        };
+                        var emiPlan = _mapper.Map<EMIPlan>(createDto);
+                        emiPlan.MonthlyEMI = calculatedEmi.MonthlyEMI;
+                        emiPlan.TotalInterestPaid = calculatedEmi.TotalInterestPaid;
+                        emiPlan.TotalRepaymentAmount = calculatedEmi.TotalRepaymentAmount;
+                        emiPlan.Status = EMIPlanStatus.Active;
+                        emiPlan.IsCompleted = false;
 
                         var created = await _unitOfWork.EMIPlans.AddAsync(emiPlan);
                         await _unitOfWork.SaveChangesAsync();
                         await transaction.CommitAsync();
 
                         _logger.LogInformation("EMI plan created successfully");
+                        await CreateNotificationAsync(createDto.CustomerId, $"EMI plan created: ₹{createDto.PrincipleAmount} for {createDto.TermMonths} months");
                         return MapToDto(created);
                     }
                     catch (Exception)
@@ -117,12 +111,62 @@ namespace Kanini.LMP.Application.Services.Implementations
 
         public async Task<CustomerEMIDashboardDto?> GetCustomerEMIDashboardAsync(int customerId)
         {
-            return null; // TODO: Implement using generic repository
+            var emiPlans = await _unitOfWork.EMIPlans.GetAllAsync(e => e.CustomerId == customerId);
+            var firstEmi = emiPlans.FirstOrDefault();
+            if (firstEmi == null) return null;
+
+            var schedule = await GenerateEMIScheduleAsync(firstEmi.EMIId);
+            var paidCount = schedule.Count(s => s.PaymentStatus == "Paid");
+            var nextDue = schedule.FirstOrDefault(s => s.PaymentStatus == "Pending");
+
+            var dashboard = _mapper.Map<CustomerEMIDashboardDto>(firstEmi);
+            dashboard.LoanAccountId = firstEmi.LoanApplicationBaseId;
+            dashboard.TotalLoanAmount = firstEmi.PrincipleAmount;
+            dashboard.PendingAmount = schedule.LastOrDefault()?.OutstandingBalance ?? 0;
+            dashboard.InterestPaid = schedule.Where(s => s.PaymentStatus == "Paid").Sum(s => s.InterestAmount);
+            dashboard.PrincipalPaid = schedule.Where(s => s.PaymentStatus == "Paid").Sum(s => s.PrincipalAmount);
+            dashboard.CurrentMonthEMI = firstEmi.MonthlyEMI;
+            dashboard.NextDueDate = nextDue?.DueDate;
+            dashboard.EMIsPaid = paidCount;
+            dashboard.EMIsRemaining = firstEmi.TermMonths - paidCount;
+            dashboard.Status = firstEmi.Status.ToString();
+            dashboard.IsOverdue = schedule.Any(s => s.PaymentStatus == "Overdue");
+            dashboard.DaysOverdue = schedule.Where(s => s.PaymentStatus == "Overdue").Select(s => (DateTime.UtcNow - s.DueDate).Days).DefaultIfEmpty(0).Max();
+            dashboard.LateFeeAmount = schedule.Sum(s => s.LateFee);
+            dashboard.PaymentStatus = firstEmi.IsCompleted ? "Completed" : "Active";
+            return dashboard;
         }
 
         public async Task<List<CustomerEMIDashboardDto>> GetAllCustomerEMIsAsync(int customerId)
         {
-            return new List<CustomerEMIDashboardDto>(); // TODO: Implement using generic repository
+            var emiPlans = await _unitOfWork.EMIPlans.GetAllAsync(e => e.CustomerId == customerId);
+            var dashboards = new List<CustomerEMIDashboardDto>();
+
+            foreach (var emi in emiPlans)
+            {
+                var schedule = await GenerateEMIScheduleAsync(emi.EMIId);
+                var paidCount = schedule.Count(s => s.PaymentStatus == "Paid");
+                var nextDue = schedule.FirstOrDefault(s => s.PaymentStatus == "Pending");
+
+                var dashboard = _mapper.Map<CustomerEMIDashboardDto>(emi);
+                dashboard.LoanAccountId = emi.LoanApplicationBaseId;
+                dashboard.TotalLoanAmount = emi.PrincipleAmount;
+                dashboard.PendingAmount = schedule.LastOrDefault()?.OutstandingBalance ?? 0;
+                dashboard.InterestPaid = schedule.Where(s => s.PaymentStatus == "Paid").Sum(s => s.InterestAmount);
+                dashboard.PrincipalPaid = schedule.Where(s => s.PaymentStatus == "Paid").Sum(s => s.PrincipalAmount);
+                dashboard.CurrentMonthEMI = emi.MonthlyEMI;
+                dashboard.NextDueDate = nextDue?.DueDate;
+                dashboard.EMIsPaid = paidCount;
+                dashboard.EMIsRemaining = emi.TermMonths - paidCount;
+                dashboard.Status = emi.Status.ToString();
+                dashboard.IsOverdue = schedule.Any(s => s.PaymentStatus == "Overdue");
+                dashboard.DaysOverdue = schedule.Where(s => s.PaymentStatus == "Overdue").Select(s => (DateTime.UtcNow - s.DueDate).Days).DefaultIfEmpty(0).Max();
+                dashboard.LateFeeAmount = schedule.Sum(s => s.LateFee);
+                dashboard.PaymentStatus = emi.IsCompleted ? "Completed" : "Active";
+                dashboards.Add(dashboard);
+            }
+
+            return dashboards;
         }
 
         public async Task<List<EMIScheduleDto>> GenerateEMIScheduleAsync(int emiId)
@@ -130,11 +174,12 @@ namespace Kanini.LMP.Application.Services.Implementations
             var emiPlan = await _unitOfWork.EMIPlans.GetByIdAsync(emiId);
             if (emiPlan == null) return new List<EMIScheduleDto>();
 
-            var payments = new List<PaymentTransaction>(); // TODO: Get from generic repository
+            var payments = await _unitOfWork.PaymentTransactions.GetAllAsync(p => p.EMIId == emiId);
             var schedule = new List<EMIScheduleDto>();
             var monthlyRate = emiPlan.RateOfInterest / 12 / 100;
             var outstandingBalance = emiPlan.PrincipleAmount;
-            var startDate = DateTime.UtcNow; // TODO: Get from loan application
+            var loanApp = await _unitOfWork.LoanApplications.GetByIdAsync(emiPlan.LoanApplicationBaseId);
+            var startDate = loanApp?.SubmissionDate.ToDateTime(TimeOnly.MinValue) ?? DateTime.UtcNow;
 
             for (int i = 1; i <= emiPlan.TermMonths; i++)
             {
@@ -167,7 +212,8 @@ namespace Kanini.LMP.Application.Services.Implementations
             var emiPlan = await _unitOfWork.EMIPlans.GetByIdAsync(emiId);
             if (emiPlan == null) throw new ArgumentException(ApplicationConstants.ErrorMessages.EMIPlanNotFound);
 
-            var paidAmount = 0m; // TODO: Calculate from payments
+            var payments = await _unitOfWork.PaymentTransactions.GetAllAsync(p => p.EMIId == emiId);
+            var paidAmount = payments.Where(p => p.Status == Database.Enums.PaymentStatus.Success).Sum(p => p.Amount);
             var currentOutstanding = emiPlan.TotalRepaymentAmount - paidAmount;
             var prepaymentCharges = prepaymentAmount * 0.02m;
             var newOutstanding = Math.Max(0, currentOutstanding - prepaymentAmount);
@@ -200,8 +246,10 @@ namespace Kanini.LMP.Application.Services.Implementations
             var emiPlan = await _unitOfWork.EMIPlans.GetByIdAsync(emiId);
             if (emiPlan == null) return 0;
 
-            var paymentsCount = 0; // TODO: Count from payments
-            var startDate = DateTime.UtcNow; // TODO: Get from loan application
+            var payments = await _unitOfWork.PaymentTransactions.GetAllAsync(p => p.EMIId == emiId);
+            var paymentsCount = payments.Count(p => p.Status == Database.Enums.PaymentStatus.Success);
+            var loanApp = await _unitOfWork.LoanApplications.GetByIdAsync(emiPlan.LoanApplicationBaseId);
+            var startDate = loanApp?.SubmissionDate.ToDateTime(TimeOnly.MinValue) ?? DateTime.UtcNow;
             var nextDueDate = startDate.AddMonths(paymentsCount + 1);
 
             if (currentDate <= nextDueDate) return 0;
@@ -218,7 +266,8 @@ namespace Kanini.LMP.Application.Services.Implementations
             var emiPlan = await _unitOfWork.EMIPlans.GetByIdAsync(restructureDto.EMIId);
             if (emiPlan == null) throw new ArgumentException(ApplicationConstants.ErrorMessages.EMIPlanNotFound);
 
-            var paidAmount = 0m; // TODO: Calculate from payments
+            var payments = await _unitOfWork.PaymentTransactions.GetAllAsync(p => p.EMIId == restructureDto.EMIId);
+            var paidAmount = payments.Where(p => p.Status == Database.Enums.PaymentStatus.Success).Sum(p => p.Amount);
             var currentOutstanding = emiPlan.TotalRepaymentAmount - paidAmount;
             var newTenure = restructureDto.NewTenureMonths ?? emiPlan.TermMonths;
             var newRate = restructureDto.NewInterestRate ?? emiPlan.RateOfInterest;
@@ -272,6 +321,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                         await transaction.CommitAsync();
 
                         _logger.LogInformation("EMI restructure applied successfully");
+                        await CreateNotificationAsync(emiPlan.CustomerId, $"EMI restructured: New EMI ₹{calculation.NewEMI} for {calculation.NewTenure} months");
                         return MapToDto(updated);
                     }
                     catch (Exception)
@@ -391,6 +441,21 @@ namespace Kanini.LMP.Application.Services.Implementations
         public async Task<IEnumerable<EMIScheduleDto>> GenerateEMIScheduleViaSPAsync(int emiId)
         {
             return await GenerateEMIScheduleAsync(emiId);
+        }
+
+        private async Task CreateNotificationAsync(int customerId, string message)
+        {
+            var customer = await _unitOfWork.Customers.GetByIdAsync(customerId);
+            if (customer != null)
+            {
+                var notification = new Notification
+                {
+                    UserId = customer.UserId,
+                    NotificationMessage = message
+                };
+                await _unitOfWork.Notifications.AddAsync(notification);
+                await _unitOfWork.SaveChangesAsync();
+            }
         }
     }
 }

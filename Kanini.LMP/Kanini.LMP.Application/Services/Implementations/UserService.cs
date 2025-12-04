@@ -94,5 +94,43 @@ namespace Kanini.LMP.Application.Services.Implementations
 
             return _mapper.Map<UserDTO>(createdUser);
         }
+
+        public async Task<UserDTO> UpdateUserAsync(UserDTO userDto)
+        {
+            var user = await _unitOfWork.Users.GetByIdAsync(userDto.UserId);
+            if (user == null) throw new InvalidOperationException("User not found");
+
+            user.FullName = userDto.FullName;
+            user.Email = userDto.Email;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            var updatedUser = await _unitOfWork.Users.UpdateAsync(user);
+            await _unitOfWork.SaveChangesAsync();
+
+            return _mapper.Map<UserDTO>(updatedUser);
+        }
+
+        public async Task ActivateUserAsync(int userId)
+        {
+            var user = await _unitOfWork.Users.GetByIdAsync(userId);
+            if (user == null) throw new InvalidOperationException("User not found");
+
+            user.Status = UserStatus.Active;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _unitOfWork.Users.UpdateAsync(user);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task<bool> ResetPasswordAsync(string email, string oldPassword, string newPassword)
+        {
+            var user = await _unitOfWork.Users.GetAsync(u => u.Email == email);
+            if (user == null) return false;
+
+            user.PasswordHash = PasswordService.HashPassword(newPassword);
+            user.UpdatedAt = DateTime.UtcNow;
+            await _unitOfWork.Users.UpdateAsync(user);
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
     }
 }

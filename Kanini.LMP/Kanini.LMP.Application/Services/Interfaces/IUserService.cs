@@ -11,5 +11,8 @@ namespace Kanini.LMP.Application.Services.Interfaces
         Task<UserDTO> RegisterCustomerAsync(CustomerRegistrationDTO registrationDto);
         Task<bool> ForgotPasswordAsync(string email);
         Task<UserDTO> CreateUserAsync(UserDTO userDto);
+        Task<UserDTO> UpdateUserAsync(UserDTO userDto);
+        Task ActivateUserAsync(int userId);
+        Task<bool> ResetPasswordAsync(string email, string oldPassword, string newPassword);
     }
 }

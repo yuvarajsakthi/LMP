@@ -1,5 +1,6 @@
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Data.Data;
+using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 
@@ -18,17 +19,43 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             var application = await _context.LoanApplicationBases
                 .Include(app => app.LoanDetails)
+                .Include(app => app.PersonalDetails)
+                .Include(app => app.AddressInformation)
+                .Include(app => app.Customer)
                 .FirstOrDefaultAsync(app => app.LoanApplicationBaseId == applicationId);
 
             if (application == null)
                 throw new ArgumentException("Application not found");
 
-            var loanDetails = application.LoanDetails;
+            var pdfContent = GenerateApplicationPdfContent(application);
+            var pdfBytes = Encoding.UTF8.GetBytes(pdfContent);
 
-            // Generate simple PDF content
-            var pdfContent = GenerateApplicationPdfContent(application, loanDetails);
+            // Store PDF in DocumentUpload table
+            var document = new DocumentUpload
+            {
+                LoanApplicationBaseId = applicationId,
+                UserId = application.CustomerId,
+                DocumentName = $"LoanApplication_{applicationId}.pdf",
+                DocumentType = "Application PDF",
+                DocumentData = pdfBytes,
+                UploadedAt = DateTime.UtcNow
+            };
 
-            return Encoding.UTF8.GetBytes(pdfContent);
+            var existing = await _context.DocumentUploads
+                .FirstOrDefaultAsync(d => d.LoanApplicationBaseId == applicationId && d.DocumentType == "Application PDF");
+
+            if (existing != null)
+            {
+                existing.DocumentData = pdfBytes;
+                existing.UploadedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                await _context.DocumentUploads.AddAsync(document);
+            }
+
+            await _context.SaveChangesAsync();
+            return pdfBytes;
         }
 
         public async Task<byte[]> GeneratePaymentReceiptPdfAsync(int transactionId)
@@ -55,32 +82,55 @@ namespace Kanini.LMP.Application.Services.Implementations
             return Encoding.UTF8.GetBytes(scheduleContent);
         }
 
-        private string GenerateApplicationPdfContent(dynamic application, dynamic loanDetails)
+        private string GenerateApplicationPdfContent(dynamic application)
         {
+            var loanDetails = application.LoanDetails;
+            var personalDetails = application.PersonalDetails;
+            var addressInfo = application.AddressInformation;
+
             return $@"
-LOAN APPLICATION DOCUMENT
-========================
+========================================
+    LOAN APPLICATION DOCUMENT
+========================================
 
 Application ID: {application.LoanApplicationBaseId}
 Application Date: {application.SubmissionDate}
 Status: {application.Status}
-
-CUSTOMER INFORMATION
--------------------
-Application ID: {application.LoanApplicationBaseId}
-Loan Product: {application.LoanProductType}
-
-LOAN DETAILS
------------
 Loan Type: {application.LoanProductType}
+
+----------------------------------------
+CUSTOMER INFORMATION
+----------------------------------------
+Full Name: {personalDetails?.FullName ?? "N/A"}
+Email: {personalDetails?.Email ?? "N/A"}
+Phone: {personalDetails?.PhoneNumber ?? "N/A"}
+Date of Birth: {personalDetails?.DateOfBirth}
+Gender: {personalDetails?.Gender}
+
+----------------------------------------
+ADDRESS INFORMATION
+----------------------------------------
+Current Address: {addressInfo?.CurrentAddress ?? "N/A"}
+City: {addressInfo?.City ?? "N/A"}
+State: {addressInfo?.State ?? "N/A"}
+Pincode: {addressInfo?.Pincode ?? "N/A"}
+
+----------------------------------------
+LOAN DETAILS
+----------------------------------------
 Requested Amount: ₹{loanDetails?.RequestedAmount ?? 0:N2}
 Tenure: {loanDetails?.TenureMonths ?? 0} months
 Interest Rate: {loanDetails?.InterestRate ?? 0}%
 Monthly EMI: ₹{loanDetails?.MonthlyInstallment ?? 0:N2}
+Purpose: {loanDetails?.LoanPurpose ?? "N/A"}
+
+----------------------------------------
 
 Generated on: {DateTime.Now:dd MMM yyyy HH:mm}
 
 This is a system-generated document.
+
+========================================
 ";
         }
 

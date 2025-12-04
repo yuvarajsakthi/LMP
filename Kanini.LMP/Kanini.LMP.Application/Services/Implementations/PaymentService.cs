@@ -1,5 +1,7 @@
+using AutoMapper;
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Data.Repositories.Interfaces;
+using Kanini.LMP.Data.UnitOfWork;
 using Kanini.LMP.Database.Entities;
 using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.EntitiesDto.PaymentTransaction;
@@ -16,38 +18,69 @@ namespace Kanini.LMP.Application.Services.Implementations
     {
         private readonly ILMPRepository<PaymentTransaction, int> _paymentRepository;
         private readonly ILMPRepository<EMIPlan, int> _emiRepository;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
         public PaymentService(
             ILMPRepository<PaymentTransaction, int> paymentRepository,
-            ILMPRepository<EMIPlan, int> emiRepository)
+            ILMPRepository<EMIPlan, int> emiRepository,
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
             _paymentRepository = paymentRepository;
             _emiRepository = emiRepository;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<PaymentTransactionDTO> CreatePaymentAsync(PaymentTransactionCreateDTO dto)
         {
-            var payment = new PaymentTransaction
-            {
-                EMIId = dto.EMIId,
-                LoanAccountId = dto.LoanAccountId,
-                Amount = dto.Amount,
-                PaymentDate = DateTime.UtcNow,
-                PaymentMethod = (EntityPaymentMethod)dto.PaymentMethod,
-                TransactionReference = dto.TransactionReference,
-                Status = EntityPaymentStatus.Pending,
-                CreatedAt = DateTime.UtcNow,
-                IsActive = true
-            };
+            var payment = _mapper.Map<PaymentTransaction>(dto);
+            payment.PaymentDate = DateTime.UtcNow;
+            payment.TransactionReference = string.IsNullOrEmpty(dto.TransactionReference) 
+                ? GenerateTransactionReference() 
+                : dto.TransactionReference;
+            payment.Status = EntityPaymentStatus.Pending;
+            payment.CreatedAt = DateTime.UtcNow;
+            payment.IsActive = true;
 
             var created = await _paymentRepository.AddAsync(payment);
-            return MapToDto(created);
+            
+            // Simulate payment gateway processing
+            var gatewayResult = await ProcessPaymentGatewayAsync(created);
+            created.Status = gatewayResult ? EntityPaymentStatus.Success : EntityPaymentStatus.Failed;
+            created.UpdatedAt = DateTime.UtcNow;
+            await _paymentRepository.UpdateAsync(created);
+            
+            // Update EMI status if payment successful
+            if (gatewayResult && dto.EMIId > 0)
+            {
+                var emi = await _emiRepository.GetByIdAsync(dto.EMIId);
+                if (emi != null)
+                {
+                    emi.Status = EMIPlanStatus.Closed;
+                    await _emiRepository.UpdateAsync(emi);
+                    await CreateNotificationAsync(emi.CustomerId, $"Payment of ₹{dto.Amount} processed successfully for EMI #{dto.EMIId}");
+                }
+            }
+            else if (!gatewayResult)
+            {
+                var loanAccount = await _unitOfWork.LoanAccounts.GetByIdAsync(dto.LoanAccountId);
+                if (loanAccount != null)
+                {
+                    var loanApp = await _unitOfWork.LoanApplications.GetByIdAsync(loanAccount.LoanApplicationBaseId);
+                    if (loanApp != null)
+                        await CreateNotificationAsync(loanApp.CustomerId, $"Payment of ₹{dto.Amount} failed. Please try again.");
+                }
+            }
+            
+            return _mapper.Map<PaymentTransactionDTO>(created);
         }
 
         public async Task<IReadOnlyList<PaymentTransactionDTO>> GetPaymentsByLoanAccountAsync(int loanAccountId)
         {
             var payments = await _paymentRepository.GetAllAsync(p => p.LoanAccountId == loanAccountId);
-            return payments.Select(MapToDto).ToList();
+            return _mapper.Map<IReadOnlyList<PaymentTransactionDTO>>(payments);
         }
 
         public async Task<PaymentTransactionDTO> UpdatePaymentStatusAsync(int paymentId, EntityPaymentStatus status)
@@ -59,49 +92,30 @@ namespace Kanini.LMP.Application.Services.Implementations
             payment.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _paymentRepository.UpdateAsync(payment);
-            return MapToDto(updated);
+            return _mapper.Map<PaymentTransactionDTO>(updated);
         }
 
         public async Task<IReadOnlyList<EMIPlanDTO>> GetEMIPlansByLoanAccountAsync(int loanAccountId)
         {
             var emiPlans = await _emiRepository.GetAllAsync(e => e.LoanApplicationBaseId == loanAccountId);
-            return emiPlans.Select(MapEMIToDto).ToList();
+            return _mapper.Map<IReadOnlyList<EMIPlanDTO>>(emiPlans);
         }
 
-        private PaymentTransactionDTO MapToDto(PaymentTransaction payment)
+
+
+        private string GenerateTransactionReference()
         {
-            return new PaymentTransactionDTO
-            {
-                TransactionId = payment.TransactionId,
-                EMIId = payment.EMIId,
-                LoanAccountId = payment.LoanAccountId,
-                Amount = payment.Amount,
-                PaymentDate = payment.PaymentDate,
-                PaymentMethod = (DtoPaymentMethod)payment.PaymentMethod,
-                TransactionReference = payment.TransactionReference,
-                Status = (DtoPaymentStatus)payment.Status,
-                CreatedAt = payment.CreatedAt,
-                UpdatedAt = payment.UpdatedAt,
-                IsActive = payment.IsActive
-            };
+            return $"TXN{DateTime.UtcNow:yyyyMMddHHmmss}{new Random().Next(1000, 9999)}";
         }
 
-        private EMIPlanDTO MapEMIToDto(EMIPlan emi)
+        private async Task<bool> ProcessPaymentGatewayAsync(PaymentTransaction payment)
         {
-            return new EMIPlanDTO
-            {
-                EMIId = emi.EMIId,
-                LoanAppicationBaseId = emi.LoanApplicationBaseId,
-                LoanAccountId = emi.LoanApplicationBaseId,
-                PrincipleAmount = emi.PrincipleAmount,
-                TermMonths = emi.TermMonths,
-                RateOfInterest = emi.RateOfInterest,
-                MonthlyEMI = emi.MonthlyEMI,
-                TotalInerestPaid = emi.TotalInterestPaid,
-                TotalRepaymentAmount = emi.TotalRepaymentAmount,
-                Status = emi.Status,
-                IsCompleted = emi.IsCompleted
-            };
+            // Simulate payment gateway processing
+            await Task.Delay(100); // Simulate network delay
+            
+            // 95% success rate simulation
+            var random = new Random();
+            return random.Next(100) < 95;
         }
 
         public async Task<PaymentAnalyticsResult> GetPaymentsByDateRangeViaSPAsync(DateTime fromDate, DateTime toDate)
@@ -126,7 +140,22 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             // Mock implementation - replace with actual SP call
             var payments = await _paymentRepository.GetAllAsync(p => p.LoanAccountId == loanAccountId);
-            return payments.Select(MapToDto).OrderByDescending(p => p.PaymentDate);
+            return _mapper.Map<IEnumerable<PaymentTransactionDTO>>(payments).OrderByDescending(p => p.PaymentDate);
+        }
+
+        private async Task CreateNotificationAsync(int customerId, string message)
+        {
+            var customer = await _unitOfWork.Customers.GetByIdAsync(customerId);
+            if (customer != null)
+            {
+                var notification = new Notification
+                {
+                    UserId = customer.UserId,
+                    NotificationMessage = message
+                };
+                await _unitOfWork.Notifications.AddAsync(notification);
+                await _unitOfWork.SaveChangesAsync();
+            }
         }
     }
 }

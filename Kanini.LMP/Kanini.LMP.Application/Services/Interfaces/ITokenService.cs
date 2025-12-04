@@ -11,7 +11,7 @@ namespace Kanini.LMP.Data.Repositories.Interfaces
 {
     public interface ITokenService
     {
-        string GenerateToken(User user);
+        string GenerateToken(UserDTO userDto);
         Task<string?> AuthenticateAsync(string email, string password);
     }
 }

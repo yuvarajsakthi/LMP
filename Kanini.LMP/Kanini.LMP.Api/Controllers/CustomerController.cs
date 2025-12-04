@@ -14,9 +14,9 @@ namespace Kanini.LMP.Api.Controllers
     public class CustomerController : ControllerBase
     {
         private readonly ICustomerService _customerService;
-        private readonly IUser _userService;
+        private readonly IUserService _userService;
 
-        public CustomerController(ICustomerService customerService, IUser userService)
+        public CustomerController(ICustomerService customerService, IUserService userService)
         {
             _customerService = customerService;
             _userService = userService;
@@ -79,7 +79,7 @@ namespace Kanini.LMP.Api.Controllers
                 if (customer == null)
                     return NotFound(ApiResponse<object>.ErrorResponse("Customer not found"));
 
-                var user = await _userService.GetByIdAsync(userId);
+                var user = await _userService.GetUserByIdAsync(userId);
                 if (user == null)
                     return NotFound(ApiResponse<object>.ErrorResponse("User not found"));
 
@@ -128,12 +128,12 @@ namespace Kanini.LMP.Api.Controllers
                 if (customer == null)
                     return NotFound(ApiResponse<object>.ErrorResponse("Customer not found"));
 
-                var user = await _userService.GetByIdAsync(userId);
+                var user = await _userService.GetUserByIdAsync(userId);
                 if (user == null)
                     return NotFound(ApiResponse<object>.ErrorResponse("User not found"));
 
                 user.FullName = settingsDto.FullName;
-                await _userService.UpdateAsync(user);
+                await _userService.UpdateUserAsync(user);
 
                 customer.PhoneNumber = settingsDto.PhoneNumber;
                 customer.Occupation = settingsDto.Occupation;

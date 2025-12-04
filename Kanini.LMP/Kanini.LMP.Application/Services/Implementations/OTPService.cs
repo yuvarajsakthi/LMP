@@ -1,6 +1,4 @@
 using Kanini.LMP.Application.Services.Interfaces;
-using Kanini.LMP.Data.Repositories.Interfaces;
-using Kanini.LMP.Database.Entities;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
