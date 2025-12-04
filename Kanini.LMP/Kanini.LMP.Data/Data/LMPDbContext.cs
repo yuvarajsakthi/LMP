@@ -34,7 +34,6 @@ namespace Kanini.LMP.Data.Data
         public DbSet<LoanDetails> LoanDetails => Set<LoanDetails>();
         public DbSet<Declaration> Declarations => Set<Declaration>();
         public DbSet<LoanApplicant> LoanApplicants => Set<LoanApplicant>();
-        public DbSet<ApplicationDocumentLink> ApplicationDocumentLinks => Set<ApplicationDocumentLink>();
         public DbSet<PropertyDetails> PropertyDetails => Set<PropertyDetails>();
         public DbSet<VehicleInformation> VehicleInformations => Set<VehicleInformation>();
 
@@ -87,18 +86,6 @@ namespace Kanini.LMP.Data.Data
                 .HasOne(la => la.Customer)
                 .WithMany()
                 .HasForeignKey(la => la.CustomerId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            b.Entity<ApplicationDocumentLink>()
-                .HasOne(adl => adl.LoanApplicationBase)
-                .WithMany()
-                .HasForeignKey(adl => adl.LoanApplicationBaseId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            b.Entity<ApplicationDocumentLink>()
-                .HasOne(adl => adl.DocumentUpload)
-                .WithMany()
-                .HasForeignKey(adl => adl.DocumentId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             b.Entity<PropertyDetails>()

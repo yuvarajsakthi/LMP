@@ -13,11 +13,11 @@ namespace Kanini.LMP.Api.Controllers
     public class TokenController : ControllerBase
     {
         private readonly ITokenService _tokenService;
-        private readonly IUser _userService;
+        private readonly IUserService _userService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IOTPService _otpService;
 
-        public TokenController(ITokenService tokenService, IUser userService, IUnitOfWork unitOfWork, IOTPService otpService)
+        public TokenController(ITokenService tokenService, IUserService userService, IUnitOfWork unitOfWork, IOTPService otpService)
         {
             _tokenService = tokenService;
             _userService = userService;
@@ -33,13 +33,13 @@ namespace Kanini.LMP.Api.Controllers
                 if (loginDto == null || string.IsNullOrEmpty(loginDto.Username) || string.IsNullOrEmpty(loginDto.Password))
                     return BadRequest(ApiResponse<object>.ErrorResponse("Username and password are required"));
 
-                var user = await _userService.GetByUsernameAsync(loginDto.Username);
-                if (user == null || !PasswordService.VerifyPassword(loginDto.Password, user.PasswordHash))
+                var user = await _userService.GetUserByNameAsync(loginDto.Username);
+                if (user == null || !PasswordService.VerifyPassword(loginDto.Password, user.Password))
                     return Unauthorized(ApiResponse<object>.ErrorResponse("Invalid credentials"));
 
                 if (user.Status == Database.Enums.UserStatus.Pending)
                 {
-                    await _otpService.SendOTPAsync(user.Email, "", user.Email, "REGISTER");
+                    await _otpService.GenerateOTPAsync(user.Email, "REGISTER");
                     return Ok(ApiResponse<object>.SuccessResponse(new
                     {
                         requiresVerification = true,
@@ -73,11 +73,11 @@ namespace Kanini.LMP.Api.Controllers
                 if (request == null || string.IsNullOrEmpty(request.Email))
                     return BadRequest(ApiResponse<object>.ErrorResponse("Email is required"));
 
-                var user = await _userService.GetByEmailAsync(request.Email);
+                var user = await _userService.GetUserByEmailAsync(request.Email);
                 if (user == null)
                     return NotFound(ApiResponse<object>.ErrorResponse("Email not found"));
 
-                await _otpService.SendOTPAsync(user.UserId, request.PhoneNumber ?? "", request.Email, "LOGIN");
+                await _otpService.GenerateOTPAsync(request.Email, "LOGIN");
                 
                 return Ok(ApiResponse<object>.SuccessResponse(new { 
                     message = "OTP sent successfully",
@@ -98,11 +98,11 @@ namespace Kanini.LMP.Api.Controllers
                 if (request == null || string.IsNullOrEmpty(request.Email))
                     return BadRequest(ApiResponse<object>.ErrorResponse("Email is required"));
 
-                var user = await _userService.GetByEmailAsync(request.Email);
+                var user = await _userService.GetUserByEmailAsync(request.Email);
                 if (user != null && user.Status == Database.Enums.UserStatus.Active)
                     return BadRequest(ApiResponse<object>.ErrorResponse("Email already exists"));
 
-                await _otpService.SendOTPAsync(0, request.PhoneNumber ?? "", request.Email, "REGISTER");
+                await _otpService.GenerateOTPAsync(request.Email, "REGISTER");
                 
                 return Ok(ApiResponse<object>.SuccessResponse(new { 
                     message = "OTP sent successfully",
@@ -123,11 +123,11 @@ namespace Kanini.LMP.Api.Controllers
                 if (request == null || string.IsNullOrEmpty(request.Email))
                     return BadRequest(ApiResponse<object>.ErrorResponse("Email is required"));
 
-                var user = await _userService.GetByEmailAsync(request.Email);
+                var user = await _userService.GetUserByEmailAsync(request.Email);
                 if (user == null)
                     return NotFound(ApiResponse<object>.ErrorResponse("Email not found"));
 
-                await _otpService.SendOTPAsync(user.UserId, request.PhoneNumber ?? "", request.Email, "FORGETPASSWORD");
+                await _otpService.GenerateOTPAsync(request.Email, "FORGETPASSWORD");
                 
                 return Ok(ApiResponse<object>.SuccessResponse(new { 
                     message = "OTP sent successfully",
@@ -148,11 +148,11 @@ namespace Kanini.LMP.Api.Controllers
                 if (request == null || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.OTP))
                     return BadRequest(ApiResponse<object>.ErrorResponse("Email and OTP are required"));
 
-                var user = await _userService.GetByEmailAsync(request.Email);
+                var user = await _userService.GetUserByEmailAsync(request.Email);
                 if (user == null)
                     return NotFound(ApiResponse<object>.ErrorResponse("Email not found"));
 
-                var isValid = await _otpService.VerifyOTPAsync(user.UserId, request.OTP, "LOGIN");
+                var isValid = await _otpService.VerifyOTPAsync(request.Email, request.OTP, "LOGIN");
                 if (!isValid)
                     return BadRequest(ApiResponse<object>.ErrorResponse("Invalid or expired OTP"));
 
@@ -180,13 +180,13 @@ namespace Kanini.LMP.Api.Controllers
                 if (registrationData == null)
                     return BadRequest(ApiResponse<object>.ErrorResponse("Registration data is required"));
 
-                var existingUser = await _userService.GetByEmailAsync(registrationData.Email);
+                var existingUser = await _userService.GetUserByEmailAsync(registrationData.Email);
                 if (existingUser != null && existingUser.Status == Database.Enums.UserStatus.Active)
                     return BadRequest(ApiResponse<object>.ErrorResponse("Email already registered"));
 
                 if (existingUser != null && existingUser.Status == Database.Enums.UserStatus.Pending)
                 {
-                    await _otpService.SendOTPAsync(existingUser.UserId, registrationData.PhoneNumber, registrationData.Email, "REGISTER");
+                    await _otpService.GenerateOTPAsync(registrationData.Email, "REGISTER");
                     return Ok(ApiResponse<object>.SuccessResponse(new { 
                         message = "Account exists but not verified. OTP sent to your email.",
                         userId = existingUser.UserId
@@ -194,7 +194,7 @@ namespace Kanini.LMP.Api.Controllers
                 }
 
                 var userDto = await _userService.RegisterCustomerAsync(registrationData);
-                await _otpService.SendOTPAsync(userDto.UserId, registrationData.PhoneNumber, registrationData.Email, "REGISTER");
+                await _otpService.GenerateOTPAsync(registrationData.Email, "REGISTER");
                 
                 return Ok(ApiResponse<object>.SuccessResponse(new { 
                     message = "Registration successful. OTP sent to your email.",
@@ -215,11 +215,11 @@ namespace Kanini.LMP.Api.Controllers
                 if (request == null || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.OTP))
                     return BadRequest(ApiResponse<object>.ErrorResponse("Email and OTP are required"));
 
-                var user = await _userService.GetByEmailAsync(request.Email);
+                var user = await _userService.GetUserByEmailAsync(request.Email);
                 if (user == null)
                     return NotFound(ApiResponse<object>.ErrorResponse("User not found"));
 
-                var isValid = await _otpService.VerifyOTPAsync(user.UserId, request.OTP, "REGISTER");
+                var isValid = await _otpService.VerifyOTPAsync(request.Email, request.OTP, "REGISTER");
                 if (!isValid)
                     return BadRequest(ApiResponse<object>.ErrorResponse("Invalid or expired OTP"));
 
@@ -244,17 +244,16 @@ namespace Kanini.LMP.Api.Controllers
             {
                 if (request == null || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.OTP) || string.IsNullOrEmpty(request.NewPassword))
                     return BadRequest(ApiResponse<object>.ErrorResponse("Email, OTP and new password are required"));
-                    return BadRequest(ApiResponse<object>.ErrorResponse("Email, OTP and new password are required"));
 
-                var user = await _userService.GetByEmailAsync(request.Email);
+                var user = await _userService.GetUserByEmailAsync(request.Email);
                 if (user == null)
                     return NotFound(ApiResponse<object>.ErrorResponse("Email not found"));
 
-                var isValid = await _otpService.VerifyOTPAsync(user.UserId, request.OTP, "FORGETPASSWORD");
+                var isValid = await _otpService.VerifyOTPAsync(request.Email, request.OTP, "FORGETPASSWORD");
                 if (!isValid)
                     return BadRequest(ApiResponse<object>.ErrorResponse("Invalid or expired OTP"));
 
-                var success = await _userService.ResetPasswordAsync(user.Email, "", request.NewPassword);
+                var success = await _userService.ResetPasswordAsync(request.Email, "", request.NewPassword);
                 if (!success)
                     return BadRequest(ApiResponse<object>.ErrorResponse("Password reset failed"));
 

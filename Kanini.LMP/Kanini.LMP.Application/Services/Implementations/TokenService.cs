@@ -1,27 +1,26 @@
-﻿using Kanini.LMP.Application.Services.Implementations;
+﻿using AutoMapper;
 using Kanini.LMP.Data.Repositories.Interfaces;
 using Kanini.LMP.Database.Entities;
+using Kanini.LMP.Database.EntitiesDto;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Kanini.LMP.Data.Repositories.Implementations
+namespace Kanini.LMP.Application.Services.Implementations
 {
     public class TokenService : ITokenService
     {
         private readonly IConfiguration _config;
         private readonly ILMPRepository<User, int> _userRepository;
+        private readonly IMapper _mapper;
 
-        public TokenService(IConfiguration config, ILMPRepository<User, int> userRepository)
+        public TokenService(IConfiguration config, ILMPRepository<User, int> userRepository, IMapper mapper)
         {
             _config = config;
             _userRepository = userRepository;
+            _mapper = mapper;
         }
 
         public string GenerateToken(User user)
@@ -29,11 +28,34 @@ namespace Kanini.LMP.Data.Repositories.Implementations
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                 new Claim(ClaimTypes.Name, user.FullName),
+                new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Role, user.Roles.ToString())
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured")));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(2),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public string GenerateToken(UserDTO userDto)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, userDto.UserId.ToString()),
+                new Claim(ClaimTypes.Name, userDto.FullName),
+                new Claim(ClaimTypes.Role, userDto.Roles.ToString())
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured")));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
@@ -61,7 +83,7 @@ namespace Kanini.LMP.Data.Repositories.Implementations
             if (!string.IsNullOrEmpty(password) && !PasswordService.VerifyPassword(password, user.PasswordHash))
                 return null;
 
-            return GenerateToken(user);
+            return GenerateToken(_mapper.Map<UserDTO>(user));
         }
     }
 }

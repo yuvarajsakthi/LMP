@@ -7,7 +7,7 @@ using Kanini.LMP.Database.Entities.ManagerEntities;
 using Kanini.LMP.Database.EntitiesDto;
 using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto.CustomerBasicDto.Customer;
 using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto.CustomerBasicDto.EMIPlan;
-using Kanini.LMP.Database.EntitiesDtos.KYCDtos;
+
 using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.HomeLoanApplication;
 using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.PersonalLoanApplication;
 using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.VehicleLoanApplication;
@@ -52,10 +52,8 @@ namespace Kanini.LMP.Application.Mappings
 
             // EMI Plan mappings
             CreateMap<EMIPlan, EMIPlanDto>().ReverseMap();
-            CreateMap<EMIPlan, EMIPlanDTO>()
-                .ForMember(dest => dest.LoanAppicationBaseId, opt => opt.MapFrom(src => src.LoanApplicationBaseId))
-                .ForMember(dest => dest.TotalInerestPaid, opt => opt.MapFrom(src => src.TotalInterestPaid))
-                .ReverseMap();
+            CreateMap<EMIPlan, EMIPlanDTO>().ReverseMap();
+            CreateMap<EMIPlanCreateDTO, EMIPlan>();
 
             // Loan Account mappings
             CreateMap<LoanAccount, LoanAccountDto>().ReverseMap();
@@ -71,21 +69,7 @@ namespace Kanini.LMP.Application.Mappings
             // Workflow mappings
             CreateMap<LoanOriginationWorkflow, WorkflowStepDto>().ReverseMap();
 
-            // KYC mappings
-            CreateMap<DocumentUpload, KYCVerificationDto>()
-                .ForMember(dest => dest.DocumentId, opt => opt.MapFrom(src => src.DocumentId))
-                .ForMember(dest => dest.CustomerId, opt => opt.MapFrom(src => src.UserId))
-                .ForMember(dest => dest.CustomerName, opt => opt.Ignore())
-                .ForMember(dest => dest.DocumentType, opt => opt.MapFrom(src => src.DocumentType != null ? src.DocumentType.Replace("KYC_", "") : ""))
-                .ForMember(dest => dest.DocumentImageBase64, opt => opt.MapFrom(src => src.DocumentData != null ? Convert.ToBase64String(src.DocumentData) : ""))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => "Pending"));
 
-            CreateMap<KYCSubmissionDto, DocumentUpload>()
-                .ForMember(dest => dest.LoanApplicationBaseId, opt => opt.MapFrom(src => src.LoanApplicationId))
-                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.CustomerId))
-                .ForMember(dest => dest.DocumentData, opt => opt.MapFrom(src => Convert.FromBase64String(src.DocumentImageBase64)))
-                .ForMember(dest => dest.UploadedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.DocumentId, opt => opt.Ignore());
 
             // Loan Application mappings
             CreateMap<PersonalLoanApplication, PersonalLoanApplicationDTO>()

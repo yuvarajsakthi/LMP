@@ -8,6 +8,8 @@ using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.HomeLoanApplica
 using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.VehicleLoanApplication;
 using Kanini.LMP.Database.Enums;
 using Microsoft.Extensions.Logging;
+using Kanini.LMP.Data.UnitOfWork;
+using Kanini.LMP.Database.Entities;
 
 namespace Kanini.LMP.Application.Services.Implementations
 {
@@ -19,6 +21,8 @@ namespace Kanini.LMP.Application.Services.Implementations
         private readonly ILMPRepository<VehicleLoanApplication, int> _vehicleLoanRepository;
         private readonly ILMPRepository<LoanApplicant, int> _loanApplicantRepository;
         private readonly IEligibilityService _eligibilityService;
+        private readonly IPdfService _pdfService;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<LoanApplicationService> _logger;
 
@@ -29,6 +33,8 @@ namespace Kanini.LMP.Application.Services.Implementations
             ILMPRepository<VehicleLoanApplication, int> vehicleLoanRepository,
             ILMPRepository<LoanApplicant, int> loanApplicantRepository,
             IEligibilityService eligibilityService,
+            IPdfService pdfService,
+            IUnitOfWork unitOfWork,
             IMapper mapper,
             ILogger<LoanApplicationService> logger)
         {
@@ -38,6 +44,8 @@ namespace Kanini.LMP.Application.Services.Implementations
             _vehicleLoanRepository = vehicleLoanRepository;
             _loanApplicantRepository = loanApplicantRepository;
             _eligibilityService = eligibilityService;
+            _pdfService = pdfService;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
         }
@@ -52,6 +60,11 @@ namespace Kanini.LMP.Application.Services.Implementations
             entity.CustomerId = customerId;
             entity.Status = ApplicationStatus.Submitted;
             var created = await _personalLoanRepository.AddAsync(entity);
+            
+            await _pdfService.GenerateLoanApplicationPdfAsync(created.LoanApplicationBaseId);
+            
+            await CreateNotificationAsync(customerId, $"Personal loan application #{created.LoanApplicationBaseId} submitted successfully");
+            
             return _mapper.Map<PersonalLoanApplicationDTO>(created);
         }
 
@@ -77,6 +90,11 @@ namespace Kanini.LMP.Application.Services.Implementations
             entity.CustomerId = customerId;
             entity.Status = ApplicationStatus.Submitted;
             var created = await _homeLoanRepository.AddAsync(entity);
+            
+            await _pdfService.GenerateLoanApplicationPdfAsync(created.LoanApplicationBaseId);
+            
+            await CreateNotificationAsync(customerId, $"Home loan application #{created.LoanApplicationBaseId} submitted successfully");
+            
             return _mapper.Map<HomeLoanApplicationDTO>(created);
         }
 
@@ -102,6 +120,11 @@ namespace Kanini.LMP.Application.Services.Implementations
             entity.CustomerId = customerId;
             entity.Status = ApplicationStatus.Submitted;
             var created = await _vehicleLoanRepository.AddAsync(entity);
+            
+            await _pdfService.GenerateLoanApplicationPdfAsync(created.LoanApplicationBaseId);
+            
+            await CreateNotificationAsync(customerId, $"Vehicle loan application #{created.LoanApplicationBaseId} submitted successfully");
+            
             return _mapper.Map<VehicleLoanApplicationDTO>(created);
         }
 
@@ -129,6 +152,9 @@ namespace Kanini.LMP.Application.Services.Implementations
             if (loan == null) throw new KeyNotFoundException($"Loan application {id} not found");
             loan.Status = status;
             var updated = await _loanAppRepository.UpdateAsync(loan);
+            
+            await CreateNotificationAsync(loan.CustomerId, $"Loan application #{id} status updated to {status}");
+            
             return _mapper.Map<PersonalLoanApplicationDTO>(updated);
         }
 
@@ -155,6 +181,21 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             var loans = await _loanAppRepository.GetAllAsync(l => l.CustomerId == customerId);
             return loans.Select(l => new { l.LoanApplicationBaseId, l.Status, l.SubmissionDate });
+        }
+
+        private async Task CreateNotificationAsync(int customerId, string message)
+        {
+            var customer = await _unitOfWork.Customers.GetByIdAsync(customerId);
+            if (customer != null)
+            {
+                var notification = new Notification
+                {
+                    UserId = customer.UserId,
+                    NotificationMessage = message
+                };
+                await _unitOfWork.Notifications.AddAsync(notification);
+                await _unitOfWork.SaveChangesAsync();
+            }
         }
     }
 }

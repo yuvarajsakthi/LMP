@@ -4,7 +4,7 @@ using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Data.UnitOfWork;
 using Kanini.LMP.Database.EntitiesDto.PaymentTransaction;
 using Kanini.LMP.Database.EntitiesDtos;
-using EntityPaymentStatus = Kanini.LMP.Database.Entities.PaymentStatus;
+using EntityPaymentStatus = Kanini.LMP.Database.Enums.PaymentStatus;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

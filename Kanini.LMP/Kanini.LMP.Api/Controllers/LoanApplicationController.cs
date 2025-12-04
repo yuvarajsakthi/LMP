@@ -86,66 +86,6 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        [HttpPost(ApplicationConstants.Routes.PersonalSubmit)]
-        public async Task<ActionResult> SubmitCompletePersonalLoan(int customerId, PersonalLoanApplicationCreateDTO dto)
-        {
-            try
-            {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingPersonalLoanCreation, customerId);
-
-                var created = await _loanApplicationService.CreatePersonalLoanAsync(dto, customerId);
-                var submitted = await _loanApplicationService.UpdateLoanStatusAsync(created.LoanApplicationBaseId, ApplicationStatus.Submitted);
-
-                _logger.LogInformation(ApplicationConstants.Messages.PersonalLoanCreationCompleted, submitted.LoanApplicationBaseId);
-                return Ok(new
-                {
-                    ApplicationId = submitted.LoanApplicationBaseId,
-                    Status = submitted.Status,
-                    Message = ApplicationConstants.Messages.LoanApplicationSubmittedSuccessfully,
-                    NextSteps = new[]
-                    {
-                        "Upload required documents using /api/Document/upload endpoint",
-                        "Wait for verification and approval",
-                        "Check application status regularly"
-                    }
-                });
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning(ex, ApplicationConstants.ErrorMessages.IneligibleForLoan);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.IneligibleForLoan });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.PersonalLoanCreationFailed, customerId);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.PersonalLoanCreationFailed });
-            }
-        }
-
-        [HttpPut(ApplicationConstants.Routes.PersonalUpdateStatus)]
-        public async Task<ActionResult<PersonalLoanApplicationDTO>> UpdateLoanStatus(int id, [FromBody] ApplicationStatus status)
-        {
-            try
-            {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingLoanStatusUpdate, id, status);
-
-                var updated = await _loanApplicationService.UpdateLoanStatusAsync(id, status);
-
-                _logger.LogInformation(ApplicationConstants.Messages.LoanStatusUpdateCompleted, id);
-                return Ok(updated);
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogWarning(ex, ApplicationConstants.ErrorMessages.LoanApplicationNotFound, id);
-                return NotFound(new { message = ApplicationConstants.ErrorMessages.LoanApplicationNotFound });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ApplicationConstants.ErrorMessages.LoanStatusUpdateFailed, id);
-                return BadRequest(new { message = ApplicationConstants.ErrorMessages.LoanStatusUpdateFailed });
-            }
-        }
-
         [HttpGet("customer-applications")]
         public async Task<ActionResult<IReadOnlyList<PersonalLoanApplicationDTO>>> GetCustomerApplications()
         {
