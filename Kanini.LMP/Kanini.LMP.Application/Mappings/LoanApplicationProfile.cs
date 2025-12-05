@@ -1,32 +1,37 @@
 using AutoMapper;
+using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.Entities.LoanApplicationEntites;
-using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.HomeLoanApplication;
-using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.PersonalLoanApplication;
-using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.VehicleLoanApplication;
+using Kanini.LMP.Database.EntitiesDtos.LoanApplicationDtos;
 
 namespace Kanini.LMP.Application.Mappings
 {
-    public class LoanApplicationProfile : Profile
+    public class LoanApplicationDTOProfile : Profile
     {
-        public LoanApplicationProfile()
+        public LoanApplicationDTOProfile()
         {
+            // Base Loan Application mappings
+            CreateMap<LoanApplicationBaseCreateDTO, LoanApplicationBase>();
+            CreateMap<LoanApplicationBaseUpdateDTO, LoanApplicationBase>();
+            CreateMap<LoanApplicationBase, LoanApplicationBaseDTO>().ReverseMap();
+            CreateMap<LoanApplicationBase, LoanApplicationBaseResponseDTO>();
+
+            // Personal Loan Application mappings
             CreateMap<PersonalLoanApplicationCreateDTO, PersonalLoanApplication>();
-            CreateMap<PersonalLoanApplicationDTO, PersonalLoanApplication>().ReverseMap();
+            CreateMap<PersonalLoanApplicationUpdateDTO, PersonalLoanApplication>();
+            CreateMap<PersonalLoanApplication, PersonalLoanApplicationDTO>().ReverseMap();
             CreateMap<PersonalLoanApplication, PersonalLoanApplicationResponseDTO>();
-            CreateMap<PersonalLoanApplication, PersonalLoanApplicationSummaryDTO>()
-                .ForMember(d => d.ApplicantName, o => o.MapFrom(s => s.PersonalDetails.FullName));
 
+            // Home Loan Application mappings
             CreateMap<HomeLoanApplicationCreateDTO, HomeLoanApplication>();
-            CreateMap<HomeLoanApplicationDTO, HomeLoanApplication>().ReverseMap();
+            CreateMap<HomeLoanApplicationUpdateDTO, HomeLoanApplication>();
+            CreateMap<HomeLoanApplication, HomeLoanApplicationDTO>().ReverseMap();
             CreateMap<HomeLoanApplication, HomeLoanApplicationResponseDTO>();
-            CreateMap<HomeLoanApplication, HomeLoanApplicationSummaryDTO>()
-                .ForMember(d => d.ApplicantName, o => o.MapFrom(s => s.PersonalDetails.FullName));
 
+            // Vehicle Loan Application mappings
             CreateMap<VehicleLoanApplicationCreateDTO, VehicleLoanApplication>();
-            CreateMap<VehicleLoanApplicationDTO, VehicleLoanApplication>().ReverseMap();
-            CreateMap<VehicleLoanApplication, VehicleLoanApplicationSummaryDTO>()
-                .ForMember(d => d.ApplicantName, o => o.MapFrom(s => s.PersonalDetails.FullName));
             CreateMap<VehicleLoanApplicationUpdateDTO, VehicleLoanApplication>();
+            CreateMap<VehicleLoanApplication, VehicleLoanApplicationDTO>().ReverseMap();
+            CreateMap<VehicleLoanApplication, VehicleLoanApplicationResponseDTO>();
         }
     }
 }
