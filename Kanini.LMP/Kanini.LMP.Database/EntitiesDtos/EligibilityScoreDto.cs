@@ -23,4 +23,16 @@ namespace Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto
         public string? Occupation { get; set; }
         public HomeOwnershipStatus? HomeOwnershipStatus { get; set; }
     }
+
+    public class EligibilityCalculationRequest
+    {
+        public int CustomerId { get; set; }
+        public int LoanProductId { get; set; }
+    }
+
+    public class EligibilityCheckRequest
+    {
+        public int CustomerId { get; set; }
+        public int LoanProductId { get; set; } = 0;
+    }
 }

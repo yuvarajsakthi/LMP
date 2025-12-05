@@ -1,6 +1,7 @@
-﻿using Kanini.LMP.Data.Repositories.Interfaces;
+using Kanini.LMP.Data.Repositories.Interfaces;
 using Kanini.LMP.Database.Entities;
 using Kanini.LMP.Database.Entities.CustomerEntities;
+using Kanini.LMP.Database.Entities.LoanApplicationEntites;
 using Kanini.LMP.Database.Entities.LoanProductEntities;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -11,7 +12,9 @@ namespace Kanini.LMP.Data.UnitOfWork
         ILMPRepository<User, int> Users { get; }
         ILMPRepository<Customer, int> Customers { get; }
         ILMPRepository<Notification, int> Notifications { get; }
-        ILMPRepository<LoanApplicationBase, int> LoanApplications { get; }
+        ILMPRepository<PersonalLoanApplication, int> PersonalLoanApplications { get; }
+        ILMPRepository<HomeLoanApplication, int> HomeLoanApplications { get; }
+        ILMPRepository<VehicleLoanApplication, int> VehicleLoanApplications { get; }
         ILMPRepository<EMIPlan, int> EMIPlans { get; }
         ILMPRepository<LoanProduct, int> LoanProducts { get; }
         ILMPRepository<Faq, int> Faqs { get; }

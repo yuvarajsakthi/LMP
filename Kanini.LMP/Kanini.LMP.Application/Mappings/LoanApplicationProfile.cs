@@ -1,5 +1,4 @@
 using AutoMapper;
-using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.Entities.LoanApplicationEntites;
 using Kanini.LMP.Database.EntitiesDtos.LoanApplicationDtos;
 
@@ -9,12 +8,6 @@ namespace Kanini.LMP.Application.Mappings
     {
         public LoanApplicationDTOProfile()
         {
-            // Base Loan Application mappings
-            CreateMap<LoanApplicationBaseCreateDTO, LoanApplicationBase>();
-            CreateMap<LoanApplicationBaseUpdateDTO, LoanApplicationBase>();
-            CreateMap<LoanApplicationBase, LoanApplicationBaseDTO>().ReverseMap();
-            CreateMap<LoanApplicationBase, LoanApplicationBaseResponseDTO>();
-
             // Personal Loan Application mappings
             CreateMap<PersonalLoanApplicationCreateDTO, PersonalLoanApplication>();
             CreateMap<PersonalLoanApplicationUpdateDTO, PersonalLoanApplication>();

@@ -3,8 +3,9 @@ using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Data.UnitOfWork;
 using Kanini.LMP.Database.Entities;
 using Kanini.LMP.Database.Entities.CustomerEntities;
-using Kanini.LMP.Database.EntitiesDto;
 using Kanini.LMP.Database.EntitiesDtos.Authentication;
+using Kanini.LMP.Database.EntitiesDtos.Common;
+using Kanini.LMP.Database.EntitiesDtos.UserDtos;
 using Kanini.LMP.Database.Enums;
 
 namespace Kanini.LMP.Application.Services.Implementations
@@ -23,14 +24,14 @@ namespace Kanini.LMP.Application.Services.Implementations
             _emailService = emailService;
         }
 
-        public async Task<UserDTO?> GetUserByNameAsync(string username) =>
-            _mapper.Map<UserDTO>(await _unitOfWork.Users.GetAsync(u => u.Email == username));
+        public async Task<UserDTO?> GetUserByNameAsync(StringDTO username) =>
+            _mapper.Map<UserDTO>(await _unitOfWork.Users.GetAsync(u => u.Email == username.Value));
 
-        public async Task<UserDTO?> GetUserByIdAsync(int userId) =>
-            _mapper.Map<UserDTO>(await _unitOfWork.Users.GetByIdAsync(userId));
+        public async Task<UserDTO?> GetUserByIdAsync(IdDTO userId) =>
+            _mapper.Map<UserDTO>(await _unitOfWork.Users.GetByIdAsync(userId.Id));
 
-        public async Task<UserDTO?> GetUserByEmailAsync(string email) =>
-            _mapper.Map<UserDTO>(await _unitOfWork.Users.GetAsync(u => u.Email == email));
+        public async Task<UserDTO?> GetUserByEmailAsync(StringDTO email) =>
+            _mapper.Map<UserDTO>(await _unitOfWork.Users.GetAsync(u => u.Email == email.Value));
 
         public async Task<UserDTO> RegisterCustomerAsync(CustomerRegistrationDTO registrationDto)
         {
@@ -51,9 +52,9 @@ namespace Kanini.LMP.Application.Services.Implementations
 
                 var customer = _mapper.Map<Customer>(registrationDto);
                 customer.UserId = createdUser.UserId;
-                customer.AadhaarNumber = string.Empty;
+                customer.PANNumber = registrationDto.PANNumber;
+                customer.AadhaarNumber = registrationDto.AadhaarNumber;
                 customer.Occupation = string.Empty;
-                customer.PANNumber = string.Empty;
                 customer.ProfileImage = Array.Empty<byte>();
                 customer.UpdatedAt = DateTime.UtcNow;
 
@@ -70,27 +71,27 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
         }
 
-        public async Task<bool> ForgotPasswordAsync(string email)
+        public async Task<BoolDTO> ForgotPasswordAsync(StringDTO email)
         {
-            var user = await _unitOfWork.Users.GetAsync(u => u.Email == email);
-            if (user == null) return false;
+            var user = await _unitOfWork.Users.GetAsync(u => u.Email == email.Value);
+            if (user == null) return new BoolDTO { Value = false };
 
             var resetToken = Guid.NewGuid().ToString();
-            _resetTokens[email] = (resetToken, DateTime.UtcNow.AddHours(1));
+            _resetTokens[email.Value] = (resetToken, DateTime.UtcNow.AddHours(1));
 
             await _emailService.SendEmailAsync(new Database.EntitiesDto.Email.EmailDto
             {
-                ToEmail = email,
+                To = email.Value,
                 Subject = "Password Reset Request",
                 Body = $"Dear {user.FullName},\n\nYour password reset token is: {resetToken}\n\nThis token will expire in 1 hour."
             });
-            return true;
+            return new BoolDTO { Value = true };
         }
 
-        public async Task<UserDTO> CreateUserAsync(UserDTO userDto)
+        public async Task<UserDTO> CreateUserAsync(UserCreateDTO userDto)
         {
             var user = _mapper.Map<User>(userDto);
-            user.PasswordHash = PasswordService.HashPassword(userDto.PasswordHash);
+            user.PasswordHash = PasswordService.HashPassword(userDto.Password);
             user.CreatedAt = DateTime.UtcNow;
 
             var createdUser = await _unitOfWork.Users.AddAsync(user);
@@ -99,13 +100,15 @@ namespace Kanini.LMP.Application.Services.Implementations
             return _mapper.Map<UserDTO>(createdUser);
         }
 
-        public async Task<UserDTO> UpdateUserAsync(UserDTO userDto)
+        public async Task<UserDTO> UpdateUserAsync(UserUpdateDTO userDto)
         {
             var user = await _unitOfWork.Users.GetByIdAsync(userDto.UserId);
             if (user == null) throw new InvalidOperationException("User not found");
 
             user.FullName = userDto.FullName;
             user.Email = userDto.Email;
+            if (userDto.Roles.HasValue) user.Roles = userDto.Roles.Value;
+            if (userDto.Status.HasValue) user.Status = userDto.Status.Value;
             user.UpdatedAt = DateTime.UtcNow;
 
             var updatedUser = await _unitOfWork.Users.UpdateAsync(user);
@@ -114,9 +117,9 @@ namespace Kanini.LMP.Application.Services.Implementations
             return _mapper.Map<UserDTO>(updatedUser);
         }
 
-        public async Task ActivateUserAsync(int userId)
+        public async Task ActivateUserAsync(IdDTO userId)
         {
-            var user = await _unitOfWork.Users.GetByIdAsync(userId);
+            var user = await _unitOfWork.Users.GetByIdAsync(userId.Id);
             if (user == null) throw new InvalidOperationException("User not found");
 
             user.Status = UserStatus.Active;
@@ -125,16 +128,16 @@ namespace Kanini.LMP.Application.Services.Implementations
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<bool> ResetPasswordAsync(string email, string oldPassword, string newPassword)
+        public async Task<BoolDTO> ResetPasswordAsync(StringDTO email, StringDTO oldPassword, StringDTO newPassword)
         {
-            var user = await _unitOfWork.Users.GetAsync(u => u.Email == email);
-            if (user == null) return false;
+            var user = await _unitOfWork.Users.GetAsync(u => u.Email == email.Value);
+            if (user == null) return new BoolDTO { Value = false };
 
-            user.PasswordHash = PasswordService.HashPassword(newPassword);
+            user.PasswordHash = PasswordService.HashPassword(newPassword.Value);
             user.UpdatedAt = DateTime.UtcNow;
             await _unitOfWork.Users.UpdateAsync(user);
             await _unitOfWork.SaveChangesAsync();
-            return true;
+            return new BoolDTO { Value = true };
         }
     }
 }

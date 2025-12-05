@@ -3,6 +3,7 @@ using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Data.UnitOfWork;
 using Kanini.LMP.Database.Entities;
 using Kanini.LMP.Database.EntitiesDto;
+using Kanini.LMP.Database.EntitiesDtos.Common;
 using Microsoft.Extensions.Logging;
 
 namespace Kanini.LMP.Application.Services.Implementations
@@ -50,11 +51,11 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
         }
 
-        public async Task<FaqDTO?> GetById(int id)
+        public async Task<FaqDTO?> GetById(IdDTO id)
         {
             try
             {
-                var faq = await _unitOfWork.Faqs.GetByIdAsync(id);
+                var faq = await _unitOfWork.Faqs.GetByIdAsync(id.Id);
                 return faq == null ? null : _mapper.Map<FaqDTO>(faq);
             }
             catch (Exception ex)
@@ -64,11 +65,11 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
         }
 
-        public async Task<IReadOnlyList<FaqDTO>> GetByCustomerId(int customerId)
+        public async Task<IReadOnlyList<FaqDTO>> GetByCustomerId(IdDTO customerId)
         {
             try
             {
-                var faqs = await _unitOfWork.Faqs.GetAllAsync(f => f.CustomerId == customerId);
+                var faqs = await _unitOfWork.Faqs.GetAllAsync(f => f.CustomerId == customerId.Id);
                 return _mapper.Map<List<FaqDTO>>(faqs);
             }
             catch (Exception ex)
@@ -94,11 +95,11 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
         }
 
-        public async Task Delete(int id)
+        public async Task Delete(IdDTO id)
         {
             try
             {
-                await _unitOfWork.Faqs.DeleteAsync(id);
+                await _unitOfWork.Faqs.DeleteAsync(id.Id);
                 await _unitOfWork.SaveChangesAsync();
             }
             catch (Exception ex)

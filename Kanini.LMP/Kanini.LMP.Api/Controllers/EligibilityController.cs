@@ -2,7 +2,7 @@
 using Kanini.LMP.Application.Constants;
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto;
-
+using Kanini.LMP.Database.EntitiesDtos.Common;
 using Kanini.LMP.Database.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,12 +25,12 @@ namespace Kanini.LMP.Api.Controllers
             _logger = logger;
         }
 
-        [HttpGet("{customerId}")]
+        [HttpGet(ApiConstants.Routes.EligibilityController.GetScore)]
         public async Task<ActionResult> GetEligibilityScore(int customerId)
         {
             try
             {
-                var eligibility = await _eligibilityService.CalculateEligibilityAsync(customerId, 0);
+                var eligibility = await _eligibilityService.CalculateEligibilityAsync(new IdDTO { Id = customerId }, new IdDTO { Id = 0 });
                 return Ok(new { CustomerId = customerId, EligibilityScore = eligibility.CreditScore, Status = eligibility.EligibilityStatus });
             }
             catch (ArgumentException ex)
@@ -43,12 +43,12 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        [HttpPost("calculate/{customerId}")]
+        [HttpPost(ApiConstants.Routes.EligibilityController.Calculate)]
         public async Task<ActionResult> CalculateEligibilityScore(int customerId)
         {
             try
             {
-                var eligibility = await _eligibilityService.CalculateEligibilityAsync(customerId, 0);
+                var eligibility = await _eligibilityService.CalculateEligibilityAsync(new IdDTO { Id = customerId }, new IdDTO { Id = 0 });
                 return Ok(eligibility);
             }
             catch (ArgumentException ex)
@@ -61,12 +61,12 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        [HttpPut("update/{customerId}")]
+        [HttpPut(ApiConstants.Routes.EligibilityController.Update)]
         public async Task<ActionResult> UpdateEligibilityProfile(int customerId, [FromBody] EligibilityProfileRequest request)
         {
             try
             {
-                await _eligibilityService.UpdateCustomerProfileAsync(customerId, request);
+                await _eligibilityService.UpdateCustomerProfileAsync(new IdDTO { Id = customerId }, request);
                 return Ok(new { message = "Profile updated and eligibility score recalculated" });
             }
             catch (ArgumentException ex)
@@ -79,7 +79,7 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        [HttpPost(ApiConstants.Routes.Check)]
+        [HttpPost(ApiConstants.Routes.EligibilityController.Check)]
         public async Task<ActionResult> CheckEligibility([FromBody] EligibilityProfileRequest request)
         {
             try
@@ -101,11 +101,11 @@ namespace Kanini.LMP.Api.Controllers
                 var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
 
                 // Update customer profile and calculate credit score
-                await _eligibilityService.UpdateCustomerProfileAsync(userId, request);
+                await _eligibilityService.UpdateCustomerProfileAsync(new IdDTO { Id = userId }, request);
 
                 // Calculate eligibility based on updated profile
-                var eligibility = await _eligibilityService.CalculateEligibilityAsync(userId, 0);
-                var eligibleProductIds = await _eligibilityService.GetEligibleProductsAsync(userId);
+                var eligibility = await _eligibilityService.CalculateEligibilityAsync(new IdDTO { Id = userId }, new IdDTO { Id = 0 });
+                var eligibleProductIds = await _eligibilityService.GetEligibleProductsAsync(new IdDTO { Id = userId });
 
                 var response = BuildEligibilityResponse(eligibility, eligibleProductIds, request.IsExistingBorrower);
                 _logger.LogInformation(ApiConstants.LogMessages.EligibilityCheckCompleted, userId, eligibility.EligibilityScore);
@@ -123,13 +123,13 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        private object BuildEligibilityResponse(EligibilityScoreDto eligibility, List<int> eligibleProductIds, bool isExistingBorrower = false)
+        private object BuildEligibilityResponse(EligibilityScoreDto eligibility, List<IdDTO> eligibleProductIds, bool isExistingBorrower = false)
         {
             var allProducts = new[]
             {
-                new { ProductId = 1, ProductName = "Personal Loan", Available = eligibleProductIds.Contains(1), MinScore = 55, MaxAmount = "₹25L", InterestRate = "10.5-18%" },
-                new { ProductId = 2, ProductName = "Vehicle Loan", Available = eligibleProductIds.Contains(2), MinScore = 55, MaxAmount = "₹50L", InterestRate = "8.5-15%" },
-                new { ProductId = 3, ProductName = "Home Loan", Available = eligibleProductIds.Contains(3), MinScore = 65, MaxAmount = "₹5Cr", InterestRate = "8.0-12%" }
+                new { ProductId = 1, ProductName = "Personal Loan", Available = eligibleProductIds.Any(p => p.Id == 1), MinScore = 55, MaxAmount = "₹25L", InterestRate = "10.5-18%" },
+                new { ProductId = 2, ProductName = "Vehicle Loan", Available = eligibleProductIds.Any(p => p.Id == 2), MinScore = 55, MaxAmount = "₹50L", InterestRate = "8.5-15%" },
+                new { ProductId = 3, ProductName = "Home Loan", Available = eligibleProductIds.Any(p => p.Id == 3), MinScore = 65, MaxAmount = "₹5Cr", InterestRate = "8.0-12%" }
             };
 
             var userType = isExistingBorrower ? "existing borrower" : "new applicant";
@@ -200,14 +200,7 @@ namespace Kanini.LMP.Api.Controllers
 
             if (isExistingBorrower && eligibilityScore < 700)
             {
-                tips.Add("⏰ Maintain consistent on-time payments");
-                tips.Add("📉 Reduce existing debt burden");
-                tips.Add("📅 Build longer employment history");
-            }
-            else if (!isExistingBorrower && eligibilityScore < 650)
-            {
-                tips.Add("📈 Build credit history with smaller loans first");
-                tips.Add("💼 Gain more work experience in current role");
+                tips.Add("📊 Maintain good repayment history");
             }
 
             return tips.ToArray();

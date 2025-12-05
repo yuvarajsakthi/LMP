@@ -3,8 +3,6 @@ using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.EntitiesDtos.CustomerDtos;
 using Kanini.LMP.Database.EntitiesDtos.EMIPlanDtos;
 using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto;
-using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto.CustomerBasicDto.Customer;
-using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto.CustomerBasicDto.EMIPlan;
 
 namespace Kanini.LMP.Application.Mappings
 {
@@ -21,7 +19,16 @@ namespace Kanini.LMP.Application.Mappings
 
             CreateMap<Customer, EligibilityScoreDto>()
                 .ForMember(d => d.CreditScore, o => o.MapFrom(s => (int)s.EligibilityScore))
-                .ForMember(d => d.EmploymentType, o => o.MapFrom(s => s.Occupation));
+                .ForMember(d => d.EmploymentType, o => o.MapFrom(s => s.Occupation))
+                .ForMember(d => d.MonthlyIncome, o => o.MapFrom(s => s.AnnualIncome / 12));
+
+            CreateMap<CustomerDTO, EligibilityScoreDto>()
+                .ForMember(d => d.CreditScore, o => o.MapFrom(s => (int)s.EligibilityScore))
+                .ForMember(d => d.EmploymentType, o => o.MapFrom(s => s.Occupation))
+                .ForMember(d => d.MonthlyIncome, o => o.MapFrom(s => s.AnnualIncome / 12));
+
+            CreateMap<EligibilityProfileRequest, Customer>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<EMIPlanCreateDTO, EMIPlan>();
             CreateMap<EMIPlanUpdateDTO, EMIPlan>();

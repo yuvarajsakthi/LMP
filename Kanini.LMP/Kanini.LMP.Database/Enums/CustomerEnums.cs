@@ -17,6 +17,7 @@
     {
         Draft,
         Submitted,
+        Withdrawn,
         Pending,
         Rejected,
         Approved,
@@ -98,5 +99,13 @@
         CompanyProvided = 4,
         PayingGuest = 5,
         Other = 6
+    }
+
+    public enum EligibilityStatus
+    {
+        NotEligible,
+        ConditionallyEligible,
+        Eligible,
+        HighlyEligible
     }
 }

@@ -1,17 +1,11 @@
-﻿using Kanini.LMP.Database.Entities;
-using Kanini.LMP.Database.EntitiesDto;
-using Kanini.LMP.Database.EntitiesDtos.Authentication;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Kanini.LMP.Database.EntitiesDtos.Common;
+using Kanini.LMP.Database.EntitiesDtos.UserDtos;
 
-namespace Kanini.LMP.Data.Repositories.Interfaces
+namespace Kanini.LMP.Application.Services.Interfaces
 {
     public interface ITokenService
     {
-        string GenerateToken(UserDTO userDto);
-        Task<string?> AuthenticateAsync(string email, string password);
+        StringDTO GenerateToken(UserDTO userDto);
+        Task<StringDTO?> AuthenticateAsync(StringDTO email, StringDTO password);
     }
 }

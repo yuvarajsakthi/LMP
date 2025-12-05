@@ -2,8 +2,9 @@ using AutoMapper;
 using Kanini.LMP.Application.Constants;
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Data.UnitOfWork;
-using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto;
+using Kanini.LMP.Database.EntitiesDtos.Common;
+using Kanini.LMP.Database.EntitiesDtos.CustomerDtos;
 using Kanini.LMP.Database.Enums;
 using Microsoft.Extensions.Logging;
 
@@ -24,33 +25,32 @@ namespace Kanini.LMP.Application.Services.Implementations
 
 
 
-        public async Task<EligibilityScoreDto> CalculateEligibilityAsync(int customerId, int loanProductId)
+        public async Task<EligibilityScoreDto> CalculateEligibilityAsync(IdDTO customerId, IdDTO loanProductId)
         {
             try
             {
                 _logger.LogInformation("Processing eligibility calculation");
 
-                var customer = await _unitOfWork.Customers.GetByIdAsync(customerId);
+                var customer = await _unitOfWork.Customers.GetByIdAsync(customerId.Id);
                 if (customer == null)
                 {
                     _logger.LogWarning("Customer not found");
                     throw new ArgumentException(ApplicationConstants.ErrorMessages.CustomerNotFound);
                 }
 
-                // Calculate and update customer's eligibility score
-                var creditScore = CalculateCreditScore(customer);
+                var customerDto = _mapper.Map<CustomerDTO>(customer);
+                var creditScore = CalculateCreditScore(customerDto);
                 customer.EligibilityScore = creditScore;
                 await _unitOfWork.Customers.UpdateAsync(customer);
                 await _unitOfWork.SaveChangesAsync();
 
-                var monthlyIncome = customer.AnnualIncome / 12;
-                var eligibilityScore = CalculateEligibilityScore(customer, loanProductId);
-                var status = DetermineEligibilityStatus(eligibilityScore, loanProductId);
+                customerDto.EligibilityScore = creditScore;
+                var eligibilityScore = CalculateEligibilityScore(customerDto, loanProductId.Id);
+                var status = DetermineEligibilityStatus(eligibilityScore, loanProductId.Id);
 
                 _logger.LogInformation("Eligibility calculation completed");
-                var result = _mapper.Map<EligibilityScoreDto>(customer);
-                result.LoanProductId = loanProductId;
-                result.MonthlyIncome = monthlyIncome;
+                var result = _mapper.Map<EligibilityScoreDto>(customerDto);
+                result.LoanProductId = loanProductId.Id;
                 result.EligibilityScore = eligibilityScore;
                 result.EligibilityStatus = status;
                 result.CalculatedOn = DateTime.UtcNow;
@@ -63,58 +63,47 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
         }
 
-        public async Task<bool> IsEligibleForLoanAsync(int customerId, int loanProductId = 0)
+        public async Task<BoolDTO> IsEligibleForLoanAsync(IdDTO customerId, IdDTO? loanProductId = null)
         {
-            var eligibility = await CalculateEligibilityAsync(customerId, loanProductId);
-            return eligibility.EligibilityScore >= 55; // Minimum threshold
+            var eligibility = await CalculateEligibilityAsync(customerId, loanProductId ?? new IdDTO { Id = 0 });
+            return new BoolDTO { Value = eligibility.EligibilityScore >= 55 }; // Minimum threshold
         }
 
-        public async Task<List<int>> GetEligibleProductsAsync(int customerId)
+        public async Task<List<IdDTO>> GetEligibleProductsAsync(IdDTO customerId)
         {
-            var eligibility = await CalculateEligibilityAsync(customerId, 0);
-            var eligibleProducts = new List<int>();
+            var eligibility = await CalculateEligibilityAsync(customerId, new IdDTO { Id = 0 });
+            var eligibleProducts = new List<IdDTO>();
 
             if (eligibility.EligibilityScore >= 55)
             {
-                eligibleProducts.Add(1); // Personal Loan
-                eligibleProducts.Add(2); // Vehicle Loan
+                eligibleProducts.Add(new IdDTO { Id = 1 }); // Personal Loan
+                eligibleProducts.Add(new IdDTO { Id = 2 }); // Vehicle Loan
             }
 
             if (eligibility.EligibilityScore >= 65)
             {
-                eligibleProducts.Add(3); // Home Loan
+                eligibleProducts.Add(new IdDTO { Id = 3 }); // Home Loan
             }
 
             return eligibleProducts;
         }
 
-        public async Task UpdateCustomerProfileAsync(int customerId, EligibilityProfileRequest request)
+        public async Task UpdateCustomerProfileAsync(IdDTO customerId, EligibilityProfileRequest request)
         {
             try
             {
                 _logger.LogInformation("Processing customer profile update");
 
-                var customer = await _unitOfWork.Customers.GetByIdAsync(customerId);
+                var customer = await _unitOfWork.Customers.GetByIdAsync(customerId.Id);
                 if (customer == null)
                 {
                     throw new ArgumentException(ApplicationConstants.ErrorMessages.CustomerNotFound);
                 }
 
-                // Update customer attributes
-                if (request.AnnualIncome.HasValue)
-                    customer.AnnualIncome = request.AnnualIncome.Value;
-                
-                if (!string.IsNullOrEmpty(request.Occupation))
-                    customer.Occupation = request.Occupation;
-                
-                if (request.HomeOwnershipStatus.HasValue)
-                    customer.HomeOwnershipStatus = request.HomeOwnershipStatus.Value;
-
+                _mapper.Map(request, customer);
                 customer.UpdatedAt = DateTime.UtcNow;
-
-                // Recalculate eligibility score with updated data
-                var creditScore = CalculateCreditScore(customer);
-                customer.EligibilityScore = creditScore;
+                var customerDto = _mapper.Map<CustomerDTO>(customer);
+                customer.EligibilityScore = CalculateCreditScore(customerDto);
 
                 await _unitOfWork.Customers.UpdateAsync(customer);
                 await _unitOfWork.SaveChangesAsync();
@@ -128,10 +117,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
         }
 
-        /// <summary>
-        /// Calculate credit score using only Customer model attributes
-        /// </summary>
-        private decimal CalculateCreditScore(Customer customer)
+        private decimal CalculateCreditScore(CustomerDTO customer)
         {
             decimal score = 300; // Base score
 
@@ -180,7 +166,7 @@ namespace Kanini.LMP.Application.Services.Implementations
 
 
 
-        private int CalculateEligibilityScore(Customer customer, int loanProductId)
+        private int CalculateEligibilityScore(CustomerDTO customer, int loanProductId)
         {
             // Simple eligibility calculation based on eligibility score and income
             var creditScore = (int)customer.EligibilityScore;

@@ -1,4 +1,5 @@
 using Kanini.LMP.Database.EntitiesDto;
+using Kanini.LMP.Database.EntitiesDtos.Common;
 
 namespace Kanini.LMP.Application.Services.Interfaces
 {
@@ -6,9 +7,9 @@ namespace Kanini.LMP.Application.Services.Interfaces
     {
         Task<FaqDTO> Add(FaqDTO entity);
         Task<IReadOnlyList<FaqDTO>> GetAll();
-        Task<FaqDTO?> GetById(int id);
-        Task<IReadOnlyList<FaqDTO>> GetByCustomerId(int customerId);
+        Task<FaqDTO?> GetById(IdDTO id);
+        Task<IReadOnlyList<FaqDTO>> GetByCustomerId(IdDTO customerId);
         Task<FaqDTO> Update(FaqDTO entity);
-        Task Delete(int id);
+        Task Delete(IdDTO id);
     }
 }

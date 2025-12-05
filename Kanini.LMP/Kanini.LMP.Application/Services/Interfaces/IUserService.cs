@@ -1,18 +1,19 @@
-using Kanini.LMP.Database.EntitiesDto;
 using Kanini.LMP.Database.EntitiesDtos.Authentication;
+using Kanini.LMP.Database.EntitiesDtos.Common;
+using Kanini.LMP.Database.EntitiesDtos.UserDtos;
 
 namespace Kanini.LMP.Application.Services.Interfaces
 {
     public interface IUserService
     {
-        Task<UserDTO?> GetUserByNameAsync(string username);
-        Task<UserDTO?> GetUserByIdAsync(int userId);
-        Task<UserDTO?> GetUserByEmailAsync(string email);
+        Task<UserDTO?> GetUserByNameAsync(StringDTO username);
+        Task<UserDTO?> GetUserByIdAsync(IdDTO userId);
+        Task<UserDTO?> GetUserByEmailAsync(StringDTO email);
         Task<UserDTO> RegisterCustomerAsync(CustomerRegistrationDTO registrationDto);
-        Task<bool> ForgotPasswordAsync(string email);
-        Task<UserDTO> CreateUserAsync(UserDTO userDto);
-        Task<UserDTO> UpdateUserAsync(UserDTO userDto);
-        Task ActivateUserAsync(int userId);
-        Task<bool> ResetPasswordAsync(string email, string oldPassword, string newPassword);
+        Task<BoolDTO> ForgotPasswordAsync(StringDTO email);
+        Task<UserDTO> CreateUserAsync(UserCreateDTO userDto);
+        Task<UserDTO> UpdateUserAsync(UserUpdateDTO userDto);
+        Task ActivateUserAsync(IdDTO userId);
+        Task<BoolDTO> ResetPasswordAsync(StringDTO email, StringDTO oldPassword, StringDTO newPassword);
     }
 }

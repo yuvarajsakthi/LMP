@@ -1,14 +1,15 @@
-﻿using Kanini.LMP.Application.Services.Interfaces;
-using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto.CustomerBasicDto.Customer;
+using Kanini.LMP.Api.Constants;
+using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Database.EntitiesDtos;
-using Kanini.LMP.Database.EntitiesDtos.CustomerEntitiesDtos;
-using Kanini.LMP.Data.Repositories.Interfaces;
+using Kanini.LMP.Database.EntitiesDtos.Common;
+using Kanini.LMP.Database.EntitiesDtos.CustomerDtos;
+using Kanini.LMP.Database.EntitiesDtos.UserDtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kanini.LMP.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route(ApiConstants.Routes.ApiController)]
     [ApiController]
     [Authorize]
     public class CustomerController : ControllerBase
@@ -22,64 +23,64 @@ namespace Kanini.LMP.Api.Controllers
             _userService = userService;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<ApiResponse<IReadOnlyList<CustomerDto>>>> GetCustomers()
+        [HttpGet(ApiConstants.Routes.CustomerController.GetAll)]
+        public async Task<ActionResult<ApiResponse<IReadOnlyList<CustomerDTO>>>> GetCustomers()
         {
             try
             {
                 var customers = await _customerService.GetAll();
-                return Ok(ApiResponse<IReadOnlyList<CustomerDto>>.SuccessResponse(customers.ToList()));
+                return Ok(ApiResponse<IReadOnlyList<CustomerDTO>>.SuccessResponse(customers));
             }
             catch (Exception)
             {
-                return BadRequest(ApiResponse<IReadOnlyList<CustomerDto>>.ErrorResponse("Failed to retrieve customers"));
+                return BadRequest(ApiResponse<IReadOnlyList<CustomerDTO>>.ErrorResponse("Failed to retrieve customers"));
             }
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<CustomerDto>>> GetCustomerById(int id)
+        [HttpGet(ApiConstants.Routes.CustomerController.GetById)]
+        public async Task<ActionResult<ApiResponse<CustomerDTO>>> GetCustomerById(int id)
         {
             try
             {
-                var customer = await _customerService.GetById(id);
+                var customer = await _customerService.GetById(new IdDTO { Id = id });
                 if (customer == null)
-                    return NotFound(ApiResponse<CustomerDto>.ErrorResponse("Customer not found"));
+                    return NotFound(ApiResponse<CustomerDTO>.ErrorResponse("Customer not found"));
                 
-                return Ok(ApiResponse<CustomerDto>.SuccessResponse(customer));
+                return Ok(ApiResponse<CustomerDTO>.SuccessResponse(customer));
             }
             catch (Exception)
             {
-                return BadRequest(ApiResponse<CustomerDto>.ErrorResponse("Failed to retrieve customer"));
+                return BadRequest(ApiResponse<CustomerDTO>.ErrorResponse("Failed to retrieve customer"));
             }
         }
 
-        [HttpGet("user/{userId}")]
-        public async Task<ActionResult<ApiResponse<CustomerDto>>> GetCustomerByUserId(int userId)
+        [HttpGet(ApiConstants.Routes.CustomerController.GetByUserId)]
+        public async Task<ActionResult<ApiResponse<CustomerDTO>>> GetCustomerByUserId(int userId)
         {
             try
             {
-                var customer = await _customerService.GetByUserIdAsync(userId);
+                var customer = await _customerService.GetByUserIdAsync(new IdDTO { Id = userId });
                 if (customer == null)
-                    return NotFound(ApiResponse<CustomerDto>.ErrorResponse("Customer not found"));
+                    return NotFound(ApiResponse<CustomerDTO>.ErrorResponse("Customer not found"));
                 
-                return Ok(ApiResponse<CustomerDto>.SuccessResponse(customer));
+                return Ok(ApiResponse<CustomerDTO>.SuccessResponse(customer));
             }
             catch (Exception)
             {
-                return BadRequest(ApiResponse<CustomerDto>.ErrorResponse("Failed to retrieve customer"));
+                return BadRequest(ApiResponse<CustomerDTO>.ErrorResponse("Failed to retrieve customer"));
             }
         }
 
-        [HttpGet("settings/{userId}")]
+        [HttpGet(ApiConstants.Routes.CustomerController.GetSettings)]
         public async Task<ActionResult<ApiResponse<object>>> GetSettings(int userId)
         {
             try
             {
-                var customer = await _customerService.GetByUserIdAsync(userId);
+                var customer = await _customerService.GetByUserIdAsync(new IdDTO { Id = userId });
                 if (customer == null)
                     return NotFound(ApiResponse<object>.ErrorResponse("Customer not found"));
 
-                var user = await _userService.GetUserByIdAsync(userId);
+                var user = await _userService.GetUserByIdAsync(new IdDTO { Id = userId });
                 if (user == null)
                     return NotFound(ApiResponse<object>.ErrorResponse("User not found"));
 
@@ -100,45 +101,45 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-
-
-        [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<CustomerDto>>> UpdateCustomer(int id, CustomerDto customerDto)
+        [HttpPut(ApiConstants.Routes.CustomerController.Update)]
+        public async Task<ActionResult<ApiResponse<CustomerDTO>>> UpdateCustomer(int id, CustomerUpdateDTO customerDto)
         {
             try
             {
                 if (id != customerDto.CustomerId)
-                    return BadRequest(ApiResponse<CustomerDto>.ErrorResponse("ID mismatch"));
+                    return BadRequest(ApiResponse<CustomerDTO>.ErrorResponse("ID mismatch"));
 
                 var updated = await _customerService.Update(customerDto);
-                return Ok(ApiResponse<CustomerDto>.SuccessResponse(updated));
+                return Ok(ApiResponse<CustomerDTO>.SuccessResponse(updated));
             }
             catch (Exception)
             {
-                return BadRequest(ApiResponse<CustomerDto>.ErrorResponse("Failed to update customer"));
+                return BadRequest(ApiResponse<CustomerDTO>.ErrorResponse("Failed to update customer"));
             }
         }
 
-        [HttpPut("settings/{userId}")]
-        public async Task<ActionResult<ApiResponse<object>>> UpdateSettings(int userId, UpdateCustomerSettingsDto settingsDto)
+        [HttpPut(ApiConstants.Routes.CustomerController.UpdateSettings)]
+        public async Task<ActionResult<ApiResponse<object>>> UpdateSettings(int userId, CustomerUpdateDTO settingsDto)
         {
             try
             {
-                var customer = await _customerService.GetByUserIdAsync(userId);
+                var customer = await _customerService.GetByUserIdAsync(new IdDTO { Id = userId });
                 if (customer == null)
                     return NotFound(ApiResponse<object>.ErrorResponse("Customer not found"));
 
-                var user = await _userService.GetUserByIdAsync(userId);
+                var user = await _userService.GetUserByIdAsync(new IdDTO { Id = userId });
                 if (user == null)
                     return NotFound(ApiResponse<object>.ErrorResponse("User not found"));
 
-                user.FullName = settingsDto.FullName;
-                await _userService.UpdateUserAsync(user);
+                var userUpdate = new UserUpdateDTO
+                {
+                    UserId = userId,
+                    FullName = user.FullName,
+                    Email = user.Email
+                };
+                await _userService.UpdateUserAsync(userUpdate);
 
-                customer.PhoneNumber = settingsDto.PhoneNumber;
-                customer.Occupation = settingsDto.Occupation;
-                customer.AnnualIncome = settingsDto.AnnualIncome;
-                await _customerService.Update(customer);
+                await _customerService.Update(settingsDto);
 
                 return Ok(ApiResponse<object>.SuccessResponse(new { message = "Settings updated successfully" }));
             }
@@ -147,6 +148,5 @@ namespace Kanini.LMP.Api.Controllers
                 return BadRequest(ApiResponse<object>.ErrorResponse("Failed to update settings"));
             }
         }
-
     }
 }
