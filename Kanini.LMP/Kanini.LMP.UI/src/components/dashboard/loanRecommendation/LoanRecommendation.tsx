@@ -4,6 +4,7 @@ import { Card, Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { CUSTOMER_ROUTES } from '../../../config';
 import { customerDashboardAPI } from '../../../services/api/customerDashboardAPI';
+import EligibilityModal from '../../eligibilityModal/EligibilityModal';
 
 interface LoanRecommendationProps {
   title?: string;
@@ -15,13 +16,14 @@ interface LoanRecommendationProps {
 
 const LoanRecommendation: React.FC<LoanRecommendationProps> = ({
   title = "What Loans are you looking for?",
-  description = "What's more, if you are eligible for a pre-approved offer, you can get instant loan sanction with no documentation. Added benefits include, attractive interest rate, low EMI and simplified loan application and disbursement process.",
+  description = "Explore our wide range of loan products tailored to meet your financial needs. Get competitive interest rates, flexible repayment options, and quick approval process.",
   eligibilityText = "click here to check your loan eligibility status",
   buttonText = "APPLY NOW",
   onApplyClick
 }) => {
   const navigate = useNavigate();
-  const [loanProducts, setLoanProducts] = useState([]);
+  const [loanProducts, setLoanProducts] = useState<any[]>([]);
+  const [showEligibilityModal, setShowEligibilityModal] = useState(false);
 
   useEffect(() => {
     const fetchLoanProducts = async () => {
@@ -44,32 +46,16 @@ const LoanRecommendation: React.FC<LoanRecommendationProps> = ({
   };
 
   return (
-    <div className={styles.box1}>
-      <Card title={title}
-        style={{
-          width: '100%', height: '100%'
-        }}
-      >
-        <p className={styles.para}>
-          {description}
-        </p>
-        <div>
-          <p className={styles.para2}>
-            <a href="#" onClick={(e) => e.preventDefault()}>{eligibilityText}</a>
-          </p>
-        </div>
-        <br />
-        <div>
-          <Button 
-            type="primary" 
-            className={styles.applynowbutton}
-            onClick={handleApplyClick}
-          >
-            {buttonText}
-          </Button>
-        </div>
-      </Card>
-    </div>
+    <Card title={title} style={{ height: '100%' }}>
+      <p className={styles.para}>{description}</p>
+      <p className={styles.para2}>
+        <a href="#" onClick={(e) => { e.preventDefault(); setShowEligibilityModal(true); }}>{eligibilityText}</a>
+      </p>
+      <Button type="primary" className={styles.applynowbutton} onClick={handleApplyClick} block>
+        {buttonText}
+      </Button>
+      <EligibilityModal visible={showEligibilityModal} onClose={() => setShowEligibilityModal(false)} />
+    </Card>
   );
 };
 

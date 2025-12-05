@@ -1,10 +1,14 @@
 .layout {
   height: 100vh;
+  overflow: hidden;
 }
 
 .sider {
   background: linear-gradient(180deg, #2C76C9 0%, #1e5a9e 100%);
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .header {

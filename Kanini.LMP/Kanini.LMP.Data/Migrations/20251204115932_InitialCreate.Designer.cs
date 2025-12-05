@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Kanini.LMP.Data.Migrations
 {
     [DbContext(typeof(LmpDbContext))]
-    [Migration("20251203194346_InitialCreate")]
+    [Migration("20251204115932_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -82,53 +82,6 @@ namespace Kanini.LMP.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Customers");
-
-                    b.HasData(
-                        new
-                        {
-                            CustomerId = 1,
-                            AadhaarNumber = "123456789012",
-                            AnnualIncome = 1200000m,
-                            CreditScore = 750m,
-                            DateOfBirth = new DateOnly(1990, 1, 1),
-                            Gender = 0,
-                            HomeOwnershipStatus = 1,
-                            Occupation = "Software Engineer",
-                            PANNumber = "ABCDE1234F",
-                            PhoneNumber = "9876543210",
-                            ProfileImage = new byte[] { 1 },
-                            UserId = 2
-                        },
-                        new
-                        {
-                            CustomerId = 2,
-                            AadhaarNumber = "123456789013",
-                            AnnualIncome = 2000000m,
-                            CreditScore = 800m,
-                            DateOfBirth = new DateOnly(1985, 5, 15),
-                            Gender = 1,
-                            HomeOwnershipStatus = 0,
-                            Occupation = "Business Owner",
-                            PANNumber = "ABCDE1234G",
-                            PhoneNumber = "9876543211",
-                            ProfileImage = new byte[] { 2 },
-                            UserId = 3
-                        },
-                        new
-                        {
-                            CustomerId = 3,
-                            AadhaarNumber = "123456789014",
-                            AnnualIncome = 1800000m,
-                            CreditScore = 780m,
-                            DateOfBirth = new DateOnly(1995, 10, 20),
-                            Gender = 0,
-                            HomeOwnershipStatus = 1,
-                            Occupation = "Doctor",
-                            PANNumber = "ABCDE1234H",
-                            PhoneNumber = "9876543212",
-                            ProfileImage = new byte[] { 3 },
-                            UserId = 4
-                        });
                 });
 
             modelBuilder.Entity("Kanini.LMP.Database.Entities.CustomerEntities.EMIPlan", b =>
@@ -215,47 +168,6 @@ namespace Kanini.LMP.Data.Migrations
                     b.ToTable("LoanApplicationBases", (string)null);
 
                     b.UseTptMappingStrategy();
-                });
-
-            modelBuilder.Entity("Kanini.LMP.Database.Entities.LoanApplicationEntites.ApplicationDocumentLink", b =>
-                {
-                    b.Property<int>("ApplicationDocumentLinkId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ApplicationDocumentLinkId"));
-
-                    b.Property<int>("DocumentId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("DocumentRequirementType")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("LinkedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("LoanApplicationBaseId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<string>("VerificationNotes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("VerifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("VerifiedBy")
-                        .HasColumnType("int");
-
-                    b.HasKey("ApplicationDocumentLinkId");
-
-                    b.HasIndex("DocumentId");
-
-                    b.HasIndex("LoanApplicationBaseId");
-
-                    b.ToTable("ApplicationDocumentLinks");
                 });
 
             modelBuilder.Entity("Kanini.LMP.Database.Entities.LoanApplicationEntites.LoanApplicant", b =>
@@ -904,38 +816,8 @@ namespace Kanini.LMP.Data.Migrations
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "manager@gmail.com",
                             FullName = "Manager One",
-                            PasswordHash = "hashedpassword",
+                            PasswordHash = "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzOxJ6.Esi",
                             Roles = 1,
-                            Status = 1
-                        },
-                        new
-                        {
-                            UserId = 2,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Email = "customer1@gmail.com",
-                            FullName = "Customer One",
-                            PasswordHash = "hashedpassword",
-                            Roles = 0,
-                            Status = 1
-                        },
-                        new
-                        {
-                            UserId = 3,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Email = "customer2@gmail.com",
-                            FullName = "Customer Two",
-                            PasswordHash = "hashedpassword",
-                            Roles = 0,
-                            Status = 1
-                        },
-                        new
-                        {
-                            UserId = 4,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Email = "customer3@gmail.com",
-                            FullName = "Customer Three",
-                            PasswordHash = "hashedpassword",
-                            Roles = 0,
                             Status = 1
                         });
                 });
@@ -1163,25 +1045,6 @@ namespace Kanini.LMP.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Customer");
-                });
-
-            modelBuilder.Entity("Kanini.LMP.Database.Entities.LoanApplicationEntites.ApplicationDocumentLink", b =>
-                {
-                    b.HasOne("Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities.DocumentUpload", "DocumentUpload")
-                        .WithMany()
-                        .HasForeignKey("DocumentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Kanini.LMP.Database.Entities.CustomerEntities.LoanApplicationBase", "LoanApplicationBase")
-                        .WithMany()
-                        .HasForeignKey("LoanApplicationBaseId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("DocumentUpload");
-
-                    b.Navigation("LoanApplicationBase");
                 });
 
             modelBuilder.Entity("Kanini.LMP.Database.Entities.LoanApplicationEntites.LoanApplicant", b =>

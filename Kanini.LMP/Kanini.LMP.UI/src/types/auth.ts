@@ -1,6 +1,6 @@
 export interface LoginCredentials {
-  username: string;
-  password: string;
+  Username: string;
+  PasswordHash: string;
 }
 
 export interface LoginResponse {

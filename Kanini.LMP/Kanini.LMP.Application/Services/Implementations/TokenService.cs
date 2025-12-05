@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Kanini.LMP.Data.Repositories.Interfaces;
+using Kanini.LMP.Data.UnitOfWork;
 using Kanini.LMP.Database.Entities;
 using Kanini.LMP.Database.EntitiesDto;
 using Microsoft.Extensions.Configuration;
@@ -15,12 +16,14 @@ namespace Kanini.LMP.Application.Services.Implementations
         private readonly IConfiguration _config;
         private readonly ILMPRepository<User, int> _userRepository;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public TokenService(IConfiguration config, ILMPRepository<User, int> userRepository, IMapper mapper)
+        public TokenService(IConfiguration config, ILMPRepository<User, int> userRepository, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _config = config;
             _userRepository = userRepository;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
 
         public string GenerateToken(User user)
@@ -31,6 +34,15 @@ namespace Kanini.LMP.Application.Services.Implementations
                 new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Role, user.Roles.ToString())
             };
+
+            if (user.Roles == Database.Enums.UserRoles.Customer)
+            {
+                var customer = _unitOfWork.Customers.GetAsync(c => c.UserId == user.UserId).Result;
+                if (customer != null)
+                {
+                    claims.Add(new Claim(Application.Constants.ApplicationConstants.Claims.CustomerId, customer.CustomerId.ToString()));
+                }
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured")));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -54,6 +66,15 @@ namespace Kanini.LMP.Application.Services.Implementations
                 new Claim(ClaimTypes.Name, userDto.FullName),
                 new Claim(ClaimTypes.Role, userDto.Roles.ToString())
             };
+
+            if (userDto.Roles == Database.Enums.UserRoles.Customer)
+            {
+                var customer = _unitOfWork.Customers.GetAsync(c => c.UserId == userDto.UserId).Result;
+                if (customer != null)
+                {
+                    claims.Add(new Claim(Application.Constants.ApplicationConstants.Claims.CustomerId, customer.CustomerId.ToString()));
+                }
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured")));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

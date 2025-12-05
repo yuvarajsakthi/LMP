@@ -24,7 +24,7 @@ namespace Kanini.LMP.Database.Entities
         public string PasswordHash { get; set; } = null!;
         
         [Required]
-        public UserEnums Roles { get; set; }
+        public UserRoles Roles { get; set; }
         
         [Required]
         public UserStatus Status { get; set; }

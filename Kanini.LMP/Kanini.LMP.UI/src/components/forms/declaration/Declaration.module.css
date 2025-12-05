@@ -1,0 +1,79 @@
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.header {
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1a1a1a;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #666;
+}
+
+.declarationCard {
+  margin-bottom: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.declarationContent {
+  margin-bottom: 24px;
+}
+
+.declarationText {
+  font-size: 16px;
+  line-height: 2;
+  color: #333;
+}
+
+.inlineInput {
+  display: inline-block;
+  width: 200px;
+  margin: 0 8px;
+}
+
+.termsContainer {
+  padding: 16px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+.termsCheckbox {
+  align-items: flex-start;
+}
+
+.termsText {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.backButton {
+  min-width: 120px;
+}
+
+.submitButton {
+  min-width: 200px;
+  background-color: #1890ff;
+}
+
+.submitButton:disabled {
+  background-color: #d9d9d9;
+  cursor: not-allowed;
+}

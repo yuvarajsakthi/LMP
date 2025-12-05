@@ -151,16 +151,8 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ data }) => {
   ];
 
   return (
-    <div className={styles.box4}>
-      <Card
-        title="Application status"
-        style={{
-          width: "100%",
-          height: "100%",
-        }}
-      >
-        {" "}
-        <Table
+    <Card title="Application status" style={{ height: '100%' }}>
+      <Table
           dataSource={applicationData}
           columns={columns}
           pagination={{ pageSize: 5 }}
@@ -168,8 +160,7 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ data }) => {
           size="middle"
           rowKey={(record) => record.applicationID || Math.random().toString()}
         />
-      </Card>
-    </div>
+    </Card>
   );
 };
 

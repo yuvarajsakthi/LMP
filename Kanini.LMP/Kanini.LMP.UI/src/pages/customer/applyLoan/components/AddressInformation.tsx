@@ -57,9 +57,8 @@ const AddressInformation: React.FC = () => {
             >
               <Select>
                 <Option value="Karnataka">Karnataka</Option>
-                <Option value="Maharashtra">Maharashtra</Option>
                 <Option value="Tamil Nadu">Tamil Nadu</Option>
-                <Option value="Delhi">Delhi</Option>
+                <Option value="Andra Pradesh">Andra Pradesh</Option>
               </Select>
             </Form.Item>
           </Col>

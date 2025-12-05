@@ -26,7 +26,7 @@ const EligibilityScore: React.FC<EligibilityScoreProps> = ({ score }) => {
     fetchEligibility();
   }, []);
 
-  const eScore = score || eligibilityData?.eligibilityScore || token?.EligibilityScore || 750;
+  const eScore = score || eligibilityData?.eligibilityScore || token?.EligibilityScore || 250;
   const eligibilityPercentage = eScore / 1000;
 
   const gaugeData = [
@@ -53,15 +53,7 @@ const EligibilityScore: React.FC<EligibilityScoreProps> = ({ score }) => {
   };
 
   return (
-    <div className={styles.box3}>
-      <Card
-        title="Eligibility Score"
-        extra={<a href="#">Generate Report</a>}
-        style={{
-          width: "100%",
-          height: "100%",
-        }}
-      >
+    <Card title="Eligibility Score" extra={<a href="#">Generate Report</a>} style={{ height: '100%' }}>
         <div className={styles.gauge}>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
@@ -93,7 +85,6 @@ const EligibilityScore: React.FC<EligibilityScoreProps> = ({ score }) => {
           </p>
         </div>
       </Card>
-    </div>
   );
 };
 

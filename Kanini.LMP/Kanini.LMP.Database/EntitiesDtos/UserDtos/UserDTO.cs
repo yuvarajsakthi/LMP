@@ -27,11 +27,11 @@ namespace Kanini.LMP.Database.EntitiesDto
         [Required(ErrorMessage = "Password is required")]
         [MinLength(6, ErrorMessage = "Password must be at least 6 characters long")]
         [DisplayName("Password")]
-        public string Password { get; set; } = null!;
+        public string PasswordHash { get; set; } = null!;
 
         [Required(ErrorMessage = "User Role is required")]
         [DisplayName("Role")]
-        public UserEnums Roles { get; set; }
+        public UserRoles Roles { get; set; }
 
         [Required(ErrorMessage = "User Status is required")]
         [DisplayName("Account Status")]

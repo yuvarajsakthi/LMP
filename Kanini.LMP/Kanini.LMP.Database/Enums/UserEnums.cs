@@ -1,6 +1,6 @@
 ﻿namespace Kanini.LMP.Database.Enums
 {
-    public enum UserEnums
+    public enum UserRoles
     {
         Customer,
         Manager

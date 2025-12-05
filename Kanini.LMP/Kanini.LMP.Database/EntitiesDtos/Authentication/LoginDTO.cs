@@ -7,7 +7,6 @@ namespace Kanini.LMP.Database.EntitiesDtos.Authentication
         [Required]
         public string Username { get; set; } = string.Empty;
         [Required]
-        public string Password { get; set; } = string.Empty;
-
+        public string PasswordHash { get; set; } = string.Empty;
     }
 }

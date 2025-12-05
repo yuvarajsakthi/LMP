@@ -112,88 +112,13 @@ namespace Kanini.LMP.Data.Data
                     UserId = 1,
                     FullName = "Manager One",
                     Email = "manager@gmail.com",
-                    PasswordHash = "hashedpassword",
-                    Roles = UserEnums.Manager,
-                    Status = UserStatus.Active,
-                    CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-                },
-                new User
-                {
-                    UserId = 2,
-                    FullName = "Customer One",
-                    Email = "customer1@gmail.com",
-                    PasswordHash = "hashedpassword",
-                    Roles = UserEnums.Customer,
-                    Status = UserStatus.Active,
-                    CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-                },
-                new User
-                {
-                    UserId = 3,
-                    FullName = "Customer Two",
-                    Email = "customer2@gmail.com",
-                    PasswordHash = "hashedpassword",
-                    Roles = UserEnums.Customer,
-                    Status = UserStatus.Active,
-                    CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-                },
-                new User
-                {
-                    UserId = 4,
-                    FullName = "Customer Three",
-                    Email = "customer3@gmail.com",
-                    PasswordHash = "hashedpassword",
-                    Roles = UserEnums.Customer,
+                    PasswordHash = "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzOxJ6.Esi",
+                    Roles = UserRoles.Manager,
                     Status = UserStatus.Active,
                     CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
                 });
 
-            b.Entity<Customer>().HasData(
-                new Customer
-                {
-                    CustomerId = 1,
-                    UserId = 2,
-                    DateOfBirth = new DateOnly(1990, 1, 1),
-                    Gender = Gender.Male,
-                    PhoneNumber = "9876543210",
-                    Occupation = "Software Engineer",
-                    AnnualIncome = 1200000m,
-                    CreditScore = 750m,
-                    ProfileImage = new byte[] { 0x01 },
-                    AadhaarNumber = "123456789012",
-                    PANNumber = "ABCDE1234F",
-                    HomeOwnershipStatus = HomeOwnershipStatus.Owned
-                },
-                new Customer
-                {
-                    CustomerId = 2,
-                    UserId = 3,
-                    DateOfBirth = new DateOnly(1985, 5, 15),
-                    Gender = Gender.Female,
-                    PhoneNumber = "9876543211",
-                    Occupation = "Business Owner",
-                    AnnualIncome = 2000000m,
-                    CreditScore = 800m,
-                    ProfileImage = new byte[] { 0x02 },
-                    AadhaarNumber = "123456789013",
-                    PANNumber = "ABCDE1234G",
-                    HomeOwnershipStatus = HomeOwnershipStatus.Rented
-                },
-                new Customer
-                {
-                    CustomerId = 3,
-                    UserId = 4,
-                    DateOfBirth = new DateOnly(1995, 10, 20),
-                    Gender = Gender.Male,
-                    PhoneNumber = "9876543212",
-                    Occupation = "Doctor",
-                    AnnualIncome = 1800000m,
-                    CreditScore = 780m,
-                    ProfileImage = new byte[] { 0x03 },
-                    AadhaarNumber = "123456789014",
-                    PANNumber = "ABCDE1234H",
-                    HomeOwnershipStatus = HomeOwnershipStatus.Owned
-                });
+
         }
     }
 }

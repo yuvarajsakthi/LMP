@@ -156,7 +156,18 @@ namespace Kanini.LMP.Api.Controllers
         private int GetCustomerId()
         {
             var customerIdClaim = User.FindFirst(ApplicationConstants.Claims.CustomerId)?.Value;
-            return int.Parse(customerIdClaim ?? "0");
+            if (!string.IsNullOrEmpty(customerIdClaim))
+                return int.Parse(customerIdClaim);
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userIdClaim))
+            {
+                var userId = int.Parse(userIdClaim);
+                var customer = _customerService.GetByUserIdAsync(userId).Result;
+                return customer?.CustomerId ?? 0;
+            }
+
+            return 0;
         }
 
         private int CalculateYearsRemaining(int loanTermMonths)

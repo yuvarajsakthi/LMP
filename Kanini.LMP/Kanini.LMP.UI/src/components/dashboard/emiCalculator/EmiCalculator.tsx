@@ -11,11 +11,13 @@ interface EmiCalculatorProps {
   defaultLoanAmount?: number;
   defaultTenure?: number;
   loanTypes?: LoanTypeRates;
+  showChart?: boolean;
 }
 
 const EmiCalculator: React.FC<EmiCalculatorProps> = ({
   defaultLoanAmount = 10000,
   defaultTenure = 3,
+  showChart = true,
 }) => {
   const [loanAmount, setLoanAmount] = useState(defaultLoanAmount);
   const [interestRate, setInterestRate] = useState(3.5);
@@ -48,8 +50,8 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
       const products = await customerDashboardAPI.getLoanProducts();
       setLoanProducts(products);
       if (products.length > 0) {
-        setSelectedLoanType(products[0].loanType);
-        setInterestRate(products[0].interestRate);
+        setSelectedLoanType(products[0].loanProductName || products[0].loanType);
+        setInterestRate(products[0].interestRate || products[0].rateOfInterest);
       }
     } catch (error) {
       console.error('Failed to fetch loan products:', error);
@@ -73,17 +75,16 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
 
   const handleLoanTypeChange = (value: string) => {
     setSelectedLoanType(value);
-    const product = loanProducts.find(p => p.loanType === value);
+    const product = loanProducts.find(p => (p.loanProductName || p.loanType) === value);
     if (product) {
-      setInterestRate(product.interestRate);
+      setInterestRate(product.interestRate || product.rateOfInterest);
     }
   };
 
 
   return (
-    <div className={styles.box2}>
       <Card
-        title={
+        title={showChart ? (
           <div className={styles.headcal}>
             <span className={styles.emititle}>EMI Calculator</span>
             <div className={styles.legend}>
@@ -97,10 +98,8 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
               </div>
             </div>
           </div>
-        }
-        style={{
-          width: '100%', height: '100% '
-        }} >
+        ) : "EMI Calculator"}
+        style={{ height: '100%' }}>
         <div className={styles.align}>
           <div className={styles.inputSection}>
             <Select
@@ -108,8 +107,8 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
               onChange={handleLoanTypeChange}
               className={styles.select1}
               options={loanProducts.map(product => ({
-                label: `${product.loanType} Loan`,
-                value: product.loanType
+                label: product.loanProductName || product.loanType,
+                value: product.loanProductName || product.loanType
               }))}
             />
             
@@ -141,28 +140,30 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
             </div>
           </div>
           
-          <div className={styles.chartSection}>
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  dataKey="value"
-                >
-                  {chartData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={colors[index]} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-            <div className={styles.emiChartText}>
-              <p className={styles.emiLabel}>EMI</p>
-              <p className={styles.emiAmount}>₹{emiAmount} <span>/month</span></p>
+          {showChart && (
+            <div className={styles.chartSection}>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    dataKey="value"
+                  >
+                    {chartData.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={colors[index]} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div className={styles.emiChartText}>
+                <p className={styles.emiLabel}>EMI</p>
+                <p className={styles.emiAmount}>₹{emiAmount} <span>/month</span></p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
         <div className={styles.amountdisplay}>
           <div className={styles.emiLabel123}>
@@ -179,8 +180,6 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
           </div>
         </div>
       </Card>
-
-    </div>
   );
 };
 

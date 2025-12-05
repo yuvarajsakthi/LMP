@@ -51,14 +51,14 @@ const processTokenResponse = (responseData: LoginResponseData): { token: string;
 
 export const authAPI = {
   async login(credentials: LoginCredentials): Promise<{ token: string; user: DecodedToken } | { requiresVerification: boolean; email: string; message: string }> {
-    if (!credentials?.username || !credentials?.password) {
+    if (!credentials?.Username || !credentials?.PasswordHash) {
       throw new Error('Authentication credentials are required');
     }
     
     return ApiService.execute(async () => {
       const formData = new FormData();
-      formData.append('Username', credentials.username);
-      formData.append('Password', credentials.password);
+      formData.append('Username', credentials.Username);
+      formData.append('PasswordHash', credentials.PasswordHash);
       
       const response = await axiosInstance.post<ApiResponse<LoginResponseData>>(
         '/auth/login', 
@@ -69,7 +69,7 @@ export const authAPI = {
       if (loginData.requiresVerification) {
         return {
           requiresVerification: true,
-          email: (loginData as any).email || credentials.username,
+          email: (loginData as any).email || credentials.Username,
           message: loginData.message || 'Account not verified'
         };
       }
@@ -82,15 +82,14 @@ export const authAPI = {
 
   async sendLoginOTP(data: {
     email: string;
-    phoneNumber?: string;
   }): Promise<{ message: string; userId: number }> {
     return ApiService.execute(async () => {
       const formData = new FormData();
       formData.append('Email', data.email);
-      if (data.phoneNumber) formData.append('PhoneNumber', data.phoneNumber);
+      formData.append('Purpose', 'LOGIN');
       
       const response = await axiosInstance.post<ApiResponse<{ message: string; userId: number }>>(
-        '/auth/sendotp/login',
+        '/auth/sendotp',
         formData
       );
       return response;
@@ -99,15 +98,14 @@ export const authAPI = {
 
   async sendRegisterOTP(data: {
     email: string;
-    phoneNumber?: string;
   }): Promise<{ message: string; userId: number }> {
     return ApiService.execute(async () => {
       const formData = new FormData();
       formData.append('Email', data.email);
-      if (data.phoneNumber) formData.append('PhoneNumber', data.phoneNumber);
+      formData.append('Purpose', 'REGISTER');
       
       const response = await axiosInstance.post<ApiResponse<{ message: string; userId: number }>>(
-        '/auth/sendotp/register',
+        '/auth/sendotp',
         formData
       );
       return response;
@@ -116,15 +114,14 @@ export const authAPI = {
 
   async sendForgetPasswordOTP(data: {
     email: string;
-    phoneNumber?: string;
   }): Promise<{ message: string; userId: number }> {
     return ApiService.execute(async () => {
       const formData = new FormData();
       formData.append('Email', data.email);
-      if (data.phoneNumber) formData.append('PhoneNumber', data.phoneNumber);
+      formData.append('Purpose', 'FORGETPASSWORD');
       
       const response = await axiosInstance.post<ApiResponse<{ message: string; userId: number }>>(
-        '/auth/sendotp/forgetpassword',
+        '/auth/sendotp',
         formData
       );
       return response;

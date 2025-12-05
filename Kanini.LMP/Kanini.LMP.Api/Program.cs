@@ -2,6 +2,9 @@ using Serilog;
 using Kanini.LMP.Api.Extensions;
 using Kanini.LMP.Application.Extensions;
 using Kanini.LMP.Data.Extensions;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+//using Microsoft.Identity.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,19 +33,31 @@ builder.Services.AddDataLayer(builder.Configuration);
 builder.Services.AddApplicationLayer();
 builder.Services.AddApiLayer(builder.Configuration);
 
+builder.Services.Configure<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions>(options =>
+{
+    options.SuppressModelStateInvalidFilter = true;
+});
+
 
 var app = builder.Build();
 
 app.Use(async (context, next) =>
 {
+    Console.WriteLine($"Request: {context.Request.Method} {context.Request.Path}");
     try
     {
         await next();
+        Console.WriteLine($"Response: {context.Response.StatusCode}");
     }
     catch (BadHttpRequestException ex) when (ex.Message.Contains("JSON"))
     {
         context.Response.StatusCode = 400;
         await context.Response.WriteAsync("Invalid JSON format");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Unhandled error: {ex.Message}");
+        throw;
     }
 });
 

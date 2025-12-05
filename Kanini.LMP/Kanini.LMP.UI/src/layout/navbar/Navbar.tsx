@@ -16,7 +16,9 @@ const Navbar = () => {
     navigate(COMMON_ROUTES.LOGIN);
   };
 
-  const userMenuItems = [
+  const isManager = token?.role?.toLowerCase() === 'manager';
+
+  const customerMenuItems = [
     {
       key: 'profile',
       icon: <UserOutlined />,
@@ -39,6 +41,17 @@ const Navbar = () => {
       onClick: handleLogout
     }
   ];
+
+  const managerMenuItems = [
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: 'Logout',
+      onClick: handleLogout
+    }
+  ];
+
+  const userMenuItems = isManager ? managerMenuItems : customerMenuItems;
 
   return (
     <div className={styles.navbar}>

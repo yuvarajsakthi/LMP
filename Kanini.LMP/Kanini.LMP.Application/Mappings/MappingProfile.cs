@@ -7,6 +7,7 @@ using Kanini.LMP.Database.Entities.ManagerEntities;
 using Kanini.LMP.Database.EntitiesDto;
 using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto.CustomerBasicDto.Customer;
 using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto.CustomerBasicDto.EMIPlan;
+using Kanini.LMP.Database.EntitiesDtos.Authentication;
 
 using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.HomeLoanApplication;
 using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.PersonalLoanApplication;
@@ -25,12 +26,24 @@ namespace Kanini.LMP.Application.Mappings
         {
             // User mappings
             CreateMap<User, UserDto>().ReverseMap();
+            CreateMap<User, UserDTO>()
+                .ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src => src.PasswordHash))
+                .ReverseMap()
+                .ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src => src.PasswordHash));
+            
+            CreateMap<CustomerRegistrationDTO, User>()
+                .ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src => src.Password))
+                .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => UserRoles.Customer))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => UserStatus.Pending));
 
             // Customer mappings
             CreateMap<Customer, CustomerDto>()
                 .ForMember(dest => dest.Age, opt => opt.MapFrom(src => CalculateAge(src.DateOfBirth)))
                 .ReverseMap()
                 .ForMember(dest => dest.Age, opt => opt.Ignore());
+            
+            CreateMap<CustomerRegistrationDTO, Customer>()
+                .ForMember(dest => dest.AadhaarNumber, opt => opt.MapFrom(src => string.Empty));
 
             // Notification mappings
             CreateMap<Notification, NotificationDTO>()
@@ -68,8 +81,6 @@ namespace Kanini.LMP.Application.Mappings
 
             // Workflow mappings
             CreateMap<LoanOriginationWorkflow, WorkflowStepDto>().ReverseMap();
-
-
 
             // Loan Application mappings
             CreateMap<PersonalLoanApplication, PersonalLoanApplicationDTO>()
