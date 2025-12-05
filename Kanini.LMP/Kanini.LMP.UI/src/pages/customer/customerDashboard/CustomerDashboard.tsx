@@ -48,19 +48,19 @@ const CustomerDashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Row gutter={[24, 24]} className={styles.topRow}>
-            <Col xs={24} lg={8}>
-              <Card className={styles.card}>
+          <Row gutter={[20, 20]} className={styles.topRow}>
+            <Col xs={24} sm={24} md={12} lg={8}>
+              <Card className={styles.card} bordered={false}>
                 <LoanReco />
               </Card>
             </Col>
-            <Col xs={24} lg={8}>
-              <Card className={styles.card}>
-                <EmiCalculator />
+            <Col xs={24} sm={24} md={12} lg={8}>
+              <Card className={styles.card} bordered={false}>
+                <EmiCalculator showChart={false} />
               </Card>
             </Col>
-            <Col xs={24} lg={8}>
-              <Card className={styles.card}>
+            <Col xs={24} sm={24} md={12} lg={8}>
+              <Card className={styles.card} bordered={false}>
                 <EligibilityScore />
               </Card>
             </Col>
@@ -72,14 +72,14 @@ const CustomerDashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <Row gutter={[24, 24]} className={styles.bottomRow}>
-            <Col xs={24} xl={14}>
-              <Card className={styles.card}>
+          <Row gutter={[20, 20]} className={styles.bottomRow}>
+            <Col xs={24} lg={16}>
+              <Card className={styles.card} bordered={false}>
                 <ApplicationStatus />
               </Card>
             </Col>
-            <Col xs={24} xl={10}>
-              <Card className={styles.card}>
+            <Col xs={24} lg={8}>
+              <Card className={styles.card} bordered={false}>
                 <ApplicationProfile />
               </Card>
             </Col>

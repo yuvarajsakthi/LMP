@@ -30,11 +30,13 @@ const Layout = ({ children }: LayoutProps) => {
         collapsible 
         collapsed={collapsed}
         className={styles.sider}
-        width={280}
-        collapsedWidth={80}
+        width={220}
+        collapsedWidth={60}
       >
-        <Logo />
-        <Sidebar collapsed={collapsed} />
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <Logo />
+          <Sidebar collapsed={collapsed} />
+        </div>
       </Sider>
       
       <AntLayout>

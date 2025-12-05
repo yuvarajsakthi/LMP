@@ -5,7 +5,7 @@ import styles from './ApprovalManager.module.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context';
-import { ROUTES } from '../../config';
+import { MANAGER_ROUTES } from '../../config';
 import {
   LoanApplied,
   Review,
@@ -144,7 +144,7 @@ const ApprovalManager: React.FC<ApprovalManagerProps> = ({ applicationNumber }) 
         message.error("Loan rejected successfully");
       }
       
-      navigate(ROUTES.APPLIED_LOAN);
+      navigate(MANAGER_ROUTES.APPLIED_LOAN);
     } catch (error) {
       message.error("Error in updating loan status");
       console.error('Update failed:', error);

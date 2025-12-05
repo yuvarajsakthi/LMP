@@ -6,7 +6,7 @@ import styles from './AppliedLoanManager.module.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context';
-import { ROUTES } from '../../config';
+import { MANAGER_ROUTES } from '../../config';
 
 interface LoanData {
   customerid: string;
@@ -29,7 +29,7 @@ const AppliedLoanManager: React.FC = () => {
   const [data, setData] = useState<LoanData[]>([]);
 
   const handleViewClick = (applicationNumber: string) => {
-    navigate(`${ROUTES.APPLIED_LOAN}/${applicationNumber}`);
+    navigate(`${MANAGER_ROUTES.APPLIED_LOAN}/${applicationNumber}`);
   };
 
     useEffect(() => {

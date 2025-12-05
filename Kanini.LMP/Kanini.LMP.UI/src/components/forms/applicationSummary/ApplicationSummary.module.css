@@ -1,0 +1,60 @@
+.summaryCard {
+  height: 100%;
+}
+
+.summaryContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.progressSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.progressLabel {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.stepText {
+  font-size: 13px;
+  color: #888;
+  text-align: center;
+}
+
+.detailsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.detailItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detailLabel {
+  font-size: 14px;
+  color: #666;
+}
+
+.detailValue {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.success {
+  color: #52c41a;
+}
+
+.pending {
+  color: #faad14;
+}

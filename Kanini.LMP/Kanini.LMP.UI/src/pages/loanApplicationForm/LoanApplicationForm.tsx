@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import Logo from '../../layout/logo/Logo';
 import { Col, Row } from 'antd';
 import number1blue from '../../assets/images/1blue.svg';
 import number2 from '../../assets/images/2grey.svg';
@@ -15,11 +14,9 @@ import number6blue from '../../assets/images/6blue.svg'
 import Greentick from '../../assets/images/GreenTick.svg';
 import triangle from '../../assets/images/SideMenuTriangle.svg'
 import loandetails from '../../assets/images/LoanDetailsandFinancial.svg'
-import '../../components/Stepper/index.css';
+import './Stepper.css';
 import arrowImage from '../../assets/images/SideMenuArrow.svg';
 import { Space } from 'antd';
-import './index.css'
-import Navbar from '../../layout/navbar/Navbar';
 import arrowdas from '../../assets/images/ArrowForm.svg';
 import User from '../../assets/images/UserIcon.svg';
 import { Link } from 'react-router-dom';
@@ -33,6 +30,9 @@ import Familyandemergency from '../../components/forms/familyAndEmergency/Family
 import Employement from '../../components/forms/employement/Employement';
 import FinancialInfo from '../../components/forms/financialInfo/FinancialInfo';
 import Declaration from '../../components/forms/declaration/Declaration';
+import Summary from '../customer/applyLoan/components/Summary';
+import { LoanApplicationProvider } from '../customer/applyLoan/context/LoanApplicationContext';
+import Layout from '../../layout/Layout';
 
 interface FormData {
   amount: number | null;
@@ -40,9 +40,8 @@ interface FormData {
   fullname: string | null;
 }
 
-function Integration() {
+function LoanApplicationFormContent() {
   const [isHiddenVisible, setHiddenVisible] = useState(false);
-  const [steps] = useState(1);
   const [uploadDocumentsImage] = useState(number2);
   const [Employeeimg] = useState(number4);
   const [Pesonalimg] = useState(number3);
@@ -119,15 +118,7 @@ function Integration() {
   }
 
   return (
-    <>
-      <div style={{ display: 'flex' }}>
-        <div style={{ flex: 0 }}>
-          <Logo />
-        </div>
-        <div style={{ flex: 12 }}>
-          <Navbar />
-        </div>
-      </div>
+      <Layout>
       <div className='Integratebody' style={{ backgroundColor: '#F6F8FC', minHeight: '100vh', padding: '10px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex' }}>
@@ -163,83 +154,83 @@ function Integration() {
           </div>
         </div>
 
-        <div>
-          <Row gutter={[24, 24]} style={{ width: '100%', height: '895px' }}>
-            <Col xs={24} sm={24} md={6} lg={6} xl={6} style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', height: '', marginLeft: "20px", position: 'relative' }}>
+        <div style={{ padding: '0 20px' }}>
+          <Row gutter={16} style={{ width: '100%' }}>
+            <Col xs={24} sm={24} md={6} lg={5} xl={5} style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', position: 'relative' }}>
               <div>
                 <div className="loanDetailsContainer" style={{ marginTop: '20px' }}>
                   <Space>
                     <img
-                      src={steps === 1 ? number1blue : Greentick}
+                      src={step === 1 ? number1blue : Greentick}
                       alt="1"
                       className="blueNumberIcon"
                     />
-                    <p className="loanDetailsText" style={{ color: steps === 1 ? '#2C76C9' : ' #BBBBBB', marginTop: '15px', fontWeight: '500', font: '100', fontSize: '20px' }}>
+                    <p className="loanDetailsText" style={{ color: step === 1 ? '#2C76C9' : ' #BBBBBB', marginTop: '15px', fontWeight: '500', font: '100', fontSize: '20px' }}>
                       Loan Details
                     </p>
-                    {steps === 1 && <img src={arrowImage} alt="Arrow" className='RightArrow' />}
+                    {step === 1 && <img src={arrowImage} alt="Arrow" className='RightArrow' />}
                   </Space>
                 </div>
 
                 <div style={{ marginTop: '5%' }}>
                   <Space>
                     <img
-                      src={steps === 2 ? number2blue : uploadDocumentsImage}
+                      src={step === 2 ? number2blue : (step > 2 ? Greentick : uploadDocumentsImage)}
                       alt="2"
                     />
-                    <p style={{ color: uploadDocumentsTextColor, marginTop: '15px', fontSize: '20px' }}>Upload Documents</p>
-                    {steps === 2 && <img src={arrowImage} alt="Arrow" className='RightArrow' />}
+                    <p style={{ color: step === 2 ? '#2C76C9' : (step > 2 ? '#BBBBBB' : uploadDocumentsTextColor), marginTop: '15px', fontSize: '20px' }}>Upload Documents</p>
+                    {step === 2 && <img src={arrowImage} alt="Arrow" className='RightArrow' />}
                   </Space>
                 </div>
 
                 <div style={{ marginTop: '5%' }}>
                   <Space onClick={toggleHidden}>
                     <img
-                      src={steps >= 3 && steps <= 5 ? number3blue : Pesonalimg}
+                      src={step >= 3 && step <= 5 ? number3blue : (step > 5 ? Greentick : Pesonalimg)}
                       alt="3"
                     />
-                    <p style={{ color: PersonalTextColor, fontSize: '20px', marginTop: '15px' }}>Personal Details</p>
+                    <p style={{ color: step >= 3 && step <= 5 ? '#2C76C9' : (step > 5 ? '#BBBBBB' : PersonalTextColor), fontSize: '20px', marginTop: '15px' }}>Personal Details</p>
                   </Space>
                 </div>
 
                 {isHiddenVisible && (
                   <div id="Hidden" >
-                    <p className="hide1" style={{ color: steps === 3 ? '#979797' : '#37414A', marginTop: '5%', fontSize: '20px', marginLeft: '55px' }}>
+                    <p className="hide1" style={{ color: step === 3 ? '#979797' : '#37414A', marginTop: '5%', fontSize: '20px', marginLeft: '55px' }}>
                       Personal Information
-                      {steps === 3 && <img src={arrowImage} alt="Arrow" className='SubRightArrow' />}
+                      {step === 3 && <img src={arrowImage} alt="Arrow" className='SubRightArrow' />}
                     </p>
-                    <p className="hide2" style={{ color: steps === 4 ? '#979797' : '#37414A', marginTop: '5%', fontSize: '20px', marginLeft: '55px' }}>
+                    <p className="hide2" style={{ color: step === 4 ? '#979797' : '#37414A', marginTop: '5%', fontSize: '20px', marginLeft: '55px' }}>
                       Address Information
-                      {steps === 4 && <img src={arrowImage} alt="Arrow" className='SubRightArrow' />}
+                      {step === 4 && <img src={arrowImage} alt="Arrow" className='SubRightArrow' />}
                     </p>
-                    <p className="hide3" style={{ color: steps === 5 ? '#979797' : '#37414A', marginTop: '5%', fontSize: '20px', marginLeft: '55px' }} >
+                    <p className="hide3" style={{ color: step === 5 ? '#979797' : '#37414A', marginTop: '5%', fontSize: '20px', marginLeft: '55px' }} >
                       Family & Emergency Details
-                      {steps === 5 && <img src={arrowImage} alt="Arrow" className='SubRightArrow' />}
+                      {step === 5 && <img src={arrowImage} alt="Arrow" className='SubRightArrow' />}
                     </p>
                   </div>
                 )}
 
                 <div style={{ marginTop: '5%' }}>
                   <Space>
-                    <img src={steps === 6 ? number4blue : Employeeimg}></img>
-                    <p style={{ color: EmploymentTextColor, fontSize: '20px', marginTop: '15px' }}>Employment Details</p>
-                    {steps === 6 && <img src={arrowImage} alt="Arrow" className='RightArrow' />}
+                    <img src={step === 6 ? number4blue : (step > 6 ? Greentick : Employeeimg)}></img>
+                    <p style={{ color: step === 6 ? '#2C76C9' : (step > 6 ? '#BBBBBB' : EmploymentTextColor), fontSize: '20px', marginTop: '15px' }}>Employment Details</p>
+                    {step === 6 && <img src={arrowImage} alt="Arrow" className='RightArrow' />}
                   </Space>
                 </div>
 
                 <div style={{ marginTop: '5%' }}>
                   <Space>
-                    <img src={steps === 7 ? number5blue : Financialimg}></img>
-                    <p style={{ color: FinancialTextColor, fontSize: '20px', marginTop: '15px' }}>Financial Information</p>
-                    {steps === 7 && <img src={arrowImage} alt="Arrow" className='RightArrow' />}
+                    <img src={step === 7 ? number5blue : (step > 7 ? Greentick : Financialimg)}></img>
+                    <p style={{ color: step === 7 ? '#2C76C9' : (step > 7 ? '#BBBBBB' : FinancialTextColor), fontSize: '20px', marginTop: '15px' }}>Financial Information</p>
+                    {step === 7 && <img src={arrowImage} alt="Arrow" className='RightArrow' />}
                   </Space>
                 </div>
 
                 <div style={{ marginTop: '5%' }}>
                   <Space>
-                    <img src={steps === 8 ? number6blue : number6}></img>
-                    <p style={{ color: DeclarationTextColor, fontSize: '20px', marginTop: '15px' }}>Declaration</p>
-                    {steps === 8 && <img src={arrowImage} alt="Arrow" className='RightArrow' />}
+                    <img src={step === 8 ? number6blue : number6}></img>
+                    <p style={{ color: step === 8 ? '#2C76C9' : DeclarationTextColor, fontSize: '20px', marginTop: '15px' }}>Declaration</p>
+                    {step === 8 && <img src={arrowImage} alt="Arrow" className='RightArrow' />}
                   </Space>
                 </div>
 
@@ -254,21 +245,26 @@ function Integration() {
 
               </div>
             </Col>
-            <Col xs={24} sm={24} md={12} lg={12} xl={11} style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', marginLeft: "25px" }}> 
+            <Col xs={24} sm={24} md={11} lg={13} xl={13} style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px' }}> 
               {RenderFormComponent()}
             </Col>
-            <Col xs={24} sm={24} md={6} lg={6} xl={6} style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', marginLeft: "25px" }}>
-              <div>
-                <h3>Application Summary</h3>
-                <p>Your loan application progress will be shown here.</p>
-              </div>
+            <Col xs={24} sm={24} md={7} lg={6} xl={6}>
+              <Summary />
             </Col>
           </Row>
         </div>
 
       </div >
-    </>
+      </Layout>
   );
 }
 
-export default Integration;
+function LoanApplicationForm() {
+  return (
+    <LoanApplicationProvider>
+      <LoanApplicationFormContent />
+    </LoanApplicationProvider>
+  );
+}
+
+export default LoanApplicationForm;

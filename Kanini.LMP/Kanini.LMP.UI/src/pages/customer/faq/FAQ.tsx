@@ -2,8 +2,6 @@ import { Collapse, Card } from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import Layout from '../../../layout/Layout';
 
-const { Panel } = Collapse;
-
 const FAQ = () => {
   const faqData = [
     {
@@ -43,13 +41,14 @@ const FAQ = () => {
             <p>Find answers to common questions about our loan services</p>
           </div>
           
-          <Collapse accordion>
-            {faqData.map(item => (
-              <Panel header={item.question} key={item.key}>
-                <p>{item.answer}</p>
-              </Panel>
-            ))}
-          </Collapse>
+          <Collapse 
+            accordion
+            items={faqData.map(item => ({
+              key: item.key,
+              label: item.question,
+              children: <p>{item.answer}</p>
+            }))}
+          />
         </Card>
       </div>
     </Layout>

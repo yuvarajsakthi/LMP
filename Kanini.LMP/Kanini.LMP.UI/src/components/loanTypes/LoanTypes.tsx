@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import style from './LoanTypes.module.css';
 import ML from '../../assets/images/Medical Loan.svg';
 import EL from '../../assets/images/Education Loan.svg';
@@ -14,13 +14,13 @@ import bell from '../../assets/images/bell.svg';
 import arrow from '../../assets/images/NextButtonArrow.svg';
 import { Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../../services/api/axiosInstance';
 import { Card } from 'antd';
+import { CUSTOMER_ROUTES } from '../../config';
 const { Meta } = Card;
 
 interface LoanCategory {
   loanCategoryId: number;
-  loanCategory1: string;
+  loanCategoryName: string;
   loanCategoryKey: string;
 }
 
@@ -39,23 +39,14 @@ const LoanTypes = () => {
     };
     console.log(loanCategoryId);
 
-    const [categories, setCategories] = useState<LoanCategory[]>([]); // State to store fetched categories
+    const categories: LoanCategory[] = [
+        { loanCategoryId: 1, loanCategoryName: 'Personal Loan', loanCategoryKey: 'personal' },
+        { loanCategoryId: 2, loanCategoryName: 'Vehicle Loan', loanCategoryKey: 'vehicle' },
+        { loanCategoryId: 3, loanCategoryName: 'Housing Loan', loanCategoryKey: 'home' }
+    ];
 
-    const firstRowCategories = categories.slice(0, 5); // First 5 categories
-    const secondRowCategories = categories.slice(5, 9); // Remaining 4 categories
-
-
-    const Category = async () => {
-        try {
-            const response = await axiosInstance.get('/categories/loan-category');
-            setCategories(response.data); // Assuming the data is an array of categories
-        } catch (error) {
-            console.error('Error fetching categories:', error);
-        }
-    };
-    useEffect(() => {
-        Category(); // Fetch categories when the component mounts
-    }, []);
+    const firstRowCategories = categories;
+    const secondRowCategories: LoanCategory[] = [];
 
 
     const navigate = useNavigate();
@@ -139,13 +130,13 @@ const LoanTypes = () => {
                                     <Card
                                         key={index}
                                         hoverable
-                                        style={{ width: 200, margin: '10px 20px 20px 10px' }}
+                                        style={{ width: 200, margin: '10px 20px 20px 10px', borderColor: clickedCard === category.loanCategoryId ? '#2ec8b6ff' : '#d9d9d9' }}
                                         className={style.card}
                                         cover={
                                             <div className={style.imageContainer}>
                                                 <img
                                                     alt={category.loanCategoryKey}
-                                                    src={getImageByFilename(category.loanCategory1)}
+                                                    src={getImageByFilename(category.loanCategoryName)}
                                                     className={style.image}
                                                 />
                                             </div>
@@ -154,7 +145,7 @@ const LoanTypes = () => {
                                     >
 
 
-                                        <Meta title={category.loanCategory1} className={style.CardLoanText} />
+                                        <Meta title={category.loanCategoryName} className={style.CardLoanText} />
 
                                     </Card>
                                 ))
@@ -174,14 +165,14 @@ const LoanTypes = () => {
                                             <div className={style.imageContainer}>
                                                 <img
                                                     alt={category.loanCategoryKey}
-                                                    src={getImageByFilename(category.loanCategory1)}
+                                                    src={getImageByFilename(category.loanCategoryName)}
                                                     className={style.image}
                                                 />
                                             </div>
                                         }
 
                                         onClick={() => handleCardClick(category.loanCategoryId)}                                    >
-                                        <Meta title={category.loanCategory1} className={style.CardLoanText} />
+                                        <Meta title={category.loanCategoryName} className={style.CardLoanText} />
 
                                     </Card>
                                 ))
@@ -193,7 +184,7 @@ const LoanTypes = () => {
                                     className={style.button2}
                                     type="primary"
                                     size='large'
-                                    onClick={() => navigate('/integration')}
+                                    onClick={() => navigate(CUSTOMER_ROUTES.INTEGRATION)}
                                     style={{
                                         display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center'
                                     }}

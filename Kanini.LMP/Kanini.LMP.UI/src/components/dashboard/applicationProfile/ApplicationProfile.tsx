@@ -27,14 +27,17 @@ const ApplicationProfile: React.FC<ApplicationProfileProps> = ({ loans: provided
     const fetchRecentLoans = async () => {
       try {
         const recentLoans = await customerDashboardAPI.getRecentAppliedLoans();
-        const formattedLoans = recentLoans.map((loan: any, index: number) => ({
-          name: loan.loanName || 'Loan',
-          amount: loan.amountToBePaid || 0,
-          percentage: 60,
-          remainingYears: loan.yearsRemaining || 0,
-          color: index === 0 ? '#FBB851' : '#F37E20'
-        }));
-        if (formattedLoans.length > 0) setLoans(formattedLoans);
+        if (recentLoans && recentLoans.length > 0) {
+          const colors = ['#FBB851', '#F37E20', '#4CAF50', '#2196F3'];
+          const formattedLoans = recentLoans.slice(0, 4).map((loan: any, index: number) => ({
+            name: loan.loanType || loan.loanProductName || 'Loan',
+            amount: loan.loanAmount || loan.amount || 0,
+            percentage: Math.round((loan.paidAmount || 0) / (loan.loanAmount || 1) * 100),
+            remainingYears: Math.ceil((loan.tenure || 0) / 12),
+            color: colors[index % colors.length]
+          }));
+          setLoans(formattedLoans);
+        }
       } catch (error) {
         console.error('Failed to fetch recent loans:', error);
       }
@@ -43,14 +46,7 @@ const ApplicationProfile: React.FC<ApplicationProfileProps> = ({ loans: provided
   }, [providedLoans]);
 
   return (
-    <div className={styles.box5}>
-      <Card
-        title="My Application Profile"
-        style={{
-          width: '100%',
-          height: '100%',
-        }}
-      >
+    <Card title="My Application Profile" style={{ height: '100%' }}>
         <p className={styles.loanrstatus}> Loan Repayment Status</p>
 
 
@@ -89,8 +85,7 @@ const ApplicationProfile: React.FC<ApplicationProfileProps> = ({ loans: provided
           <a href='#' onClick={(e) => e.preventDefault()}>Click here to view the complete Report</a>
         </div>
 
-      </Card>
-    </div>
+    </Card>
   );
 };
 

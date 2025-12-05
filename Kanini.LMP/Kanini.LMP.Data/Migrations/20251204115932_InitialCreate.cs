@@ -561,38 +561,6 @@ namespace Kanini.LMP.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "ApplicationDocumentLinks",
-                columns: table => new
-                {
-                    ApplicationDocumentLinkId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    LoanApplicationBaseId = table.Column<int>(type: "int", nullable: false),
-                    DocumentId = table.Column<int>(type: "int", nullable: false),
-                    DocumentRequirementType = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    VerificationNotes = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    VerifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    VerifiedBy = table.Column<int>(type: "int", nullable: true),
-                    LinkedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ApplicationDocumentLinks", x => x.ApplicationDocumentLinkId);
-                    table.ForeignKey(
-                        name: "FK_ApplicationDocumentLinks_DocumentUploads_DocumentId",
-                        column: x => x.DocumentId,
-                        principalTable: "DocumentUploads",
-                        principalColumn: "DocumentId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_ApplicationDocumentLinks_LoanApplicationBases_LoanApplicationBaseId",
-                        column: x => x.LoanApplicationBaseId,
-                        principalTable: "LoanApplicationBases",
-                        principalColumn: "LoanApplicationBaseId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
             migrationBuilder.InsertData(
                 table: "LoanProducts",
                 columns: new[] { "LoanProductId", "IsActive", "LoanType" },
@@ -606,39 +574,13 @@ namespace Kanini.LMP.Data.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "UserId", "CreatedAt", "Email", "FullName", "PasswordHash", "Roles", "Status", "UpdatedAt" },
-                values: new object[,]
-                {
-                    { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "manager@gmail.com", "Manager One", "hashedpassword", 1, 1, null },
-                    { 2, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "customer1@gmail.com", "Customer One", "hashedpassword", 0, 1, null },
-                    { 3, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "customer2@gmail.com", "Customer Two", "hashedpassword", 0, 1, null },
-                    { 4, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "customer3@gmail.com", "Customer Three", "hashedpassword", 0, 1, null }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Customers",
-                columns: new[] { "CustomerId", "AadhaarNumber", "AnnualIncome", "CreditScore", "DateOfBirth", "Gender", "HomeOwnershipStatus", "Occupation", "PANNumber", "PhoneNumber", "ProfileImage", "UpdatedAt", "UserId" },
-                values: new object[,]
-                {
-                    { 1, "123456789012", 1200000m, 750m, new DateOnly(1990, 1, 1), 0, 1, "Software Engineer", "ABCDE1234F", "9876543210", new byte[] { 1 }, null, 2 },
-                    { 2, "123456789013", 2000000m, 800m, new DateOnly(1985, 5, 15), 1, 0, "Business Owner", "ABCDE1234G", "9876543211", new byte[] { 2 }, null, 3 },
-                    { 3, "123456789014", 1800000m, 780m, new DateOnly(1995, 10, 20), 0, 1, "Doctor", "ABCDE1234H", "9876543212", new byte[] { 3 }, null, 4 }
-                });
+                values: new object[] { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "manager@gmail.com", "Manager One", "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzOxJ6.Esi", 1, 1, null });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AddressInformations_LoanApplicationBaseId",
                 table: "AddressInformations",
                 column: "LoanApplicationBaseId",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ApplicationDocumentLinks_DocumentId",
-                table: "ApplicationDocumentLinks",
-                column: "DocumentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ApplicationDocumentLinks_LoanApplicationBaseId",
-                table: "ApplicationDocumentLinks",
-                column: "LoanApplicationBaseId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Customers_UserId",
@@ -740,10 +682,10 @@ namespace Kanini.LMP.Data.Migrations
                 name: "AddressInformations");
 
             migrationBuilder.DropTable(
-                name: "ApplicationDocumentLinks");
+                name: "Declarations");
 
             migrationBuilder.DropTable(
-                name: "Declarations");
+                name: "DocumentUploads");
 
             migrationBuilder.DropTable(
                 name: "EMIPlans");
@@ -789,9 +731,6 @@ namespace Kanini.LMP.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "VehicleLoanApplications");
-
-            migrationBuilder.DropTable(
-                name: "DocumentUploads");
 
             migrationBuilder.DropTable(
                 name: "LoanApplicationBases");

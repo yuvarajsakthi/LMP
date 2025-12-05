@@ -22,36 +22,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const initializeAuth = () => {
-      const rawToken = authMiddleware.getToken();
-      
-      if (rawToken && authMiddleware.isAuthenticated()) {
-        const storedToken = authMiddleware.getDecodedToken();
-        if (storedToken) {
-          // Enhance token with proper name extraction
-          const enhancedToken = {
-            ...storedToken,
-            FullName: storedToken.FullName || storedToken.name || storedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']
-          };
-          setToken(enhancedToken);
-          setIsAuthenticated(true);
-          // Sync with Redux store
-          dispatch(setReduxToken({ token: rawToken, user: enhancedToken }));
+      try {
+        const rawToken = authMiddleware.getToken();
+        
+        if (rawToken) {
+          const isValid = authMiddleware.isAuthenticated();
+          
+          if (isValid) {
+            const storedToken = authMiddleware.getDecodedToken();
+            if (storedToken) {
+              const enhancedToken = {
+                ...storedToken,
+                FullName: storedToken.FullName || storedToken.name || storedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
+                role: storedToken.role || storedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+              };
+              setToken(enhancedToken);
+              setIsAuthenticated(true);
+              dispatch(setReduxToken({ token: rawToken, user: enhancedToken }));
+            } else {
+              setToken(null);
+              setIsAuthenticated(false);
+            }
+          } else {
+            setToken(null);
+            setIsAuthenticated(false);
+          }
         } else {
           setToken(null);
           setIsAuthenticated(false);
-          authMiddleware.removeToken();
         }
-      } else {
+      } catch (error) {
+        console.error('Auth initialization error:', error);
         setToken(null);
         setIsAuthenticated(false);
-        authMiddleware.removeToken();
+      } finally {
+        setIsInitialized(true);
       }
-      setIsInitialized(true);
     };
     
     initializeAuth();
-    
-
   }, [dispatch]);
 
   const handleSetToken = (newToken: DecodedToken | null) => {

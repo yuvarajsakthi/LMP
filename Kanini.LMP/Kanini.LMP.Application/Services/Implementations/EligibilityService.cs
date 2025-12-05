@@ -29,8 +29,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             {
                 _logger.LogInformation("Processing eligibility calculation");
 
-                // Find customer by UserId (not CustomerId)
-                var customer = await _unitOfWork.Customers.GetAsync(c => c.UserId == customerId);
+                var customer = await _unitOfWork.Customers.GetByIdAsync(customerId);
                 if (customer == null)
                 {
                     _logger.LogWarning("Customer not found");
@@ -96,17 +95,17 @@ namespace Kanini.LMP.Application.Services.Implementations
             return eligibleProducts;
         }
 
-        public async Task UpdateCustomerProfileAsync(int userId, EligibilityProfileRequest request)
+        public async Task UpdateCustomerProfileAsync(int customerId, EligibilityProfileRequest request)
         {
             try
             {
-                _logger.LogInformation(ApplicationConstants.Messages.ProcessingCustomerProfileUpdate, userId);
+                _logger.LogInformation(ApplicationConstants.Messages.ProcessingCustomerProfileUpdate, customerId);
 
                 using (var transaction = await _unitOfWork.BeginTransactionAsync())
                 {
                     try
                     {
-                        var customer = await _unitOfWork.Customers.GetAsync(c => c.UserId == userId);
+                        var customer = await _unitOfWork.Customers.GetByIdAsync(customerId);
                         if (customer == null)
                         {
                             _logger.LogWarning("Customer not found");

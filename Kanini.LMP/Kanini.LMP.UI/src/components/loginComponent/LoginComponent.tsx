@@ -6,7 +6,7 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import LoginComponentCss from "./LoginComponent.module.css";
 import { useAuth } from "../../context";
 import type { LoginCredentials, InputChangeEvent } from "../../types";
-import { COMMON_ROUTES, CUSTOMER_ROUTES, USER_ROLES } from "../../config";
+import { COMMON_ROUTES, CUSTOMER_ROUTES, MANAGER_ROUTES, USER_ROLES } from "../../config";
 import { validateField } from "../../utils";
 import { loginUser } from "../../store/slices/authSlice";
 import type { RootState, AppDispatch } from "../../store";
@@ -14,7 +14,7 @@ const { Title } = Typography;
 
 const Login = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { isLoading } = useSelector((state: RootState) => state.auth);
+  const isLoading = useSelector((state: RootState) => (state.auth as any).isLoading);
   const { setToken } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -70,7 +70,7 @@ const Login = () => {
         await authAPI.verifyOTP({ email, otp });
         message.success('Account verified! Logging you in...');
         
-        const loginData: LoginCredentials = { username: email, password };
+        const loginData: LoginCredentials = { Username: email, PasswordHash: password };
         const result = await dispatch(loginUser(loginData)).unwrap();
         
         if ('token' in result && result.token) {
@@ -80,7 +80,7 @@ const Login = () => {
           
           const userRole = result.user.role;
           if (userRole?.toLowerCase() === USER_ROLES.MANAGER.toLowerCase()) {
-            navigate(COMMON_ROUTES.APPLIED_LOAN);
+            navigate(MANAGER_ROUTES.MANAGER_DASHBOARD);
           } else if (userRole?.toLowerCase() === USER_ROLES.CUSTOMER.toLowerCase()) {
             navigate(CUSTOMER_ROUTES.CUSTOMER_DASHBOARD);
           }
@@ -98,8 +98,8 @@ const Login = () => {
       }
       
       const loginData: LoginCredentials = {
-        username: email,
-        password: password,
+        Username: email,
+        PasswordHash: password,
       };
       
       try {
@@ -120,7 +120,7 @@ const Login = () => {
           
           const userRole = result.user.role;
           if (userRole?.toLowerCase() === USER_ROLES.MANAGER.toLowerCase()) {
-            navigate(COMMON_ROUTES.APPLIED_LOAN);
+            navigate(MANAGER_ROUTES.MANAGER_DASHBOARD);
           } else if (userRole?.toLowerCase() === USER_ROLES.CUSTOMER.toLowerCase()) {
             navigate(CUSTOMER_ROUTES.CUSTOMER_DASHBOARD);
           }

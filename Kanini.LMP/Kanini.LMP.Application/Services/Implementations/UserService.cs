@@ -42,8 +42,8 @@ namespace Kanini.LMP.Application.Services.Implementations
 
                 var user = _mapper.Map<User>(registrationDto);
                 user.PasswordHash = PasswordService.HashPassword(registrationDto.Password);
-                user.Roles = UserEnums.Customer;
-                user.Status = UserStatus.Active;
+                user.Roles = UserRoles.Customer;
+                user.Status = UserStatus.Pending;
                 user.CreatedAt = DateTime.UtcNow;
 
                 var createdUser = await _unitOfWork.Users.AddAsync(user);
@@ -51,6 +51,10 @@ namespace Kanini.LMP.Application.Services.Implementations
 
                 var customer = _mapper.Map<Customer>(registrationDto);
                 customer.UserId = createdUser.UserId;
+                customer.AadhaarNumber = string.Empty;
+                customer.Occupation = string.Empty;
+                customer.PANNumber = string.Empty;
+                customer.ProfileImage = Array.Empty<byte>();
                 customer.UpdatedAt = DateTime.UtcNow;
 
                 await _unitOfWork.Customers.AddAsync(customer);
@@ -86,7 +90,7 @@ namespace Kanini.LMP.Application.Services.Implementations
         public async Task<UserDTO> CreateUserAsync(UserDTO userDto)
         {
             var user = _mapper.Map<User>(userDto);
-            user.PasswordHash = PasswordService.HashPassword(userDto.Password);
+            user.PasswordHash = PasswordService.HashPassword(userDto.PasswordHash);
             user.CreatedAt = DateTime.UtcNow;
 
             var createdUser = await _unitOfWork.Users.AddAsync(user);
