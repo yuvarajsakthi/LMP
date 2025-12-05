@@ -6,151 +6,76 @@ namespace Kanini.LMP.Api.Constants
         {
             public const string ApiController = "api/[controller]";
             
-            // Document routes
-            public const string Upload = "upload";
-            public const string DownloadDocument = "download/{documentId}";
-            public const string ViewDocument = "view/{documentId}";
-            public const string DocumentsByApplication = "application/{loanApplicationBaseId}";
-            public const string DeleteDocument = "delete/{documentId}";
-            public const string Pending = "pending";
-            public const string Verify = "verify";
+            
+            // Customer routes
+            public static class CustomerController
+            {
+                public const string GetAll = "";
+                public const string GetById = "{id}";
+                public const string GetByUserId = "user/{userId}";
+                public const string GetSettings = "settings/{userId}";
+                public const string Update = "{id}";
+                public const string UpdateSettings = "settings/{userId}";
+            }
+            
+            // Customer Dashboard routes
+            public static class CustomerDashboardController
+            {
+                public const string Base = "customerdashboard";
+                public const string LoanProducts = "loanproducts";
+                public const string RecentAppliedLoans = "recent-applied-loans";
+                public const string ApplicationStatus = "applicationstatus";
+            }
             
             // Eligibility routes
-            public const string Check = "check";
+            public static class EligibilityController
+            {
+                public const string GetScore = "{customerId}";
+                public const string Calculate = "calculate/{customerId}";
+                public const string Update = "update/{customerId}";
+                public const string Check = "check";
+            }
             
-            // EMI Calculator routes
-            public const string Calculate = "calculate";
-            public const string Dashboard = "dashboard";
-            public const string RestructureApply = "restructure/apply";
-            
-            // Joint Loan routes
-            public const string Applicants = "{loanApplicationId}/applicants";
-            public const string Documents = "{loanApplicationId}/documents";
-            
-            // KYC routes
-            public const string SubmitDocument = "submit-document";
-            public const string Status = "status/{customerId}";
-            public const string MyStatus = "my-status";
-            public const string IsCompleted = "is-completed/{customerId}";
-            public const string PendingDocuments = "pending-documents";
-            public const string Document = "document/{documentId}";
-            public const string Reject = "reject";
-            public const string Score = "score/{customerId}";
-            
-            // Loan Application routes
-            public const string Personal = "personal";
-            public const string PersonalById = "personal/{id}";
-            public const string PersonalByStatus = "personal/status/{status}";
-            public const string PersonalSubmit = "personal/{customerId}/submit";
-            public const string PersonalUpdateStatus = "personal/{id}/status";
-            public const string Home = "home/{customerId}";
-            public const string Vehicle = "vehicle/{customerId}";
-            
-            // Manager Dashboard routes
-            public const string OverallMetrics = "overall-metrics";
-            public const string ApplicationStatus = "application-status";
-            public const string ApplicationTrends = "application-trends";
-            public const string LoanTypePerformance = "loan-type-performance";
-            public const string NewApplications = "new-applications";
-            
-            // Manager Workflow routes
-            public const string PendingApplications = "pending-applications";
-            public const string Application = "application/{applicationId}";
-            public const string StartWorkflow = "start-workflow/{applicationId}/{managerId}";
-            public const string UpdateStep = "update-step/{applicationId}";
-            public const string WorkflowStatus = "workflow-status/{applicationId}";
-            public const string VerifyDocuments = "verify-documents/{applicationId}/{managerId}";
-            public const string Approve = "approve/{applicationId}/{managerId}";
-            public const string WorkflowReject = "reject/{applicationId}/{managerId}";
-            public const string Revise = "revise/{applicationId}/{managerId}";
-            public const string Disburse = "disburse/{applicationId}/{managerId}";
+            // Loan Application Flow routes
+            public static class LoanApplicationFlowController
+            {
+                public const string CreatePersonal = "personal/{customerId}";
+                public const string CreateHome = "home/{customerId}";
+                public const string CreateVehicle = "vehicle/{customerId}";
+                public const string UpdateStatus = "{loanId}/status";
+                public const string Withdraw = "{loanId}";
+            }
             
             // Notification routes
-            public const string MyNotifications = "my-notifications";
-            public const string MarkRead = "mark-read/{notificationId}";
-            public const string MarkAllRead = "mark-all-read";
-            public const string UnreadCount = "unread-count";
-            public const string Unread = "unread";
-            public const string Preferences = "preferences";
-            public const string PreferencesUpdate = "preferences/{userId}";
-            public const string Test = "test";
-            public const string Bulk = "bulk";
-            
-            // Razorpay routes
-            public static class RazorpayController
+            public static class NotificationController
             {
-                public const string Base = "api/[controller]";
-                public const string CreateOrder = "create-order";
-                public const string ProcessPayment = "process-payment";
-                public const string VerifySignature = "verify-signature";
-                public const string DisburseLoan = "disburse-loan";
-                public const string GetDisbursementStatus = "disbursement-status/{disbursementId}";
+                public const string GetAll = "";
+                public const string Delete = "{notificationId}";
             }
             
-            // Payment routes
-            public static class PaymentController
+            // FAQ routes
+            public static class FaqController
             {
-                public const string Base = "api/[controller]";
-                public const string LoanAccount = "loan-account/{loanAccountId}";
-                public const string EMIPlans = "emi-plans/{loanAccountId}";
-                public const string UpdateStatus = "{paymentId}/status";
-                public const string AnalyticsSP = "analytics-sp";
-                public const string HistorySP = "history-sp/{loanAccountId}";
+                public const string Create = "";
+                public const string GetAll = "";
+                public const string GetById = "{id}";
+                public const string GetByCustomer = "customer/{customerId}";
+                public const string Update = "{id}";
+                public const string Delete = "{id}";
             }
             
-            // User routes
-            // EMI Calculator routes
-            public static class EmiCalculatorController
-            {
-                public const string Base = "api/[controller]";
-                public const string Calculate = "calculate";
-                public const string Create = "create";
-                public const string GetById = "{emiId}";
-                public const string GetByLoan = "loan/{loanApplicationId}";
-                public const string Dashboard = "dashboard";
-                public const string All = "all";
-                public const string Schedule = "{emiId}/schedule";
-                public const string Prepayment = "{emiId}/prepayment";
-                public const string LateFee = "{emiId}/latefee";
-                public const string RestructureCalculate = "restructure/calculate";
-                public const string RestructureApply = "restructure/apply";
-                public const string CompleteDetails = "{emiId}/complete-details";
-                public const string CalculateSP = "calculate-sp";
-                public const string ScheduleSP = "{emiId}/schedule-sp";
-            }
-            
-            // Reports routes
-            public static class ReportsController
-            {
-                public const string Base = "api/[controller]";
-                public const string LoanPerformance = "loan-performance";
-                public const string RiskAssessment = "risk-assessment";
-                public const string Compliance = "compliance";
-                public const string CustomerAnalytics = "customer-analytics";
-                public const string AnalyticsDashboard = "analytics-dashboard";
-                public const string LoanPerformanceSP = "loan-performance-sp";
-                public const string RiskAssessmentSP = "risk-assessment-sp";
-                public const string ComplianceSP = "compliance-sp";
-                public const string CustomerAnalyticsSP = "customer-analytics-sp";
-                public const string Export = "export/{reportType}";
-            }
-            
-            // Token routes
+            // Token routes  
             public static class TokenController
             {
-                public const string Base = "api/[controller]";
                 public const string Login = "login";
                 public const string Register = "register";
+                public const string SendOTP = "sendotp";
+                public const string LoginWithOTP = "login/otp";
+                public const string VerifyOTP = "verify/otp";
                 public const string ForgotPassword = "forgot-password";
                 public const string ResetPassword = "reset-password";
             }
             
-            public static class UserController
-            {
-                public const string Base = "api/[controller]";
-                public const string GetById = "{id}";
-                public const string ChangePassword = "change-password";
-            }
         }
 
         public static class LogMessages

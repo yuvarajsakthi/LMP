@@ -2,6 +2,7 @@ using AutoMapper;
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Data.UnitOfWork;
 using Kanini.LMP.Database.EntitiesDto;
+using Kanini.LMP.Database.EntitiesDtos.Common;
 
 namespace Kanini.LMP.Application.Services.Implementations
 {
@@ -16,21 +17,21 @@ namespace Kanini.LMP.Application.Services.Implementations
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<NotificationDTO>> GetUserNotificationsAsync(int userId)
+        public async Task<IEnumerable<NotificationDTO>> GetUserNotificationsAsync(IdDTO userId)
         {
-            var notifications = await _unitOfWork.Notifications.GetAllAsync(n => n.UserId == userId);
+            var notifications = await _unitOfWork.Notifications.GetAllAsync(n => n.UserId == userId.Id);
             return _mapper.Map<IEnumerable<NotificationDTO>>(notifications);
         }
 
-        public async Task<bool> DeleteNotificationAsync(int notificationId, int userId)
+        public async Task<BoolDTO> DeleteNotificationAsync(IdDTO notificationId, IdDTO userId)
         {
-            var notification = await _unitOfWork.Notifications.GetByIdAsync(notificationId);
-            if (notification == null || notification.UserId != userId)
-                return false;
+            var notification = await _unitOfWork.Notifications.GetByIdAsync(notificationId.Id);
+            if (notification == null || notification.UserId != userId.Id)
+                return new BoolDTO { Value = false };
 
-            await _unitOfWork.Notifications.DeleteAsync(notificationId);
+            await _unitOfWork.Notifications.DeleteAsync(notificationId.Id);
             await _unitOfWork.SaveChangesAsync();
-            return true;
+            return new BoolDTO { Value = true };
         }
     }
 }

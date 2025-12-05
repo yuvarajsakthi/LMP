@@ -1,12 +1,14 @@
+using Kanini.LMP.Api.Constants;
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Database.EntitiesDto;
 using Kanini.LMP.Database.EntitiesDtos;
+using Kanini.LMP.Database.EntitiesDtos.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kanini.LMP.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route(ApiConstants.Routes.ApiController)]
     [ApiController]
     public class FaqController : ControllerBase
     {
@@ -17,7 +19,7 @@ namespace Kanini.LMP.Api.Controllers
             _faqService = faqService;
         }
 
-        [HttpPost]
+        [HttpPost(ApiConstants.Routes.FaqController.Create)]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<FaqDTO>>> CreateFaq([FromBody] FaqDTO faqDto)
         {
@@ -32,7 +34,7 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet(ApiConstants.Routes.FaqController.GetAll)]
         [Authorize(Roles = "Manager")]
         public async Task<ActionResult<ApiResponse<IEnumerable<FaqDTO>>>> GetAllFaqs()
         {
@@ -47,13 +49,13 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet(ApiConstants.Routes.FaqController.GetById)]
         [Authorize(Roles = "Manager,Customer")]
         public async Task<ActionResult<ApiResponse<FaqDTO>>> GetFaqById(int id)
         {
             try
             {
-                var faq = await _faqService.GetById(id);
+                var faq = await _faqService.GetById(new IdDTO { Id = id });
                 if (faq == null)
                     return NotFound(ApiResponse<FaqDTO>.ErrorResponse("FAQ not found"));
 
@@ -65,13 +67,13 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        [HttpGet("customer/{customerId}")]
+        [HttpGet(ApiConstants.Routes.FaqController.GetByCustomer)]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult<ApiResponse<IEnumerable<FaqDTO>>>> GetFaqsByCustomerId(int customerId)
         {
             try
             {
-                var faqs = await _faqService.GetByCustomerId(customerId);
+                var faqs = await _faqService.GetByCustomerId(new IdDTO { Id = customerId });
                 return Ok(ApiResponse<IEnumerable<FaqDTO>>.SuccessResponse(faqs));
             }
             catch (Exception)
@@ -80,7 +82,7 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        [HttpPut("{id}")]
+        [HttpPut(ApiConstants.Routes.FaqController.Update)]
         [Authorize(Roles = "Manager")]
         public async Task<ActionResult<ApiResponse<FaqDTO>>> UpdateFaq(int id, [FromBody] FaqDTO faqDto)
         {
@@ -96,13 +98,13 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete(ApiConstants.Routes.FaqController.Delete)]
         [Authorize(Roles = "Manager")]
         public async Task<ActionResult<ApiResponse<object>>> DeleteFaq(int id)
         {
             try
             {
-                await _faqService.Delete(id);
+                await _faqService.Delete(new IdDTO { Id = id });
                 return Ok(ApiResponse<object>.SuccessResponse(new { message = "FAQ deleted successfully" }));
             }
             catch (Exception)

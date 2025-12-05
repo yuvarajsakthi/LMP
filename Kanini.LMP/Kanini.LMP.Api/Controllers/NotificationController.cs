@@ -1,13 +1,15 @@
+using Kanini.LMP.Api.Constants;
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Database.EntitiesDto;
 using Kanini.LMP.Database.EntitiesDtos;
+using Kanini.LMP.Database.EntitiesDtos.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace Kanini.LMP.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route(ApiConstants.Routes.ApiController)]
     [ApiController]
     [Authorize]
     public class NotificationController : ControllerBase
@@ -19,13 +21,13 @@ namespace Kanini.LMP.Api.Controllers
             _notificationService = notificationService;
         }
 
-        [HttpGet]
+        [HttpGet(ApiConstants.Routes.NotificationController.GetAll)]
         public async Task<ActionResult<ApiResponse<IEnumerable<NotificationDTO>>>> GetAllNotifications()
         {
             try
             {
                 var userId = GetCurrentUserId();
-                var notifications = await _notificationService.GetUserNotificationsAsync(userId);
+                var notifications = await _notificationService.GetUserNotificationsAsync(new IdDTO { Id = userId });
                 return Ok(ApiResponse<IEnumerable<NotificationDTO>>.SuccessResponse(notifications));
             }
             catch (Exception)
@@ -34,15 +36,15 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        [HttpDelete("{notificationId}")]
+        [HttpDelete(ApiConstants.Routes.NotificationController.Delete)]
         public async Task<ActionResult<ApiResponse<object>>> DeleteNotification(int notificationId)
         {
             try
             {
                 var userId = GetCurrentUserId();
-                var result = await _notificationService.DeleteNotificationAsync(notificationId, userId);
+                var result = await _notificationService.DeleteNotificationAsync(new IdDTO { Id = notificationId }, new IdDTO { Id = userId });
                 
-                if (!result)
+                if (!result.Value)
                     return NotFound(ApiResponse<object>.ErrorResponse("Notification not found"));
                 
                 return Ok(ApiResponse<object>.SuccessResponse(new { message = "Notification deleted successfully" }));

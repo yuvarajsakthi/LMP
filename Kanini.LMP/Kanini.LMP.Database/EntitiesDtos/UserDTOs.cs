@@ -24,6 +24,7 @@ namespace Kanini.LMP.Database.EntitiesDtos.UserDtos
         public int UserId { get; set; }
         public string FullName { get; set; } = null!;
         public string Email { get; set; } = null!;
+        public string PasswordHash { get; set; } = null!;
         public UserRoles Roles { get; set; }
         public UserStatus Status { get; set; }
         public DateTime? CreatedAt { get; set; }

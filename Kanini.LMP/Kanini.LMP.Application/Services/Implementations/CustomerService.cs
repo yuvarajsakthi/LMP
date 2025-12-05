@@ -1,9 +1,10 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Kanini.LMP.Application.Constants;
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Data.UnitOfWork;
 using Kanini.LMP.Database.Entities.CustomerEntities;
-using Kanini.LMP.Database.EntitiesDto.CustomerEntitiesDto.CustomerBasicDto.Customer;
+using Kanini.LMP.Database.EntitiesDtos.CustomerDtos;
+using Kanini.LMP.Database.EntitiesDtos.Common;
 using Microsoft.Extensions.Logging;
 
 namespace Kanini.LMP.Application.Services.Implementations
@@ -24,21 +25,21 @@ namespace Kanini.LMP.Application.Services.Implementations
             _logger = logger;
         }
 
-        public async Task<CustomerDto> Add(CustomerDto entity)
+        public async Task<CustomerDTO> Add(CustomerCreateDTO entity)
         {
             try
             {
                 _logger.LogInformation("Adding new customer for user ID: {UserId}", entity.UserId);
 
                 var customer = _mapper.Map<Customer>(entity);
-                customer.ProfileImage = new byte[] { 0x00 }; // Default empty image
+                customer.ProfileImage = new byte[] { 0x00 };
                 customer.UpdatedAt = DateTime.UtcNow;
 
                 var created = await _unitOfWork.Customers.AddAsync(customer);
                 await _unitOfWork.SaveChangesAsync();
 
                 _logger.LogInformation("Customer created successfully with ID: {CustomerId}", created.CustomerId);
-                return _mapper.Map<CustomerDto>(created);
+                return _mapper.Map<CustomerDTO>(created);
             }
             catch (Exception ex)
             {
@@ -47,39 +48,39 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
         }
 
-        public async Task Delete(int id)
+        public async Task Delete(IdDTO request)
         {
             try
             {
-                _logger.LogInformation("Deleting customer with ID: {CustomerId}", id);
+                _logger.LogInformation("Deleting customer with ID: {CustomerId}", request.Id);
 
-                var customer = await _unitOfWork.Customers.GetByIdAsync(id);
+                var customer = await _unitOfWork.Customers.GetByIdAsync(request.Id);
                 if (customer == null)
                 {
-                    _logger.LogWarning("Customer with ID {CustomerId} not found for deletion", id);
+                    _logger.LogWarning("Customer with ID {CustomerId} not found for deletion", request.Id);
                     throw new KeyNotFoundException(ApplicationConstants.ErrorMessages.CustomerNotFound);
                 }
 
-                await _unitOfWork.Customers.DeleteAsync(id);
+                await _unitOfWork.Customers.DeleteAsync(request.Id);
                 await _unitOfWork.SaveChangesAsync();
 
-                _logger.LogInformation("Customer deleted successfully with ID: {CustomerId}", id);
+                _logger.LogInformation("Customer deleted successfully with ID: {CustomerId}", request.Id);
             }
             catch (Exception ex) when (!(ex is KeyNotFoundException))
             {
-                _logger.LogError(ex, "Error deleting customer with ID: {CustomerId}", id);
+                _logger.LogError(ex, "Error deleting customer with ID: {CustomerId}", request.Id);
                 throw new InvalidOperationException("Failed to delete customer", ex);
             }
         }
 
-        public async Task<IReadOnlyList<CustomerDto>> GetAll()
+        public async Task<IReadOnlyList<CustomerDTO>> GetAll()
         {
             try
             {
                 _logger.LogInformation("Retrieving all customers");
 
                 var customers = await _unitOfWork.Customers.GetAllAsync();
-                var customerDtos = _mapper.Map<List<CustomerDto>>(customers);
+                var customerDtos = _mapper.Map<List<CustomerDTO>>(customers);
 
                 _logger.LogInformation("Retrieved {Count} customers", customerDtos.Count);
                 return customerDtos;
@@ -91,31 +92,31 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
         }
 
-        public async Task<CustomerDto?> GetById(int id)
+        public async Task<CustomerDTO?> GetById(IdDTO request)
         {
             try
             {
-                _logger.LogInformation("Retrieving customer with ID: {CustomerId}", id);
+                _logger.LogInformation("Retrieving customer with ID: {CustomerId}", request.Id);
 
-                var customer = await _unitOfWork.Customers.GetByIdAsync(id);
+                var customer = await _unitOfWork.Customers.GetByIdAsync(request.Id);
                 if (customer == null)
                 {
-                    _logger.LogWarning("Customer with ID {CustomerId} not found", id);
+                    _logger.LogWarning("Customer with ID {CustomerId} not found", request.Id);
                     return null;
                 }
 
-                var customerDto = _mapper.Map<CustomerDto>(customer);
-                _logger.LogInformation("Customer retrieved successfully with ID: {CustomerId}", id);
+                var customerDto = _mapper.Map<CustomerDTO>(customer);
+                _logger.LogInformation("Customer retrieved successfully with ID: {CustomerId}", request.Id);
                 return customerDto;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving customer with ID: {CustomerId}", id);
+                _logger.LogError(ex, "Error retrieving customer with ID: {CustomerId}", request.Id);
                 throw new InvalidOperationException("Failed to retrieve customer", ex);
             }
         }
 
-        public async Task<CustomerDto> Update(CustomerDto entity)
+        public async Task<CustomerDTO> Update(CustomerUpdateDTO entity)
         {
             try
             {
@@ -128,15 +129,14 @@ namespace Kanini.LMP.Application.Services.Implementations
                     throw new KeyNotFoundException(ApplicationConstants.ErrorMessages.CustomerNotFound);
                 }
 
-                var customer = _mapper.Map<Customer>(entity);
-                customer.UpdatedAt = DateTime.UtcNow;
-                customer.ProfileImage = existingCustomer.ProfileImage; // Preserve existing image
+                _mapper.Map(entity, existingCustomer);
+                existingCustomer.UpdatedAt = DateTime.UtcNow;
 
-                var updated = await _unitOfWork.Customers.UpdateAsync(customer);
+                var updated = await _unitOfWork.Customers.UpdateAsync(existingCustomer);
                 await _unitOfWork.SaveChangesAsync();
 
                 _logger.LogInformation("Customer updated successfully with ID: {CustomerId}", entity.CustomerId);
-                return _mapper.Map<CustomerDto>(updated);
+                return _mapper.Map<CustomerDTO>(updated);
             }
             catch (Exception ex) when (!(ex is KeyNotFoundException))
             {
@@ -145,30 +145,28 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
         }
 
-        public async Task<CustomerDto?> GetByUserIdAsync(int userId)
+        public async Task<CustomerDTO?> GetByUserIdAsync(IdDTO request)
         {
             try
             {
-                _logger.LogInformation("Retrieving customer by user ID: {UserId}", userId);
+                _logger.LogInformation("Retrieving customer by user ID: {UserId}", request.Id);
 
-                var customer = await _unitOfWork.Customers.GetAsync(c => c.UserId == userId);
+                var customer = await _unitOfWork.Customers.GetAsync(c => c.UserId == request.Id);
                 if (customer == null)
                 {
-                    _logger.LogWarning("Customer with user ID {UserId} not found", userId);
+                    _logger.LogWarning("Customer with user ID {UserId} not found", request.Id);
                     return null;
                 }
 
-                var customerDto = _mapper.Map<CustomerDto>(customer);
-                _logger.LogInformation("Customer retrieved successfully by user ID: {UserId}", userId);
+                var customerDto = _mapper.Map<CustomerDTO>(customer);
+                _logger.LogInformation("Customer retrieved successfully by user ID: {UserId}", request.Id);
                 return customerDto;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving customer by user ID: {UserId}", userId);
+                _logger.LogError(ex, "Error retrieving customer by user ID: {UserId}", request.Id);
                 throw new InvalidOperationException("Failed to retrieve customer by user ID", ex);
             }
         }
-
-
     }
 }

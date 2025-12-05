@@ -1,172 +1,183 @@
-// using Kanini.LMP.Application.Services.Interfaces;
-// using Kanini.LMP.Data.Data;
-// using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
-// using Kanini.LMP.Database.Enums;
-// using Microsoft.EntityFrameworkCore;
-// using System.Reflection.Metadata;
-// using System.Text;
+using Kanini.LMP.Application.Services.Interfaces;
+using Kanini.LMP.Data.UnitOfWork;
+using Kanini.LMP.Database.Entities.LoanApplicationEntites;
+using Kanini.LMP.Database.EntitiesDtos.Common;
+using System.Text;
 
-// namespace Kanini.LMP.Application.Services.Implementations
-// {
-//     public class PdfService : IPdfService
-//     {
-//         private readonly LmpDbContext _context;
+namespace Kanini.LMP.Application.Services.Implementations
+{
+    public class PdfService : IPdfService
+    {
+        private readonly IUnitOfWork _unitOfWork;
 
-//         public PdfService(LmpDbContext context)
-//         {
-//             _context = context;
-//         }
+        public PdfService(IUnitOfWork unitOfWork)
+        {
+            _unitOfWork = unitOfWork;
+        }
 
-//         public async Task<byte[]> GenerateLoanApplicationPdfAsync(int applicationId)
-//         {
-//             var application = await _context.LoanApplicationBases
-//                 .Include(app => app.LoanDetails)
-//                 .Include(app => app.PersonalDetails)
-//                 .Include(app => app.AddressInformation)
-//                 .Include(app => app.Customer)
-//                 .FirstOrDefaultAsync(app => app.LoanApplicationBaseId == applicationId);
+        public async Task<ByteArrayDTO> GenerateLoanApplicationPdfAsync(IdDTO applicationId)
+        {
+            var personalLoan = await _unitOfWork.PersonalLoanApplications.GetByIdAsync(applicationId.Id);
+            if (personalLoan != null)
+            {
+                var customer = await _unitOfWork.Customers.GetByIdAsync(personalLoan.CustomerId);
+                if (customer == null) throw new ArgumentException("Customer not found");
+                return new ByteArrayDTO { Data = Encoding.UTF8.GetBytes(GeneratePersonalLoanPdf(personalLoan, customer)) };
+            }
 
-//             if (application == null)
-//                 throw new ArgumentException("Application not found");
+            var homeLoan = await _unitOfWork.HomeLoanApplications.GetByIdAsync(applicationId.Id);
+            if (homeLoan != null)
+            {
+                var customer = await _unitOfWork.Customers.GetByIdAsync(homeLoan.CustomerId);
+                if (customer == null) throw new ArgumentException("Customer not found");
+                return new ByteArrayDTO { Data = Encoding.UTF8.GetBytes(GenerateHomeLoanPdf(homeLoan, customer)) };
+            }
 
-//             var pdfContent = GenerateApplicationPdfContent(application);
-//             var pdfBytes = Encoding.UTF8.GetBytes(pdfContent);
+            var vehicleLoan = await _unitOfWork.VehicleLoanApplications.GetByIdAsync(applicationId.Id);
+            if (vehicleLoan != null)
+            {
+                var customer = await _unitOfWork.Customers.GetByIdAsync(vehicleLoan.CustomerId);
+                if (customer == null) throw new ArgumentException("Customer not found");
+                return new ByteArrayDTO { Data = Encoding.UTF8.GetBytes(GenerateVehicleLoanPdf(vehicleLoan, customer)) };
+            }
 
-//             // Store PDF in DocumentUpload table
-//             var document = new DocumentUpload
-//             {
-//                 LoanApplicationBaseId = applicationId,
-//                 CustomerId = application.CustomerId,
-//                 DocumentName = $"LoanApplication_{applicationId}.pdf",
-//                 DocumentType = DocumentType.ApplicationPDF,
-//                 DocumentData = pdfBytes,
-//                 UploadedAt = DateTime.UtcNow
-//             };
+            throw new ArgumentException("Application not found");
+        }
 
-//             var existing = await _context.DocumentUploads
-//                 .FirstOrDefaultAsync(d => d.LoanApplicationBaseId == applicationId && d.DocumentType == DocumentType.ApplicationPDF);
+        private string GeneratePersonalLoanPdf(PersonalLoanApplication loan, dynamic customer)
+        {
+            return $@"
+========================================
+  PERSONAL LOAN APPLICATION DOCUMENT
+========================================
 
-//             if (existing != null)
-//             {
-//                 existing.DocumentData = pdfBytes;
-//                 existing.UploadedAt = DateTime.UtcNow;
-//             }
-//             else
-//             {
-//                 await _context.DocumentUploads.AddAsync(document);
-//             }
+Application ID: {loan.LoanApplicationBaseId}
+Application Date: {loan.SubmissionDate}
+Status: {loan.Status}
 
-//             await _context.SaveChangesAsync();
-//             return pdfBytes;
-//         }
+----------------------------------------
+CUSTOMER INFORMATION
+----------------------------------------
+Phone: {customer?.PhoneNumber ?? "N/A"}
+Date of Birth: {customer?.DateOfBirth}
+Gender: {customer?.Gender}
 
-//         public async Task<byte[]> GeneratePaymentReceiptPdfAsync(int transactionId)
-//         {
-            
-//         }
+----------------------------------------
+LOAN DETAILS
+----------------------------------------
+Requested Amount: ₹{loan.RequestedLoanAmount:N2}
+Tenure: {loan.TenureMonths} months
+Interest Rate: {loan.InterestRate ?? 0}%
 
-//         public async Task<byte[]> GenerateEMISchedulePdfAsync(int loanAccountId)
-//         {
-//             var loanAccount = await _context.LoanAccounts
-//                 .FirstOrDefaultAsync(la => la.LoanAccountId == loanAccountId);
+----------------------------------------
+EMPLOYMENT DETAILS
+----------------------------------------
+Employment Type: {loan.EmploymentType}
+Monthly Income: ₹{loan.MonthlyIncome:N2}
+Work Experience: {loan.WorkExperienceYears} years
+Loan Purpose: {loan.LoanPurpose}
 
-//             if (loanAccount == null)
-//                 throw new ArgumentException("Loan account not found");
+----------------------------------------
 
-//             var scheduleContent = GenerateEMIScheduleContent(loanAccount);
-//             return Encoding.UTF8.GetBytes(scheduleContent);
-//         }
+Generated on: {DateTime.Now:dd MMM yyyy HH:mm}
 
-//         private string GenerateApplicationPdfContent(dynamic application)
-//         {
-//             var loanDetails = application.LoanDetails;
-//             var personalDetails = application.PersonalDetails;
-//             var addressInfo = application.AddressInformation;
+This is a system-generated document.
 
-//             return $@"
-// ========================================
-//     LOAN APPLICATION DOCUMENT
-// ========================================
+========================================
+";
+        }
 
-// Application ID: {application.LoanApplicationBaseId}
-// Application Date: {application.SubmissionDate}
-// Status: {application.Status}
-// Loan Type: {application.LoanProductType}
+        private string GenerateHomeLoanPdf(HomeLoanApplication loan, dynamic customer)
+        {
+            return $@"
+========================================
+    HOME LOAN APPLICATION DOCUMENT
+========================================
 
-// ----------------------------------------
-// CUSTOMER INFORMATION
-// ----------------------------------------
-// Full Name: {personalDetails?.FullName ?? "N/A"}
-// Email: {personalDetails?.Email ?? "N/A"}
-// Phone: {personalDetails?.PhoneNumber ?? "N/A"}
-// Date of Birth: {personalDetails?.DateOfBirth}
-// Gender: {personalDetails?.Gender}
+Application ID: {loan.LoanApplicationBaseId}
+Application Date: {loan.SubmissionDate}
+Status: {loan.Status}
 
-// ----------------------------------------
-// ADDRESS INFORMATION
-// ----------------------------------------
-// Current Address: {addressInfo?.CurrentAddress ?? "N/A"}
-// City: {addressInfo?.City ?? "N/A"}
-// State: {addressInfo?.State ?? "N/A"}
-// Pincode: {addressInfo?.Pincode ?? "N/A"}
+----------------------------------------
+CUSTOMER INFORMATION
+----------------------------------------
+Phone: {customer?.PhoneNumber ?? "N/A"}
+Date of Birth: {customer?.DateOfBirth}
+Gender: {customer?.Gender}
 
-// ----------------------------------------
-// LOAN DETAILS
-// ----------------------------------------
-// Requested Amount: ₹{loanDetails?.RequestedAmount ?? 0:N2}
-// Tenure: {loanDetails?.TenureMonths ?? 0} months
-// Interest Rate: {loanDetails?.InterestRate ?? 0}%
-// Monthly EMI: ₹{loanDetails?.MonthlyInstallment ?? 0:N2}
-// Purpose: {loanDetails?.LoanPurpose ?? "N/A"}
+----------------------------------------
+LOAN DETAILS
+----------------------------------------
+Requested Amount: ₹{loan.RequestedLoanAmount:N2}
+Tenure: {loan.TenureMonths} months
+Interest Rate: {loan.InterestRate ?? 0}%
 
-// ----------------------------------------
+----------------------------------------
+PROPERTY DETAILS
+----------------------------------------
+Property Type: {loan.PropertyType}
+Property Address: {loan.PropertyAddress}
+City: {loan.City}
+Zip Code: {loan.ZipCode}
+Ownership Type: {loan.OwnershipType}
+Property Cost: ₹{loan.PropertyCost:N2}
+Down Payment: ₹{loan.DownPayment:N2}
+Loan Purpose: {loan.LoanPurpose}
 
-// Generated on: {DateTime.Now:dd MMM yyyy HH:mm}
+----------------------------------------
 
-// This is a system-generated document.
+Generated on: {DateTime.Now:dd MMM yyyy HH:mm}
 
-// ========================================
-// ";
-//         }
+This is a system-generated document.
 
-//         private string GeneratePaymentReceiptContent(dynamic transaction)
-//         {
-//             return $@"
-// PAYMENT RECEIPT
-// ==============
+========================================
+";
+        }
 
-// Transaction ID: {transaction.TransactionId}
-// Payment Date: {transaction.PaymentDate:dd MMM yyyy HH:mm}
-// Amount: ₹{transaction.Amount:N2}
-// Payment Method: {transaction.PaymentMethod}
-// Status: {transaction.Status}
-// Reference: {transaction.TransactionReference ?? "N/A"}
-// Loan Account: {transaction.LoanAccountId}
+        private string GenerateVehicleLoanPdf(VehicleLoanApplication loan, dynamic customer)
+        {
+            return $@"
+========================================
+   VEHICLE LOAN APPLICATION DOCUMENT
+========================================
 
-// Thank you for your payment!
+Application ID: {loan.LoanApplicationBaseId}
+Application Date: {loan.SubmissionDate}
+Status: {loan.Status}
 
-// Generated on: {DateTime.Now:dd MMM yyyy HH:mm}
-// ";
-//         }
+----------------------------------------
+CUSTOMER INFORMATION
+----------------------------------------
+Phone: {customer?.PhoneNumber ?? "N/A"}
+Date of Birth: {customer?.DateOfBirth}
+Gender: {customer?.Gender}
 
-//         private string GenerateEMIScheduleContent(dynamic loanAccount)
-//         {
-//             return $@"
-// EMI SCHEDULE
-// ===========
+----------------------------------------
+LOAN DETAILS
+----------------------------------------
+Requested Amount: ₹{loan.RequestedLoanAmount:N2}
+Tenure: {loan.TenureMonths} months
+Interest Rate: {loan.InterestRate ?? 0}%
 
-// Loan Account ID: {loanAccount.LoanAccountId}
-// Loan Amount: ₹{loanAccount.TotalLoanAmount:N2}
+----------------------------------------
+VEHICLE DETAILS
+----------------------------------------
+Vehicle Type: {loan.VehicleType}
+Manufacturer: {loan.Manufacturer}
+Model: {loan.Model}
+Manufacturing Year: {loan.ManufacturingYear}
+On-Road Price: ₹{loan.OnRoadPrice:N2}
+Down Payment: ₹{loan.DownPayment:N2}
+Loan Purpose: {loan.LoanPurposeVehicle}
 
-// PAYMENT STATUS
-// -------------
-// Total Paid (Principal): ₹{loanAccount.TotalPaidPrincipal:N2}
-// Total Paid (Interest): ₹{loanAccount.TotalPaidInterest:N2}
-// Remaining Principal: ₹{loanAccount.PrincipalRemaining:N2}
-// Current Status: {loanAccount.CurrentPaymentStatus}
+----------------------------------------
 
-// Generated on: {DateTime.Now:dd MMM yyyy HH:mm}
-// ";
-//         }
-//     }
-// }
+Generated on: {DateTime.Now:dd MMM yyyy HH:mm}
+
+This is a system-generated document.
+
+========================================
+";
+        }
+    }
+}

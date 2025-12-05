@@ -1,4 +1,6 @@
 using Kanini.LMP.Application.Services.Interfaces;
+using Kanini.LMP.Database.EntitiesDto.Email;
+using Kanini.LMP.Database.EntitiesDtos.Common;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
@@ -17,39 +19,45 @@ namespace Kanini.LMP.Application.Services.Implementations
             _emailService = emailService;
         }
 
-        public async Task<string> GenerateOTPAsync(string email, string purpose)
+        public async Task<StringDTO> GenerateOTPAsync(StringDTO email, StringDTO purpose)
         {
             var otp = new Random().Next(100000, 999999).ToString();
-            var cacheKey = $"OTP_{email}_{purpose}";
+            var cacheKey = $"OTP_{email.Value}_{purpose.Value}";
             
             _cache.Set(cacheKey, otp, TimeSpan.FromMinutes(5));
             
-            await _emailService.SendOTPEmailAsync(email, email.Split('@')[0], otp, purpose);
+            await _emailService.SendOTPEmailAsync(new OTPEmailDto
+            {
+                Email = email.Value,
+                Name = email.Value.Split('@')[0],
+                OTP = otp,
+                Purpose = purpose.Value
+            });
             
-            _logger.LogInformation($"OTP generated for email {email}, purpose: {purpose}");
-            return otp;
+            _logger.LogInformation($"OTP generated for email {email.Value}, purpose: {purpose.Value}");
+            return new StringDTO { Value = otp };
         }
 
-        public async Task<bool> VerifyOTPAsync(string email, string otp, string purpose)
+        public async Task<BoolDTO> VerifyOTPAsync(StringDTO email, StringDTO otp, StringDTO purpose)
         {
-            var cacheKey = $"OTP_{email}_{purpose}";
+            var cacheKey = $"OTP_{email.Value}_{purpose.Value}";
             
-            if (_cache.TryGetValue(cacheKey, out string? cachedOtp) && cachedOtp == otp)
+            if (_cache.TryGetValue(cacheKey, out string? cachedOtp) && cachedOtp == otp.Value)
             {
                 _cache.Remove(cacheKey);
-                _logger.LogInformation($"OTP verified successfully for email {email}, purpose: {purpose}");
-                return true;
+                _logger.LogInformation($"OTP verified successfully for email {email.Value}, purpose: {purpose.Value}");
+                return new BoolDTO { Value = true };
             }
             
-            _logger.LogWarning($"OTP verification failed for email {email}, purpose: {purpose}");
-            return false;
+            _logger.LogWarning($"OTP verification failed for email {email.Value}, purpose: {purpose.Value}");
+            return new BoolDTO { Value = false };
         }
 
-        public async Task InvalidateOTPAsync(string email, string purpose)
+        public async Task InvalidateOTPAsync(StringDTO email, StringDTO purpose)
         {
-            var cacheKey = $"OTP_{email}_{purpose}";
+            var cacheKey = $"OTP_{email.Value}_{purpose.Value}";
             _cache.Remove(cacheKey);
-            _logger.LogInformation($"OTP invalidated for email {email}, purpose: {purpose}");
+            _logger.LogInformation($"OTP invalidated for email {email.Value}, purpose: {purpose.Value}");
         }
     }
 }

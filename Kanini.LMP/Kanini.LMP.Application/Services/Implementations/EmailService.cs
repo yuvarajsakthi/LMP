@@ -1,6 +1,7 @@
 ﻿using Kanini.LMP.Application.Constants;
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Database.EntitiesDto.Email;
+using Kanini.LMP.Database.EntitiesDtos.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net;
@@ -19,7 +20,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             _logger = logger;
         }
 
-        public async Task<bool> SendEmailAsync(EmailDto emailDto)
+        public async Task<BoolDTO> SendEmailAsync(EmailDto emailDto)
         {
             try
             {
@@ -39,28 +40,27 @@ namespace Kanini.LMP.Application.Services.Implementations
                     IsBodyHtml = emailDto.IsHtml
                 };
 
-                message.To.Add(new MailAddress(emailDto.ToEmail, emailDto.ToName));
+                message.To.Add(new MailAddress(emailDto.To));
 
                 await client.SendMailAsync(message);
-                _logger.LogInformation($"Email sent successfully to {emailDto.ToEmail}");
-                return true;
+                _logger.LogInformation($"Email sent successfully to {emailDto.To}");
+                return new BoolDTO { Value = true };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Failed to send email to {emailDto.ToEmail}");
-                return false;
+                _logger.LogError(ex, $"Failed to send email to {emailDto.To}");
+                return new BoolDTO { Value = false };
             }
         }
 
-        public async Task<bool> SendLoanApplicationSubmittedEmailAsync(string customerEmail, string customerName, int applicationId, string loanType, decimal amount, byte[] applicationPdf)
+        public async Task<BoolDTO> SendLoanApplicationSubmittedEmailAsync(LoanApplicationSubmittedEmailDto dto)
         {
-            var subject = $"Loan Application Submitted - Application #{applicationId}";
-            var body = $"Dear {customerName},\n\nYour {loanType} application for ₹{amount:N2} has been submitted successfully.\n\nApplication ID: {applicationId}\n\nWe will review and get back to you within 3-5 business days.\n\nBest regards,\nLMP Team";
+            var subject = $"Loan Application Submitted - Application #{dto.ApplicationId}";
+            var body = $"Dear {dto.CustomerName},\n\nYour {dto.LoanType} application for ₹{dto.Amount:N2} has been submitted successfully.\n\nApplication ID: {dto.ApplicationId}\n\nWe will review and get back to you within 3-5 business days.\n\nBest regards,\nLMP Team";
 
             var emailDto = new EmailDto
             {
-                ToEmail = customerEmail,
-                ToName = customerName,
+                To = dto.CustomerEmail,
                 Subject = subject,
                 Body = body
             };
@@ -68,15 +68,14 @@ namespace Kanini.LMP.Application.Services.Implementations
             return await SendEmailAsync(emailDto);
         }
 
-        public async Task<bool> SendLoanApprovedEmailAsync(string customerEmail, string customerName, int applicationId, decimal amount, string loanType)
+        public async Task<BoolDTO> SendLoanApprovedEmailAsync(LoanApprovedEmailDto dto)
         {
-            var subject = string.Format(EmailTemplates.LoanApprovedSubject, applicationId);
-            var body = string.Format(EmailTemplates.LoanApprovedBody, customerName, applicationId, loanType, amount, DateTime.Now.ToString("dd MMM yyyy"));
+            var subject = string.Format(EmailTemplates.LoanApprovedSubject, dto.ApplicationId);
+            var body = string.Format(EmailTemplates.LoanApprovedBody, dto.CustomerName, dto.ApplicationId, dto.LoanType, dto.Amount, DateTime.Now.ToString("dd MMM yyyy"));
 
             var emailDto = new EmailDto
             {
-                ToEmail = customerEmail,
-                ToName = customerName,
+                To = dto.CustomerEmail,
                 Subject = subject,
                 Body = body
             };
@@ -84,82 +83,58 @@ namespace Kanini.LMP.Application.Services.Implementations
             return await SendEmailAsync(emailDto);
         }
 
-        public async Task<bool> SendPaymentSuccessEmailAsync(string customerEmail, string customerName, decimal amount, string emiDetails, DateTime paymentDate)
+        public async Task<BoolDTO> SendLoanRejectedEmailAsync(LoanRejectedEmailDto dto)
         {
-            var body = string.Format(EmailTemplates.PaymentSuccessBody, customerName, amount, paymentDate.ToString("dd MMM yyyy HH:mm"));
+            var subject = $"Loan Application Update - Application #{dto.ApplicationId}";
+            var body = $"Dear {dto.CustomerName},\n\nWe regret to inform you that your loan application #{dto.ApplicationId} has been rejected.\n\nReason: {dto.Reason}\n\nYou may reapply after addressing the concerns.\n\nBest regards,\nLMP Team";
 
-            var emailDto = new EmailDto
-            {
-                ToEmail = customerEmail,
-                ToName = customerName,
-                Subject = EmailTemplates.PaymentSuccessSubject,
-                Body = body
-            };
-
+            var emailDto = new EmailDto { To = dto.CustomerEmail, Subject = subject, Body = body };
             return await SendEmailAsync(emailDto);
         }
 
-        public async Task<bool> SendLoanRejectedEmailAsync(string customerEmail, string customerName, int applicationId, string reason)
+        public async Task<BoolDTO> SendEMIDueReminderEmailAsync(EMIDueReminderEmailDto dto)
         {
-            var subject = $"Loan Application Update - Application #{applicationId}";
-            var body = $"Dear {customerName},\n\nWe regret to inform you that your loan application #{applicationId} has been rejected.\n\nReason: {reason}\n\nYou may reapply after addressing the concerns.\n\nBest regards,\nLMP Team";
+            var subject = $"📅 EMI Payment Reminder - Due {dto.DueDate:dd MMM yyyy}";
+            var urgency = dto.DaysUntilDue <= 0 ? "is due today" : $"is due in {dto.DaysUntilDue} days";
+            var body = $"Dear {dto.CustomerName},\n\nYour EMI payment of ₹{dto.Amount:N2} {urgency}.\n\nDue Date: {dto.DueDate:dd MMM yyyy}\n\nBest regards,\nLMP Team";
 
-            var emailDto = new EmailDto { ToEmail = customerEmail, ToName = customerName, Subject = subject, Body = body };
+            var emailDto = new EmailDto { To = dto.CustomerEmail, Subject = subject, Body = body };
             return await SendEmailAsync(emailDto);
         }
 
-        public async Task<bool> SendPaymentFailedEmailAsync(string customerEmail, string customerName, decimal amount, string emiDetails, string reason)
+        public async Task<BoolDTO> SendOverduePaymentEmailAsync(OverduePaymentEmailDto dto)
         {
-            var subject = "❌ Payment Failed - Action Required";
-            var body = $"Dear {customerName},\n\nYour EMI payment of ₹{amount:N2} failed.\n\nReason: {reason}\n\nPlease try again.\n\nBest regards,\nLMP Team";
+            var subject = $"⚠️ Urgent: Overdue Payment - {dto.DaysPastDue} Days Past Due";
+            var body = $"Dear {dto.CustomerName},\n\nYour EMI payment of ₹{dto.Amount:N2} is {dto.DaysPastDue} days overdue.\n\nPlease make payment immediately.\n\nBest regards,\nLMP Team";
 
-            var emailDto = new EmailDto { ToEmail = customerEmail, ToName = customerName, Subject = subject, Body = body };
+            var emailDto = new EmailDto { To = dto.CustomerEmail, Subject = subject, Body = body };
             return await SendEmailAsync(emailDto);
         }
 
-        public async Task<bool> SendEMIDueReminderEmailAsync(string customerEmail, string customerName, decimal amount, DateTime dueDate, int daysUntilDue)
-        {
-            var subject = $"📅 EMI Payment Reminder - Due {dueDate:dd MMM yyyy}";
-            var urgency = daysUntilDue <= 0 ? "is due today" : $"is due in {daysUntilDue} days";
-            var body = $"Dear {customerName},\n\nYour EMI payment of ₹{amount:N2} {urgency}.\n\nDue Date: {dueDate:dd MMM yyyy}\n\nBest regards,\nLMP Team";
-
-            var emailDto = new EmailDto { ToEmail = customerEmail, ToName = customerName, Subject = subject, Body = body };
-            return await SendEmailAsync(emailDto);
-        }
-
-        public async Task<bool> SendOverduePaymentEmailAsync(string customerEmail, string customerName, decimal amount, int daysPastDue)
-        {
-            var subject = $"⚠️ Urgent: Overdue Payment - {daysPastDue} Days Past Due";
-            var body = $"Dear {customerName},\n\nYour EMI payment of ₹{amount:N2} is {daysPastDue} days overdue.\n\nPlease make payment immediately.\n\nBest regards,\nLMP Team";
-
-            var emailDto = new EmailDto { ToEmail = customerEmail, ToName = customerName, Subject = subject, Body = body };
-            return await SendEmailAsync(emailDto);
-        }
-
-        public async Task<bool> SendLoanDisbursedEmailAsync(string customerEmail, string customerName, decimal amount, int loanAccountId, DateTime disbursementDate)
+        public async Task<BoolDTO> SendLoanDisbursedEmailAsync(LoanDisbursedEmailDto dto)
         {
             var subject = "💰 Loan Disbursed Successfully";
-            var body = $"Dear {customerName},\n\nYour loan of ₹{amount:N2} has been disbursed successfully.\n\nLoan Account ID: {loanAccountId}\n\nDisbursement Date: {disbursementDate:dd MMM yyyy}\n\nBest regards,\nLMP Team";
+            var body = $"Dear {dto.CustomerName},\n\nYour loan of ₹{dto.Amount:N2} has been disbursed successfully.\n\nLoan Account ID: {dto.LoanAccountId}\n\nDisbursement Date: {dto.DisbursementDate:dd MMM yyyy}\n\nBest regards,\nLMP Team";
 
-            var emailDto = new EmailDto { ToEmail = customerEmail, ToName = customerName, Subject = subject, Body = body };
+            var emailDto = new EmailDto { To = dto.CustomerEmail, Subject = subject, Body = body };
             return await SendEmailAsync(emailDto);
         }
 
-        public async Task<bool> SendLoanFullyPaidEmailAsync(string customerEmail, string customerName, int loanAccountId, decimal totalAmountPaid)
+        public async Task<BoolDTO> SendLoanFullyPaidEmailAsync(LoanFullyPaidEmailDto dto)
         {
             var subject = "🎉 Congratulations! Loan Fully Paid";
-            var body = $"Dear {customerName},\n\nCongratulations! You have fully paid your loan.\n\nLoan Account ID: {loanAccountId}\n\nTotal Amount Paid: ₹{totalAmountPaid:N2}\n\nBest regards,\nLMP Team";
+            var body = $"Dear {dto.CustomerName},\n\nCongratulations! You have fully paid your loan.\n\nLoan Account ID: {dto.LoanAccountId}\n\nTotal Amount Paid: ₹{dto.TotalAmountPaid:N2}\n\nBest regards,\nLMP Team";
 
-            var emailDto = new EmailDto { ToEmail = customerEmail, ToName = customerName, Subject = subject, Body = body };
+            var emailDto = new EmailDto { To = dto.CustomerEmail, Subject = subject, Body = body };
             return await SendEmailAsync(emailDto);
         }
 
-        public async Task<bool> SendOTPEmailAsync(string email, string name, string otp, string purpose)
+        public async Task<BoolDTO> SendOTPEmailAsync(OTPEmailDto dto)
         {
-            var subject = $"Your OTP for {purpose}";
-            var body = $"Dear {name},\n\nYour OTP is: {otp}\n\nThis OTP is valid for 5 minutes.\n\nBest regards,\nLMP Team";
+            var subject = $"Your OTP for {dto.Purpose}";
+            var body = $"Dear {dto.Name},\n\nYour OTP is: {dto.OTP}\n\nThis OTP is valid for 5 minutes.\n\nBest regards,\nLMP Team";
 
-            var emailDto = new EmailDto { ToEmail = email, ToName = name, Subject = subject, Body = body };
+            var emailDto = new EmailDto { To = dto.Email, Subject = subject, Body = body };
             return await SendEmailAsync(emailDto);
         }
     }

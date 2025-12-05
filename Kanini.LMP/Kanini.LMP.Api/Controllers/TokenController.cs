@@ -1,11 +1,12 @@
+using Kanini.LMP.Api.Constants;
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Application.Services.Implementations;
 using Kanini.LMP.Data.Repositories.Interfaces;
 using Kanini.LMP.Data.UnitOfWork;
 using Kanini.LMP.Database.EntitiesDtos;
 using Kanini.LMP.Database.EntitiesDtos.Authentication;
+using Kanini.LMP.Database.EntitiesDtos.Common;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json.Serialization;
 
 namespace Kanini.LMP.Api.Controllers
 {
@@ -26,37 +27,27 @@ namespace Kanini.LMP.Api.Controllers
             _otpService = otpService;
         }
 
-        [HttpPost("login")]
+        [HttpPost(ApiConstants.Routes.TokenController.Login)]
         public async Task<ActionResult<ApiResponse<object>>> Login([FromForm] LoginDTO loginDto)
         {
             try
             {
-                Console.WriteLine("Login endpoint hit");
-                Console.WriteLine($"loginDto is null: {loginDto == null}");
-                if (loginDto != null)
-                {
-                    Console.WriteLine($"Username: {loginDto.Username}");
-                    Console.WriteLine($"Password: {loginDto.PasswordHash}");
-                }
                 if (loginDto == null || string.IsNullOrEmpty(loginDto.Username) || string.IsNullOrEmpty(loginDto.PasswordHash))
                     return BadRequest(ApiResponse<object>.ErrorResponse("Username and password are required"));
 
-                var user = await _userService.GetUserByEmailAsync(loginDto.Username);
-                Console.WriteLine($"User found: {user != null}");
+                var user = await _userService.GetUserByEmailAsync(new StringDTO { Value = loginDto.Username });
                 
                 if (user == null)
                     return Unauthorized(ApiResponse<object>.ErrorResponse("Invalid credentials"));
             
-                
                 var passwordValid = PasswordService.VerifyPassword(loginDto.PasswordHash, user.PasswordHash);
-                Console.WriteLine($"Password valid: {passwordValid}");
                 
                 if (!passwordValid)
                     return Unauthorized(ApiResponse<object>.ErrorResponse("Invalid credentials"));
 
                 if (user.Status == Database.Enums.UserStatus.Pending)
                 {
-                    await _otpService.GenerateOTPAsync(user.Email, "REGISTER");
+                    await _otpService.GenerateOTPAsync(new StringDTO { Value = user.Email }, new StringDTO { Value = "REGISTER" });
                     return Ok(ApiResponse<object>.SuccessResponse(new
                     {
                         requiresVerification = true,
@@ -76,15 +67,13 @@ namespace Kanini.LMP.Api.Controllers
                     role = user.Roles.ToString()
                 }));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"Login error: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 return BadRequest(ApiResponse<object>.ErrorResponse("Login failed"));
             }
         }
 
-        [HttpPost("sendotp")]
+        [HttpPost(ApiConstants.Routes.TokenController.SendOTP)]
         public async Task<ActionResult<ApiResponse<object>>> SendOTP([FromForm] SendOTPRequest request)
         {
             try
@@ -92,7 +81,7 @@ namespace Kanini.LMP.Api.Controllers
                 if (request == null || string.IsNullOrEmpty(request.Email))
                     return BadRequest(ApiResponse<object>.ErrorResponse("Email is required"));
 
-                var user = await _userService.GetUserByEmailAsync(request.Email);
+                var user = await _userService.GetUserByEmailAsync(new StringDTO { Value = request.Email });
                 var purpose = request.Purpose.ToString();
 
                 if (request.Purpose == OTPPurpose.REGISTER)
@@ -106,7 +95,7 @@ namespace Kanini.LMP.Api.Controllers
                         return NotFound(ApiResponse<object>.ErrorResponse("Email not found"));
                 }
 
-                await _otpService.GenerateOTPAsync(request.Email, purpose);
+                await _otpService.GenerateOTPAsync(new StringDTO { Value = request.Email }, new StringDTO { Value = purpose });
                 
                 return Ok(ApiResponse<object>.SuccessResponse(new { 
                     message = "OTP sent successfully",
@@ -119,7 +108,7 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        [HttpPost("login/otp")]
+        [HttpPost(ApiConstants.Routes.TokenController.LoginWithOTP)]
         public async Task<ActionResult<ApiResponse<object>>> LoginWithOTP([FromForm] LoginOTPRequest request)
         {
             try
@@ -127,12 +116,12 @@ namespace Kanini.LMP.Api.Controllers
                 if (request == null || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.OTP))
                     return BadRequest(ApiResponse<object>.ErrorResponse("Email and OTP are required"));
 
-                var user = await _userService.GetUserByEmailAsync(request.Email);
+                var user = await _userService.GetUserByEmailAsync(new StringDTO { Value = request.Email });
                 if (user == null)
                     return NotFound(ApiResponse<object>.ErrorResponse("Email not found"));
 
-                var isValid = await _otpService.VerifyOTPAsync(request.Email, request.OTP, "LOGIN");
-                if (!isValid)
+                var isValid = await _otpService.VerifyOTPAsync(new StringDTO { Value = request.Email }, new StringDTO { Value = request.OTP }, new StringDTO { Value = "LOGIN" });
+                if (!isValid.Value)
                     return BadRequest(ApiResponse<object>.ErrorResponse("Invalid or expired OTP"));
 
                 if (user.Status != Database.Enums.UserStatus.Active)
@@ -151,7 +140,7 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        [HttpPost("register")]
+        [HttpPost(ApiConstants.Routes.TokenController.Register)]
         public async Task<ActionResult<ApiResponse<object>>> Register([FromForm] CustomerRegistrationDTO registrationData)
         {
             try
@@ -159,13 +148,13 @@ namespace Kanini.LMP.Api.Controllers
                 if (registrationData == null)
                     return BadRequest(ApiResponse<object>.ErrorResponse("Registration data is required"));
 
-                var existingUser = await _userService.GetUserByEmailAsync(registrationData.Email);
+                var existingUser = await _userService.GetUserByEmailAsync(new StringDTO { Value = registrationData.Email });
                 if (existingUser != null && existingUser.Status == Database.Enums.UserStatus.Active)
                     return BadRequest(ApiResponse<object>.ErrorResponse("Email already registered"));
 
                 if (existingUser != null && existingUser.Status == Database.Enums.UserStatus.Pending)
                 {
-                    await _otpService.GenerateOTPAsync(registrationData.Email, "REGISTER");
+                    await _otpService.GenerateOTPAsync(new StringDTO { Value = registrationData.Email }, new StringDTO { Value = "REGISTER" });
                     return Ok(ApiResponse<object>.SuccessResponse(new { 
                         message = "Account exists but not verified. OTP sent to your email.",
                         userId = existingUser.UserId
@@ -173,7 +162,7 @@ namespace Kanini.LMP.Api.Controllers
                 }
 
                 var userDto = await _userService.RegisterCustomerAsync(registrationData);
-                await _otpService.GenerateOTPAsync(registrationData.Email, "REGISTER");
+                await _otpService.GenerateOTPAsync(new StringDTO { Value = registrationData.Email }, new StringDTO { Value = "REGISTER" });
                 
                 return Ok(ApiResponse<object>.SuccessResponse(new { 
                     message = "Registration successful. OTP sent to your email.",
@@ -186,7 +175,7 @@ namespace Kanini.LMP.Api.Controllers
             }
         }
 
-        [HttpPost("verify/otp")]
+        [HttpPost(ApiConstants.Routes.TokenController.VerifyOTP)]
         public async Task<ActionResult<ApiResponse<object>>> VerifyOTP([FromForm] VerifyOTPRequest request)
         {
             try
@@ -194,87 +183,82 @@ namespace Kanini.LMP.Api.Controllers
                 if (request == null || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.OTP))
                     return BadRequest(ApiResponse<object>.ErrorResponse("Email and OTP are required"));
 
-                var user = await _userService.GetUserByEmailAsync(request.Email);
+                var user = await _userService.GetUserByEmailAsync(new StringDTO { Value = request.Email });
                 if (user == null)
                     return NotFound(ApiResponse<object>.ErrorResponse("User not found"));
 
-                var isValid = await _otpService.VerifyOTPAsync(request.Email, request.OTP, "REGISTER");
-                if (!isValid)
+                var isValid = await _otpService.VerifyOTPAsync(new StringDTO { Value = request.Email }, new StringDTO { Value = request.OTP }, new StringDTO { Value = request.Purpose });
+                if (!isValid.Value)
                     return BadRequest(ApiResponse<object>.ErrorResponse("Invalid or expired OTP"));
 
-                await _userService.ActivateUserAsync(user.UserId);
-                
-                return Ok(ApiResponse<object>.SuccessResponse(new { 
-                    message = "Account verified successfully. You can now login."
-                }));
+                if (request.Purpose == "REGISTER")
+                {
+                    await _userService.ActivateUserAsync(new IdDTO { Id = user.UserId });
+                    var token = _tokenService.GenerateToken(user);
+                    return Ok(ApiResponse<object>.SuccessResponse(new
+                    {
+                        message = "Account verified successfully",
+                        token,
+                        username = user.FullName,
+                        role = user.Roles.ToString()
+                    }));
+                }
+
+                return Ok(ApiResponse<object>.SuccessResponse(new { message = "OTP verified successfully" }));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ApiResponse<object>.ErrorResponse($"Verification failed: {ex.Message}"));
+                return BadRequest(ApiResponse<object>.ErrorResponse("OTP verification failed"));
             }
         }
 
+        [HttpPost(ApiConstants.Routes.TokenController.ForgotPassword)]
+        public async Task<ActionResult<ApiResponse<object>>> ForgotPassword([FromForm] ForgotPasswordRequest request)
+        {
+            try
+            {
+                if (request == null || string.IsNullOrEmpty(request.Email))
+                    return BadRequest(ApiResponse<object>.ErrorResponse("Email is required"));
 
+                var user = await _userService.GetUserByEmailAsync(new StringDTO { Value = request.Email });
+                if (user == null)
+                    return NotFound(ApiResponse<object>.ErrorResponse("Email not found"));
 
-        [HttpPost("reset-password")]
-        public async Task<ActionResult<ApiResponse<object>>> ResetPassword([FromForm] ResetPasswordOTPRequest request)
+                await _otpService.GenerateOTPAsync(new StringDTO { Value = request.Email }, new StringDTO { Value = "RESET_PASSWORD" });
+                
+                return Ok(ApiResponse<object>.SuccessResponse(new { message = "Password reset OTP sent to your email" }));
+            }
+            catch (Exception)
+            {
+                return BadRequest(ApiResponse<object>.ErrorResponse("Failed to send password reset OTP"));
+            }
+        }
+
+        [HttpPost(ApiConstants.Routes.TokenController.ResetPassword)]
+        public async Task<ActionResult<ApiResponse<object>>> ResetPassword([FromForm] ResetPasswordRequest request)
         {
             try
             {
                 if (request == null || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.OTP) || string.IsNullOrEmpty(request.NewPassword))
-                    return BadRequest(ApiResponse<object>.ErrorResponse("Email, OTP and new password are required"));
+                    return BadRequest(ApiResponse<object>.ErrorResponse("Email, OTP, and new password are required"));
 
-                var user = await _userService.GetUserByEmailAsync(request.Email);
+                var user = await _userService.GetUserByEmailAsync(new StringDTO { Value = request.Email });
                 if (user == null)
-                    return NotFound(ApiResponse<object>.ErrorResponse("Email not found"));
+                    return NotFound(ApiResponse<object>.ErrorResponse("User not found"));
 
-                var isValid = await _otpService.VerifyOTPAsync(request.Email, request.OTP, "FORGETPASSWORD");
-                if (!isValid)
+                var isValid = await _otpService.VerifyOTPAsync(new StringDTO { Value = request.Email }, new StringDTO { Value = request.OTP }, new StringDTO { Value = "RESET_PASSWORD" });
+                if (!isValid.Value)
                     return BadRequest(ApiResponse<object>.ErrorResponse("Invalid or expired OTP"));
 
-                var success = await _userService.ResetPasswordAsync(request.Email, "", request.NewPassword);
-                if (!success)
-                    return BadRequest(ApiResponse<object>.ErrorResponse("Password reset failed"));
+                var hashedPassword = PasswordService.HashPassword(request.NewPassword);
+                await _userService.ResetPasswordAsync(new StringDTO { Value = request.Email }, new StringDTO { Value = user.PasswordHash }, new StringDTO { Value = hashedPassword });
 
                 return Ok(ApiResponse<object>.SuccessResponse(new { message = "Password reset successfully" }));
             }
             catch (Exception)
             {
-                return BadRequest(ApiResponse<object>.ErrorResponse("Password reset failed"));
+                return BadRequest(ApiResponse<object>.ErrorResponse("Failed to reset password"));
             }
         }
-    }
-
-    public class LoginOTPRequest
-    {
-        public string Email { get; set; } = null!;
-        public string OTP { get; set; } = null!;
-    }
-
-    public class SendOTPRequest
-    {
-        public string Email { get; set; } = null!;
-        public OTPPurpose Purpose { get; set; }
-    }
-
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum OTPPurpose
-    {
-        LOGIN,
-        REGISTER,
-        FORGETPASSWORD
-    }
-
-    public class VerifyOTPRequest
-    {
-        public string Email { get; set; } = null!;
-        public string OTP { get; set; } = null!;
-    }
-
-    public class ResetPasswordOTPRequest
-    {
-        public string Email { get; set; } = null!;
-        public string OTP { get; set; } = null!;
-        public string NewPassword { get; set; } = null!;
     }
 }
