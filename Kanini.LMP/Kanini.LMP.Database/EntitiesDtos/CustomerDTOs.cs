@@ -41,7 +41,7 @@ namespace Kanini.LMP.Database.EntitiesDtos.CustomerDtos
         public string PhoneNumber { get; set; } = null!;
         public string Occupation { get; set; } = null!;
         public decimal AnnualIncome { get; set; }
-        public decimal CreditScore { get; set; }
+        public decimal EligibilityScore { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public HomeOwnershipStatus? HomeOwnershipStatus { get; set; }
         public string AadhaarNumber { get; set; } = null!;
@@ -81,7 +81,7 @@ namespace Kanini.LMP.Database.EntitiesDtos.CustomerDtos
         public string PhoneNumber { get; set; } = null!;
         public string Occupation { get; set; } = null!;
         public decimal AnnualIncome { get; set; }
-        public decimal CreditScore { get; set; }
+        public decimal EligibilityScore { get; set; }
         public HomeOwnershipStatus? HomeOwnershipStatus { get; set; }
         public int Age { get; set; }
     }

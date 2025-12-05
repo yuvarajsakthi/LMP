@@ -19,6 +19,10 @@ namespace Kanini.LMP.Application.Mappings
             CreateMap<Customer, CustomerResponseDTO>()
                 .ForMember(d => d.Age, o => o.MapFrom(s => s.Age));
 
+            CreateMap<Customer, EligibilityScoreDto>()
+                .ForMember(d => d.CreditScore, o => o.MapFrom(s => (int)s.EligibilityScore))
+                .ForMember(d => d.EmploymentType, o => o.MapFrom(s => s.Occupation));
+
             CreateMap<EMIPlanCreateDTO, EMIPlan>();
             CreateMap<EMIPlanUpdateDTO, EMIPlan>();
             CreateMap<EMIPlan, EMIPlanDTO>().ReverseMap();
