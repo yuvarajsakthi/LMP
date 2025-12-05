@@ -12,10 +12,13 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
 
         [ForeignKey(nameof(LoanApplicationBase))]
         public int LoanApplicationBaseId { get; set; }
-        // FK → Linked User
+        public LoanApplicationBase LoanApplicationBase { get; set; } = null!;
+        
         [Required]
-        [ForeignKey(nameof(User))]
-        public int UserId { get; set; }
+        [ForeignKey(nameof(Customer))]
+        public int CustomerId { get; set; }
+        public virtual Customer Customer { get; set; } = null!;
+
         // Personal info
         [Required]
         [MaxLength(100)]
@@ -27,17 +30,15 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
         [MaxLength(100)]
         public string DistrictOfBirth { get; set; } = null!;
         [Required]
-        [MaxLength(100)]
-        public string CountryOfBirth { get; set; } = null!;
-        [Required]
+        [RegularExpression(@"^[A-Z]{5}[0-9]{4}[A-Z]{1}$", ErrorMessage = "Invalid PAN format.")]
         [MaxLength(10)]
         public string PANNumber { get; set; } = null!;
         [Required]
         [MaxLength(100)]
-        public string EducationQualification { get; set; } = null!;
+        public EducationQualification EducationQualification { get; set; }
         [Required]
         [MaxLength(50)]
-        public string ResidentialStatus { get; set; } = null!;
+        public ResidentialStatus ResidentialStatus { get; set; }
         [Required]
         public Gender Gender { get; set; }
         // Digital images

@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import styles from './EmiCalculator.module.css';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { Card, Select, Input } from 'antd';
+import { fetchLoanProducts } from '../../../store';
+import type { RootState, AppDispatch } from '../../../store';
 
 interface LoanTypeRates {
   [key: string]: number;
@@ -25,7 +28,9 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
   const [emiAmount, setEmiAmount] = useState(0);
   const [totalRepayable, setTotalRepayable] = useState(0);
   const [totalInterest, setTotalInterest] = useState(0);
-  const [selectedLoanType, setSelectedLoanType] = useState('Personal Loan');
+  const [selectedLoanType, setSelectedLoanType] = useState('');
+  const dispatch = useDispatch<AppDispatch>();
+  const loanProductsFromStore = useSelector((state: RootState) => state.dashboard.loanProducts);
   const [loanProducts, setLoanProducts] = useState<any[]>([]);
 
   const chartData = [
@@ -41,23 +46,18 @@ const EmiCalculator: React.FC<EmiCalculatorProps> = ({
   }, [loanAmount, interestRate, tenure]);
 
   useEffect(() => {
-    fetchLoanProducts();
-  }, []);
+    dispatch(fetchLoanProducts());
+  }, [dispatch]);
 
-  const fetchLoanProducts = async () => {
-    try {
-      const { customerDashboardAPI } = await import('../../../services/api/customerDashboardAPI');
-      const products = await customerDashboardAPI.getLoanProducts();
-      setLoanProducts(products);
-      if (products.length > 0) {
-        setSelectedLoanType(products[0].loanProductName || products[0].loanType);
-        setInterestRate(products[0].interestRate || products[0].rateOfInterest);
+  useEffect(() => {
+    if (loanProductsFromStore.length > 0) {
+      setLoanProducts(loanProductsFromStore);
+      if (!selectedLoanType || selectedLoanType === 'Personal Loan') {
+        setSelectedLoanType(loanProductsFromStore[0].loanProductName || loanProductsFromStore[0].loanType);
+        setInterestRate(loanProductsFromStore[0].interestRate || loanProductsFromStore[0].rateOfInterest);
       }
-    } catch (error) {
-      console.error('Failed to fetch loan products:', error);
-      setLoanProducts([]);
     }
-  };
+  }, [loanProductsFromStore]);
 
   const calculateEmi = () => {
     const principle = loanAmount;

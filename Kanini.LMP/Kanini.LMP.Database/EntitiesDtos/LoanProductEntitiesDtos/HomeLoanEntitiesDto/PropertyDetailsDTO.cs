@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kanini.LMP.Database.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -33,8 +34,7 @@ namespace Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.HomeLoanEntitie
         public string City { get; set; } = null!;
 
         [Required(ErrorMessage = "State is required.")]
-        [MaxLength(100, ErrorMessage = "State name cannot exceed 100 characters.")]
-        public string State { get; set; } = null!;
+        public IndianStates State { get; set; }
 
         [Required(ErrorMessage = "Zip code is required.")]
         [Range(100000, 999999, ErrorMessage = "Please enter a valid 6-digit zip code.")]

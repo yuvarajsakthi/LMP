@@ -12,7 +12,6 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
         [ForeignKey(nameof(LoanApplicationBase))]
         public int LoanApplicationBaseId { get; set; }
 
-        // FK to User
         [Required]
         [ForeignKey(nameof(User))]
         public int UserId { get; set; }

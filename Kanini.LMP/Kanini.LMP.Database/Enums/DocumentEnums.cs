@@ -13,9 +13,9 @@
         IdentityProof,
         AddressProof,
         IncomeProof,
-        BankStatement,
         PropertyDocuments,
         VehicleDocuments,
+        ApplicationPDF,
         Other
     }
 }

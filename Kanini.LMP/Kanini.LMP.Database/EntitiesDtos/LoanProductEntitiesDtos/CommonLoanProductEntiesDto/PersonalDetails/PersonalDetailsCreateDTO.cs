@@ -27,10 +27,6 @@ namespace Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.CommonLoanProdu
         [MaxLength(100, ErrorMessage = "District name cannot exceed 100 characters.")]
         public string DistrictOfBirth { get; set; } = null!;
 
-        [Required(ErrorMessage = "Country of birth is required.")]
-        [MaxLength(100, ErrorMessage = "Country name cannot exceed 100 characters.")]
-        public string CountryOfBirth { get; set; } = null!;
-
         [Required(ErrorMessage = "PAN number is required.")]
         [RegularExpression(@"^[A-Z]{5}[0-9]{4}[A-Z]{1}$", ErrorMessage = "Invalid PAN number format.")]
         [MaxLength(10)]

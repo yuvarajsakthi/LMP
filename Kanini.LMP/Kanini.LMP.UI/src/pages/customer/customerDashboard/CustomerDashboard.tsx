@@ -50,17 +50,17 @@ const CustomerDashboard = () => {
         >
           <Row gutter={[20, 20]} className={styles.topRow}>
             <Col xs={24} sm={24} md={12} lg={8}>
-              <Card className={styles.card} bordered={false}>
+              <Card className={styles.card} variant="borderless">
                 <LoanReco />
               </Card>
             </Col>
             <Col xs={24} sm={24} md={12} lg={8}>
-              <Card className={styles.card} bordered={false}>
+              <Card className={styles.card} variant="borderless">
                 <EmiCalculator showChart={false} />
               </Card>
             </Col>
             <Col xs={24} sm={24} md={12} lg={8}>
-              <Card className={styles.card} bordered={false}>
+              <Card className={styles.card} variant="borderless">
                 <EligibilityScore />
               </Card>
             </Col>
@@ -74,12 +74,12 @@ const CustomerDashboard = () => {
         >
           <Row gutter={[20, 20]} className={styles.bottomRow}>
             <Col xs={24} lg={16}>
-              <Card className={styles.card} bordered={false}>
+              <Card className={styles.card} variant="borderless">
                 <ApplicationStatus />
               </Card>
             </Col>
             <Col xs={24} lg={8}>
-              <Card className={styles.card} bordered={false}>
+              <Card className={styles.card} variant="borderless">
                 <ApplicationProfile />
               </Card>
             </Col>

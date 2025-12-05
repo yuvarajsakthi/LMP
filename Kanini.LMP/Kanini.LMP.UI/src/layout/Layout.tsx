@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { Button, Layout as AntLayout } from 'antd';
 import { MenuOutlined, MenuFoldOutlined } from '@ant-design/icons';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,6 +18,17 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   const { collapsed, setCollapsed } = useLayout();
   const location = useLocation();
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setCollapsed(true);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [setCollapsed]);
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);

@@ -4,7 +4,6 @@ using Kanini.LMP.Data.Repositories.Implementations;
 using Kanini.LMP.Database.Entities;
 using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.Entities.LoanProductEntities;
-using Kanini.LMP.Database.Entities.ManagerEntities;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Kanini.LMP.Data.UnitOfWork
@@ -21,22 +20,18 @@ namespace Kanini.LMP.Data.UnitOfWork
             Customers = new LMPRepositoy<Customer, int>(_context);
             Notifications = new LMPRepositoy<Notification, int>(_context);
             LoanApplications = new LMPRepositoy<LoanApplicationBase, int>(_context);
-            LoanAccounts = new LMPRepositoy<LoanAccount, int>(_context);
-            PaymentTransactions = new LMPRepositoy<PaymentTransaction, int>(_context);
             EMIPlans = new LMPRepositoy<EMIPlan, int>(_context);
-            LoanWorkflows = new LMPRepositoy<LoanOriginationWorkflow, int>(_context);
             LoanProducts = new LMPRepositoy<LoanProduct, int>(_context);
+            Faqs = new LMPRepositoy<Faq, int>(_context);
         }
 
         public ILMPRepository<User, int> Users { get; }
         public ILMPRepository<Customer, int> Customers { get; }
         public ILMPRepository<Notification, int> Notifications { get; }
         public ILMPRepository<LoanApplicationBase, int> LoanApplications { get; }
-        public ILMPRepository<LoanAccount, int> LoanAccounts { get; }
-        public ILMPRepository<PaymentTransaction, int> PaymentTransactions { get; }
         public ILMPRepository<EMIPlan, int> EMIPlans { get; }
-        public ILMPRepository<LoanOriginationWorkflow, int> LoanWorkflows { get; }
         public ILMPRepository<LoanProduct, int> LoanProducts { get; }
+        public ILMPRepository<Faq, int> Faqs { get; }
 
         public async Task<int> SaveChangesAsync()
         {

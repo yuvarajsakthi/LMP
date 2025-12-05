@@ -2,13 +2,21 @@
 {
     public enum LoanPaymentStatus
     {
-        Active = 0,             // Loan is current and on schedule
-        InGracePeriod = 1,      // Payment missed, but within a grace period (not yet officially late)
-        Late30Days = 2,         // 1-30 days past due
-        Late60Days = 3,         // 31-60 days past due
-        Late90Days = 4,         // 61-90 days past due (NPL/Non-Performing Loan risk)
-        ChargedOff = 5,         // Deemed uncollectible
-        FullyPaid = 6,          // Principal and Interest are fully paid
-        Defaulted = 7           // Officially defaulted (used for internal reporting)
+        Active = 0,
+        InGracePeriod = 1,
+        Late30Days = 2,
+        Late60Days = 3,
+        Late90Days = 4,
+        ChargedOff = 5,
+        FullyPaid = 6,
+        Defaulted = 7
+    }
+
+    public enum PaymentStatus
+    {
+        Pending,
+        Completed,
+        Failed,
+        Refunded
     }
 }

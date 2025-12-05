@@ -48,13 +48,6 @@ namespace Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.CommonLoanProdu
         public string DistrictOfBirth { get; set; } = null!;
 
         /// <summary>
-        /// Country where the applicant was born.
-        /// </summary>
-        [Required(ErrorMessage = "Country of birth is required.")]
-        [MaxLength(100, ErrorMessage = "Country name cannot exceed 100 characters.")]
-        public string CountryOfBirth { get; set; } = null!;
-
-        /// <summary>
         /// PAN number (Permanent Account Number) of the applicant.
         /// </summary>
         [Required(ErrorMessage = "PAN number is required.")]

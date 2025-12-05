@@ -25,9 +25,6 @@ namespace Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.CommonLoanProdu
         [Required]
         public IndianStates State { get; set; }
 
-        [Required, MaxLength(100)]
-        public string Country { get; set; } = null!;
-
         [Required, MaxLength(10)]
         [RegularExpression(@"^\d{5,10}$", ErrorMessage = "Enter a valid zip code.")]
         public string ZipCode { get; set; } = null!;

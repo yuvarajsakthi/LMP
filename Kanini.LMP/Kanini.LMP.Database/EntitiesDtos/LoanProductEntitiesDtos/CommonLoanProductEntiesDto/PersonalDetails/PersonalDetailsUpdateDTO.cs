@@ -21,9 +21,6 @@ namespace Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.CommonLoanProdu
         [MaxLength(100)]
         public string? DistrictOfBirth { get; set; }
 
-        [MaxLength(100)]
-        public string? CountryOfBirth { get; set; }
-
         [RegularExpression(@"^[A-Z]{5}[0-9]{4}[A-Z]{1}$", ErrorMessage = "Invalid PAN number format.")]
         [MaxLength(10)]
         public string? PANNumber { get; set; }

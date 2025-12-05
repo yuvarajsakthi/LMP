@@ -42,6 +42,17 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         public ApplicationStatus Status { get; set; } = ApplicationStatus.Draft;
         public DateOnly SubmissionDate { get; set; }
         public DateOnly? ApprovedDate { get; set; }
+
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal? InterestRate { get; set; }
+
+        [Required]
+        [Range(1, 360)]
+        public int TenureMonths { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal RequestedLoanAmount { get; set; }
         
         [MaxLength(500)]
         public string? RejectionReason { get; set; }
@@ -50,6 +61,6 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         public bool IsActive { get; set; } = true;
 
         public Customer? Customer { get; set; }
-        public ICollection<LoanApplicant>? Applicants { get; set; }
+
     }
 }

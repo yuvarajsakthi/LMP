@@ -7,5 +7,5 @@ export { default as ViewStatus } from './customer/viewStatus/ViewStatus';
 export { default as Settings } from './customer/settings/Settings';
 export { default as ApplyLoan } from './customer/applyLoan/ApplyLoan';
 export { default as LoanTypes } from './customer/loanTypes/LoanTypes';
-export { default as LoanApplicationForm } from './loanApplicationForm/LoanApplicationForm';
-export { default as Unauthorized } from './customer/unauthorized/Unauthorized';
+export { default as LoanApplicationForm } from './customer/loanApplicationForm/LoanApplicationForm';
+export { default as Unauthorized } from './auth/unauthorized/Unauthorized';

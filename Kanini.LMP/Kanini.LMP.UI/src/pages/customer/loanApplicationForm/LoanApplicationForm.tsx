@@ -1,38 +1,26 @@
 import { useState } from 'react';
-import { Col, Row } from 'antd';
-import number1blue from '../../assets/images/1blue.svg';
-import number2 from '../../assets/images/2grey.svg';
-import number3 from '../../assets/images/3grey.svg';
-import number4 from '../../assets/images/4grey.svg';
-import number5 from '../../assets/images/5grey.svg';
-import number6 from '../../assets/images/6grey.svg';
-import number2blue from '../../assets/images/2blue.svg'
-import number3blue from '../../assets/images/3blue.svg'
-import number4blue from '../../assets/images/4blue.svg'
-import number5blue from '../../assets/images/5blue.svg'
-import number6blue from '../../assets/images/6blue.svg'
-import Greentick from '../../assets/images/GreenTick.svg';
-import triangle from '../../assets/images/SideMenuTriangle.svg'
-import loandetails from '../../assets/images/LoanDetailsandFinancial.svg'
-import './Stepper.css';
-import arrowImage from '../../assets/images/SideMenuArrow.svg';
-import { Space } from 'antd';
-import arrowdas from '../../assets/images/ArrowForm.svg';
-import User from '../../assets/images/UserIcon.svg';
+import { Col, Row, Space } from 'antd';
 import { Link } from 'react-router-dom';
+import { 
+  OneBlue, TwoGrey, ThreeGrey, FourGrey, FiveGrey, SixGrey,
+  TwoBlue, ThreeBlue, FourBlue, FiveBlue, SixBlue,
+  GreenTick, SideMenuTriangle, LoanDetailsAndFinancial,
+  SideMenuArrow, ArrowForm, UserIcon
+} from '../../../assets';
+import './Stepper.css';
 
 // Import form components with proper paths
-import LoanDetails from '../../components/forms/loanDetails/LoanDetails';
-import LoanDocuments from '../../components/forms/loanDocuments/LoanDocuments';
-import PersonalInformationPage from '../../components/forms/personalInformationPage/PersonalInformationPage';
-import Addressinformation from '../../components/forms/addressInformation/Addressinformation';
-import Familyandemergency from '../../components/forms/familyAndEmergency/Familyandemergency';
-import Employement from '../../components/forms/employement/Employement';
-import FinancialInfo from '../../components/forms/financialInfo/FinancialInfo';
-import Declaration from '../../components/forms/declaration/Declaration';
-import Summary from '../customer/applyLoan/components/Summary';
-import { LoanApplicationProvider } from '../customer/applyLoan/context/LoanApplicationContext';
-import Layout from '../../layout/Layout';
+import LoanDetails from '../../../components/forms/loanDetails/LoanDetails';
+import LoanDocuments from '../../../components/forms/loanDocuments/LoanDocuments';
+import PersonalInformationPage from '../../../components/forms/personalInformationPage/PersonalInformationPage';
+import Addressinformation from '../../../components/forms/addressInformation/Addressinformation';
+import Familyandemergency from '../../../components/forms/familyAndEmergency/Familyandemergency';
+import Employement from '../../../components/forms/employement/Employement';
+import FinancialInfo from '../../../components/forms/financialInfo/FinancialInfo';
+import Declaration from '../../../components/forms/declaration/Declaration';
+import Summary from '../applyLoan/components/Summary';
+import { LoanApplicationProvider } from '../applyLoan/context/LoanApplicationContext';
+import Layout from '../../../layout/Layout';
 
 interface FormData {
   amount: number | null;
@@ -42,16 +30,16 @@ interface FormData {
 
 function LoanApplicationFormContent() {
   const [isHiddenVisible, setHiddenVisible] = useState(false);
-  const [uploadDocumentsImage] = useState(number2);
-  const [Employeeimg] = useState(number4);
-  const [Pesonalimg] = useState(number3);
-  const [Financialimg] = useState(number5);
+  const [uploadDocumentsImage] = useState(TwoGrey);
+  const [Employeeimg] = useState(FourGrey);
+  const [Pesonalimg] = useState(ThreeGrey);
+  const [Financialimg] = useState(FiveGrey);
   const [uploadDocumentsTextColor] = useState('#676D74');
   const [PersonalTextColor] = useState('#676D74');
   const [EmploymentTextColor] = useState('#676D74');
   const [FinancialTextColor] = useState('#676D74');
   const [DeclarationTextColor] = useState('#676D74');
-  const [col1ImageContent] = useState(loandetails);
+  const [col1ImageContent] = useState(LoanDetailsAndFinancial);
 
   const [step, setStep] = useState(1);
 
@@ -124,7 +112,7 @@ function LoanApplicationFormContent() {
           <div style={{ display: 'flex' }}>
             <p style={{
               color: '#676D74',
-              backgroundImage: `url(${User})`,
+              backgroundImage: `url(${UserIcon})`,
               backgroundPosition: 'left center',
               backgroundRepeat: 'no-repeat',
               paddingLeft: '25px',
@@ -138,7 +126,7 @@ function LoanApplicationFormContent() {
           <div style={{ display: 'flex' }}>
             <Link to="/customer-dashboard" style={{
               color: '#2C76C9',
-              backgroundImage: `url(${arrowdas})`,
+              backgroundImage: `url(${ArrowForm})`,
               backgroundPosition: 'left center',
               backgroundRepeat: 'no-repeat',
               marginTop: '10px',
@@ -161,32 +149,32 @@ function LoanApplicationFormContent() {
                 <div className="loanDetailsContainer" style={{ marginTop: '20px' }}>
                   <Space>
                     <img
-                      src={step === 1 ? number1blue : Greentick}
+                      src={step === 1 ? OneBlue : GreenTick}
                       alt="1"
                       className="blueNumberIcon"
                     />
                     <p className="loanDetailsText" style={{ color: step === 1 ? '#2C76C9' : ' #BBBBBB', marginTop: '15px', fontWeight: '500', font: '100', fontSize: '20px' }}>
                       Loan Details
                     </p>
-                    {step === 1 && <img src={arrowImage} alt="Arrow" className='RightArrow' />}
+                    {step === 1 && <img src={SideMenuArrow} alt="Arrow" className='RightArrow' />}
                   </Space>
                 </div>
 
                 <div style={{ marginTop: '5%' }}>
                   <Space>
                     <img
-                      src={step === 2 ? number2blue : (step > 2 ? Greentick : uploadDocumentsImage)}
+                      src={step === 2 ? TwoBlue : (step > 2 ? GreenTick : uploadDocumentsImage)}
                       alt="2"
                     />
                     <p style={{ color: step === 2 ? '#2C76C9' : (step > 2 ? '#BBBBBB' : uploadDocumentsTextColor), marginTop: '15px', fontSize: '20px' }}>Upload Documents</p>
-                    {step === 2 && <img src={arrowImage} alt="Arrow" className='RightArrow' />}
+                    {step === 2 && <img src={SideMenuArrow} alt="Arrow" className='RightArrow' />}
                   </Space>
                 </div>
 
                 <div style={{ marginTop: '5%' }}>
                   <Space onClick={toggleHidden}>
                     <img
-                      src={step >= 3 && step <= 5 ? number3blue : (step > 5 ? Greentick : Pesonalimg)}
+                      src={step >= 3 && step <= 5 ? ThreeBlue : (step > 5 ? GreenTick : Pesonalimg)}
                       alt="3"
                     />
                     <p style={{ color: step >= 3 && step <= 5 ? '#2C76C9' : (step > 5 ? '#BBBBBB' : PersonalTextColor), fontSize: '20px', marginTop: '15px' }}>Personal Details</p>
@@ -197,46 +185,46 @@ function LoanApplicationFormContent() {
                   <div id="Hidden" >
                     <p className="hide1" style={{ color: step === 3 ? '#979797' : '#37414A', marginTop: '5%', fontSize: '20px', marginLeft: '55px' }}>
                       Personal Information
-                      {step === 3 && <img src={arrowImage} alt="Arrow" className='SubRightArrow' />}
+                      {step === 3 && <img src={SideMenuArrow} alt="Arrow" className='SubRightArrow' />}
                     </p>
                     <p className="hide2" style={{ color: step === 4 ? '#979797' : '#37414A', marginTop: '5%', fontSize: '20px', marginLeft: '55px' }}>
                       Address Information
-                      {step === 4 && <img src={arrowImage} alt="Arrow" className='SubRightArrow' />}
+                      {step === 4 && <img src={SideMenuArrow} alt="Arrow" className='SubRightArrow' />}
                     </p>
                     <p className="hide3" style={{ color: step === 5 ? '#979797' : '#37414A', marginTop: '5%', fontSize: '20px', marginLeft: '55px' }} >
                       Family & Emergency Details
-                      {step === 5 && <img src={arrowImage} alt="Arrow" className='SubRightArrow' />}
+                      {step === 5 && <img src={SideMenuArrow} alt="Arrow" className='SubRightArrow' />}
                     </p>
                   </div>
                 )}
 
                 <div style={{ marginTop: '5%' }}>
                   <Space>
-                    <img src={step === 6 ? number4blue : (step > 6 ? Greentick : Employeeimg)}></img>
+                    <img src={step === 6 ? FourBlue : (step > 6 ? GreenTick : Employeeimg)}></img>
                     <p style={{ color: step === 6 ? '#2C76C9' : (step > 6 ? '#BBBBBB' : EmploymentTextColor), fontSize: '20px', marginTop: '15px' }}>Employment Details</p>
-                    {step === 6 && <img src={arrowImage} alt="Arrow" className='RightArrow' />}
+                    {step === 6 && <img src={SideMenuArrow} alt="Arrow" className='RightArrow' />}
                   </Space>
                 </div>
 
                 <div style={{ marginTop: '5%' }}>
                   <Space>
-                    <img src={step === 7 ? number5blue : (step > 7 ? Greentick : Financialimg)}></img>
+                    <img src={step === 7 ? FiveBlue : (step > 7 ? GreenTick : Financialimg)}></img>
                     <p style={{ color: step === 7 ? '#2C76C9' : (step > 7 ? '#BBBBBB' : FinancialTextColor), fontSize: '20px', marginTop: '15px' }}>Financial Information</p>
-                    {step === 7 && <img src={arrowImage} alt="Arrow" className='RightArrow' />}
+                    {step === 7 && <img src={SideMenuArrow} alt="Arrow" className='RightArrow' />}
                   </Space>
                 </div>
 
                 <div style={{ marginTop: '5%' }}>
                   <Space>
-                    <img src={step === 8 ? number6blue : number6}></img>
+                    <img src={step === 8 ? SixBlue : SixGrey}></img>
                     <p style={{ color: step === 8 ? '#2C76C9' : DeclarationTextColor, fontSize: '20px', marginTop: '15px' }}>Declaration</p>
-                    {step === 8 && <img src={arrowImage} alt="Arrow" className='RightArrow' />}
+                    {step === 8 && <img src={SideMenuArrow} alt="Arrow" className='RightArrow' />}
                   </Space>
                 </div>
 
                 <div className="col1images"  >
                   <div className='col1bottomImagetriangle'>
-                    <img src={triangle} style={{ width: '500px' }} />
+                    <img src={SideMenuTriangle} style={{ width: '500px' }} />
                   </div>
                   <div className="col1bottomImage" >
                     <img src={col1ImageContent} />

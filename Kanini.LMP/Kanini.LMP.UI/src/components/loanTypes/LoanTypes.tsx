@@ -184,18 +184,19 @@ const LoanTypes = () => {
                                     className={style.button2}
                                     type="primary"
                                     size='large'
-                                    onClick={() => navigate(CUSTOMER_ROUTES.INTEGRATION)}
+                                    onClick={() => {
+                                        if (loanCategoryId) {
+                                            navigate(CUSTOMER_ROUTES.LOAN_APPLICATION, { state: { loanCategoryId } });
+                                        }
+                                    }}
+                                    disabled={!loanCategoryId}
                                     style={{
                                         display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center'
                                     }}
                                 >
                                     <img src={arrow} style={{ marginLeft: '18px', marginTop: '2px' }} alt="Next arrow" />
-
                                     NEXT
-
                                 </Button>
-
-
                             </div>
 
                         </div>
