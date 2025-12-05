@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import styles from './LoanRecommendation.module.css';
 import { Card, Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { CUSTOMER_ROUTES } from '../../../config';
-import { customerDashboardAPI } from '../../../services/api/customerDashboardAPI';
 import EligibilityModal from '../../eligibilityModal/EligibilityModal';
+import { fetchLoanProducts } from '../../../store';
+import type { RootState, AppDispatch } from '../../../store';
 
 interface LoanRecommendationProps {
   title?: string;
@@ -22,20 +24,20 @@ const LoanRecommendation: React.FC<LoanRecommendationProps> = ({
   onApplyClick
 }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const loanProductsFromStore = useSelector((state: RootState) => state.dashboard.loanProducts);
   const [loanProducts, setLoanProducts] = useState<any[]>([]);
   const [showEligibilityModal, setShowEligibilityModal] = useState(false);
 
   useEffect(() => {
-    const fetchLoanProducts = async () => {
-      try {
-        const products = await customerDashboardAPI.getLoanProducts();
-        setLoanProducts(products);
-      } catch (error: any) {
-        // Silently handle error - component works without API data
-      }
-    };
-    fetchLoanProducts();
-  }, []);
+    dispatch(fetchLoanProducts());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (loanProductsFromStore.length > 0) {
+      setLoanProducts(loanProductsFromStore);
+    }
+  }, [loanProductsFromStore]);
 
   const handleApplyClick = () => {
     if (onApplyClick) {

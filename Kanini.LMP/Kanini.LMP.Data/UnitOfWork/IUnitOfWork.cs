@@ -2,7 +2,6 @@
 using Kanini.LMP.Database.Entities;
 using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.Entities.LoanProductEntities;
-using Kanini.LMP.Database.Entities.ManagerEntities;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Kanini.LMP.Data.UnitOfWork
@@ -13,11 +12,9 @@ namespace Kanini.LMP.Data.UnitOfWork
         ILMPRepository<Customer, int> Customers { get; }
         ILMPRepository<Notification, int> Notifications { get; }
         ILMPRepository<LoanApplicationBase, int> LoanApplications { get; }
-        ILMPRepository<LoanAccount, int> LoanAccounts { get; }
-        ILMPRepository<PaymentTransaction, int> PaymentTransactions { get; }
         ILMPRepository<EMIPlan, int> EMIPlans { get; }
-        ILMPRepository<LoanOriginationWorkflow, int> LoanWorkflows { get; }
         ILMPRepository<LoanProduct, int> LoanProducts { get; }
+        ILMPRepository<Faq, int> Faqs { get; }
 
         Task<int> SaveChangesAsync();
         Task<IDbContextTransaction> BeginTransactionAsync();

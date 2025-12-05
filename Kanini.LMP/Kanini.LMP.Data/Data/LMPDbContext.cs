@@ -3,9 +3,6 @@ using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.Entities.LoanApplicationEntites;
 using Kanini.LMP.Database.Entities.LoanProductEntities;
 using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
-using Kanini.LMP.Database.Entities.LoanProductEntities.HomeLoanEntities;
-using Kanini.LMP.Database.Entities.LoanProductEntities.VehicleLoanEntities;
-using Kanini.LMP.Database.Entities.ManagerEntities;
 using Kanini.LMP.Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,18 +21,13 @@ namespace Kanini.LMP.Data.Data
         public DbSet<DocumentUpload> DocumentUploads => Set<DocumentUpload>();
         public DbSet<LoanProduct> LoanProducts => Set<LoanProduct>();
         public DbSet<EMIPlan> EMIPlans => Set<EMIPlan>();
-        public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
-        public DbSet<LoanOriginationWorkflow> LoanOriginationWorkflows => Set<LoanOriginationWorkflow>();
-        public DbSet<LoanAccount> LoanAccounts => Set<LoanAccount>();
         public DbSet<Notification> Notifications => Set<Notification>();
         public DbSet<AddressInformation> AddressInformations => Set<AddressInformation>();
         public DbSet<PersonalDetails> PersonalDetails => Set<PersonalDetails>();
         public DbSet<FamilyEmergencyDetails> FamilyEmergencyDetails => Set<FamilyEmergencyDetails>();
         public DbSet<LoanDetails> LoanDetails => Set<LoanDetails>();
         public DbSet<Declaration> Declarations => Set<Declaration>();
-        public DbSet<LoanApplicant> LoanApplicants => Set<LoanApplicant>();
-        public DbSet<PropertyDetails> PropertyDetails => Set<PropertyDetails>();
-        public DbSet<VehicleInformation> VehicleInformations => Set<VehicleInformation>();
+        public DbSet<Faq> Faqs => Set<Faq>();
 
         protected override void OnModelCreating(ModelBuilder b)
         {
@@ -74,30 +66,6 @@ namespace Kanini.LMP.Data.Data
                 .HasOne<User>()
                 .WithMany()
                 .HasForeignKey(n => n.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            b.Entity<LoanApplicant>()
-                .HasOne(la => la.LoanApplicationBase)
-                .WithMany(lab => lab.Applicants)
-                .HasForeignKey(la => la.LoanApplicationBaseId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            b.Entity<LoanApplicant>()
-                .HasOne(la => la.Customer)
-                .WithMany()
-                .HasForeignKey(la => la.CustomerId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            b.Entity<PropertyDetails>()
-                .HasOne(pd => pd.LoanApplicationBase)
-                .WithMany()
-                .HasForeignKey(pd => pd.LoanApplicationBaseId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            b.Entity<VehicleInformation>()
-                .HasOne(vi => vi.LoanApplicationBase)
-                .WithMany()
-                .HasForeignKey(vi => vi.LoanApplicationBaseId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Seed Data

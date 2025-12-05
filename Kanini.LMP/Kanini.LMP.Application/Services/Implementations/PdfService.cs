@@ -1,177 +1,172 @@
-using Kanini.LMP.Application.Services.Interfaces;
-using Kanini.LMP.Data.Data;
-using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
-using Microsoft.EntityFrameworkCore;
-using System.Text;
+// using Kanini.LMP.Application.Services.Interfaces;
+// using Kanini.LMP.Data.Data;
+// using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
+// using Kanini.LMP.Database.Enums;
+// using Microsoft.EntityFrameworkCore;
+// using System.Reflection.Metadata;
+// using System.Text;
 
-namespace Kanini.LMP.Application.Services.Implementations
-{
-    public class PdfService : IPdfService
-    {
-        private readonly LmpDbContext _context;
+// namespace Kanini.LMP.Application.Services.Implementations
+// {
+//     public class PdfService : IPdfService
+//     {
+//         private readonly LmpDbContext _context;
 
-        public PdfService(LmpDbContext context)
-        {
-            _context = context;
-        }
+//         public PdfService(LmpDbContext context)
+//         {
+//             _context = context;
+//         }
 
-        public async Task<byte[]> GenerateLoanApplicationPdfAsync(int applicationId)
-        {
-            var application = await _context.LoanApplicationBases
-                .Include(app => app.LoanDetails)
-                .Include(app => app.PersonalDetails)
-                .Include(app => app.AddressInformation)
-                .Include(app => app.Customer)
-                .FirstOrDefaultAsync(app => app.LoanApplicationBaseId == applicationId);
+//         public async Task<byte[]> GenerateLoanApplicationPdfAsync(int applicationId)
+//         {
+//             var application = await _context.LoanApplicationBases
+//                 .Include(app => app.LoanDetails)
+//                 .Include(app => app.PersonalDetails)
+//                 .Include(app => app.AddressInformation)
+//                 .Include(app => app.Customer)
+//                 .FirstOrDefaultAsync(app => app.LoanApplicationBaseId == applicationId);
 
-            if (application == null)
-                throw new ArgumentException("Application not found");
+//             if (application == null)
+//                 throw new ArgumentException("Application not found");
 
-            var pdfContent = GenerateApplicationPdfContent(application);
-            var pdfBytes = Encoding.UTF8.GetBytes(pdfContent);
+//             var pdfContent = GenerateApplicationPdfContent(application);
+//             var pdfBytes = Encoding.UTF8.GetBytes(pdfContent);
 
-            // Store PDF in DocumentUpload table
-            var document = new DocumentUpload
-            {
-                LoanApplicationBaseId = applicationId,
-                UserId = application.CustomerId,
-                DocumentName = $"LoanApplication_{applicationId}.pdf",
-                DocumentType = "Application PDF",
-                DocumentData = pdfBytes,
-                UploadedAt = DateTime.UtcNow
-            };
+//             // Store PDF in DocumentUpload table
+//             var document = new DocumentUpload
+//             {
+//                 LoanApplicationBaseId = applicationId,
+//                 CustomerId = application.CustomerId,
+//                 DocumentName = $"LoanApplication_{applicationId}.pdf",
+//                 DocumentType = DocumentType.ApplicationPDF,
+//                 DocumentData = pdfBytes,
+//                 UploadedAt = DateTime.UtcNow
+//             };
 
-            var existing = await _context.DocumentUploads
-                .FirstOrDefaultAsync(d => d.LoanApplicationBaseId == applicationId && d.DocumentType == "Application PDF");
+//             var existing = await _context.DocumentUploads
+//                 .FirstOrDefaultAsync(d => d.LoanApplicationBaseId == applicationId && d.DocumentType == DocumentType.ApplicationPDF);
 
-            if (existing != null)
-            {
-                existing.DocumentData = pdfBytes;
-                existing.UploadedAt = DateTime.UtcNow;
-            }
-            else
-            {
-                await _context.DocumentUploads.AddAsync(document);
-            }
+//             if (existing != null)
+//             {
+//                 existing.DocumentData = pdfBytes;
+//                 existing.UploadedAt = DateTime.UtcNow;
+//             }
+//             else
+//             {
+//                 await _context.DocumentUploads.AddAsync(document);
+//             }
 
-            await _context.SaveChangesAsync();
-            return pdfBytes;
-        }
+//             await _context.SaveChangesAsync();
+//             return pdfBytes;
+//         }
 
-        public async Task<byte[]> GeneratePaymentReceiptPdfAsync(int transactionId)
-        {
-            var transaction = await _context.PaymentTransactions
-                .FirstOrDefaultAsync(pt => pt.TransactionId == transactionId);
+//         public async Task<byte[]> GeneratePaymentReceiptPdfAsync(int transactionId)
+//         {
+            
+//         }
 
-            if (transaction == null)
-                throw new ArgumentException("Transaction not found");
+//         public async Task<byte[]> GenerateEMISchedulePdfAsync(int loanAccountId)
+//         {
+//             var loanAccount = await _context.LoanAccounts
+//                 .FirstOrDefaultAsync(la => la.LoanAccountId == loanAccountId);
 
-            var receiptContent = GeneratePaymentReceiptContent(transaction);
-            return Encoding.UTF8.GetBytes(receiptContent);
-        }
+//             if (loanAccount == null)
+//                 throw new ArgumentException("Loan account not found");
 
-        public async Task<byte[]> GenerateEMISchedulePdfAsync(int loanAccountId)
-        {
-            var loanAccount = await _context.LoanAccounts
-                .FirstOrDefaultAsync(la => la.LoanAccountId == loanAccountId);
+//             var scheduleContent = GenerateEMIScheduleContent(loanAccount);
+//             return Encoding.UTF8.GetBytes(scheduleContent);
+//         }
 
-            if (loanAccount == null)
-                throw new ArgumentException("Loan account not found");
+//         private string GenerateApplicationPdfContent(dynamic application)
+//         {
+//             var loanDetails = application.LoanDetails;
+//             var personalDetails = application.PersonalDetails;
+//             var addressInfo = application.AddressInformation;
 
-            var scheduleContent = GenerateEMIScheduleContent(loanAccount);
-            return Encoding.UTF8.GetBytes(scheduleContent);
-        }
+//             return $@"
+// ========================================
+//     LOAN APPLICATION DOCUMENT
+// ========================================
 
-        private string GenerateApplicationPdfContent(dynamic application)
-        {
-            var loanDetails = application.LoanDetails;
-            var personalDetails = application.PersonalDetails;
-            var addressInfo = application.AddressInformation;
+// Application ID: {application.LoanApplicationBaseId}
+// Application Date: {application.SubmissionDate}
+// Status: {application.Status}
+// Loan Type: {application.LoanProductType}
 
-            return $@"
-========================================
-    LOAN APPLICATION DOCUMENT
-========================================
+// ----------------------------------------
+// CUSTOMER INFORMATION
+// ----------------------------------------
+// Full Name: {personalDetails?.FullName ?? "N/A"}
+// Email: {personalDetails?.Email ?? "N/A"}
+// Phone: {personalDetails?.PhoneNumber ?? "N/A"}
+// Date of Birth: {personalDetails?.DateOfBirth}
+// Gender: {personalDetails?.Gender}
 
-Application ID: {application.LoanApplicationBaseId}
-Application Date: {application.SubmissionDate}
-Status: {application.Status}
-Loan Type: {application.LoanProductType}
+// ----------------------------------------
+// ADDRESS INFORMATION
+// ----------------------------------------
+// Current Address: {addressInfo?.CurrentAddress ?? "N/A"}
+// City: {addressInfo?.City ?? "N/A"}
+// State: {addressInfo?.State ?? "N/A"}
+// Pincode: {addressInfo?.Pincode ?? "N/A"}
 
-----------------------------------------
-CUSTOMER INFORMATION
-----------------------------------------
-Full Name: {personalDetails?.FullName ?? "N/A"}
-Email: {personalDetails?.Email ?? "N/A"}
-Phone: {personalDetails?.PhoneNumber ?? "N/A"}
-Date of Birth: {personalDetails?.DateOfBirth}
-Gender: {personalDetails?.Gender}
+// ----------------------------------------
+// LOAN DETAILS
+// ----------------------------------------
+// Requested Amount: ₹{loanDetails?.RequestedAmount ?? 0:N2}
+// Tenure: {loanDetails?.TenureMonths ?? 0} months
+// Interest Rate: {loanDetails?.InterestRate ?? 0}%
+// Monthly EMI: ₹{loanDetails?.MonthlyInstallment ?? 0:N2}
+// Purpose: {loanDetails?.LoanPurpose ?? "N/A"}
 
-----------------------------------------
-ADDRESS INFORMATION
-----------------------------------------
-Current Address: {addressInfo?.CurrentAddress ?? "N/A"}
-City: {addressInfo?.City ?? "N/A"}
-State: {addressInfo?.State ?? "N/A"}
-Pincode: {addressInfo?.Pincode ?? "N/A"}
+// ----------------------------------------
 
-----------------------------------------
-LOAN DETAILS
-----------------------------------------
-Requested Amount: ₹{loanDetails?.RequestedAmount ?? 0:N2}
-Tenure: {loanDetails?.TenureMonths ?? 0} months
-Interest Rate: {loanDetails?.InterestRate ?? 0}%
-Monthly EMI: ₹{loanDetails?.MonthlyInstallment ?? 0:N2}
-Purpose: {loanDetails?.LoanPurpose ?? "N/A"}
+// Generated on: {DateTime.Now:dd MMM yyyy HH:mm}
 
-----------------------------------------
+// This is a system-generated document.
 
-Generated on: {DateTime.Now:dd MMM yyyy HH:mm}
+// ========================================
+// ";
+//         }
 
-This is a system-generated document.
+//         private string GeneratePaymentReceiptContent(dynamic transaction)
+//         {
+//             return $@"
+// PAYMENT RECEIPT
+// ==============
 
-========================================
-";
-        }
+// Transaction ID: {transaction.TransactionId}
+// Payment Date: {transaction.PaymentDate:dd MMM yyyy HH:mm}
+// Amount: ₹{transaction.Amount:N2}
+// Payment Method: {transaction.PaymentMethod}
+// Status: {transaction.Status}
+// Reference: {transaction.TransactionReference ?? "N/A"}
+// Loan Account: {transaction.LoanAccountId}
 
-        private string GeneratePaymentReceiptContent(dynamic transaction)
-        {
-            return $@"
-PAYMENT RECEIPT
-==============
+// Thank you for your payment!
 
-Transaction ID: {transaction.TransactionId}
-Payment Date: {transaction.PaymentDate:dd MMM yyyy HH:mm}
-Amount: ₹{transaction.Amount:N2}
-Payment Method: {transaction.PaymentMethod}
-Status: {transaction.Status}
-Reference: {transaction.TransactionReference ?? "N/A"}
-Loan Account: {transaction.LoanAccountId}
+// Generated on: {DateTime.Now:dd MMM yyyy HH:mm}
+// ";
+//         }
 
-Thank you for your payment!
+//         private string GenerateEMIScheduleContent(dynamic loanAccount)
+//         {
+//             return $@"
+// EMI SCHEDULE
+// ===========
 
-Generated on: {DateTime.Now:dd MMM yyyy HH:mm}
-";
-        }
+// Loan Account ID: {loanAccount.LoanAccountId}
+// Loan Amount: ₹{loanAccount.TotalLoanAmount:N2}
 
-        private string GenerateEMIScheduleContent(dynamic loanAccount)
-        {
-            return $@"
-EMI SCHEDULE
-===========
+// PAYMENT STATUS
+// -------------
+// Total Paid (Principal): ₹{loanAccount.TotalPaidPrincipal:N2}
+// Total Paid (Interest): ₹{loanAccount.TotalPaidInterest:N2}
+// Remaining Principal: ₹{loanAccount.PrincipalRemaining:N2}
+// Current Status: {loanAccount.CurrentPaymentStatus}
 
-Loan Account ID: {loanAccount.LoanAccountId}
-Loan Amount: ₹{loanAccount.TotalLoanAmount:N2}
-
-PAYMENT STATUS
--------------
-Total Paid (Principal): ₹{loanAccount.TotalPaidPrincipal:N2}
-Total Paid (Interest): ₹{loanAccount.TotalPaidInterest:N2}
-Remaining Principal: ₹{loanAccount.PrincipalRemaining:N2}
-Current Status: {loanAccount.CurrentPaymentStatus}
-
-Generated on: {DateTime.Now:dd MMM yyyy HH:mm}
-";
-        }
-    }
-}
+// Generated on: {DateTime.Now:dd MMM yyyy HH:mm}
+// ";
+//         }
+//     }
+// }

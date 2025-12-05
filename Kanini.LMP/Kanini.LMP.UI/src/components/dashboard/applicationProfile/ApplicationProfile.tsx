@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import styles from './ApplicationProfile.module.css';
 import { Card } from 'antd';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { customerDashboardAPI } from '../../../services/api/customerDashboardAPI';
+import { fetchRecentLoans } from '../../../store';
+import type { RootState, AppDispatch } from '../../../store';
 
 interface LoanData {
   name: string;
@@ -17,40 +19,46 @@ interface ApplicationProfileProps {
 }
 
 const ApplicationProfile: React.FC<ApplicationProfileProps> = ({ loans: providedLoans }) => {
-  const [loans, setLoans] = useState<LoanData[]>(providedLoans || [
-    { name: 'Car loan', amount: 25540, percentage: 25, remainingYears: 4, color: '#FBB851' },
-    { name: 'Personal loan', amount: 9540, percentage: 60, remainingYears: 2, color: '#F37E20' }
-  ]);
+  const dispatch = useDispatch<AppDispatch>();
+  const recentLoansFromStore = useSelector((state: RootState) => state.dashboard.recentLoans);
+  const [loans, setLoans] = useState<LoanData[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (providedLoans) return;
-    const fetchRecentLoans = async () => {
-      try {
-        const recentLoans = await customerDashboardAPI.getRecentAppliedLoans();
-        if (recentLoans && recentLoans.length > 0) {
-          const colors = ['#FBB851', '#F37E20', '#4CAF50', '#2196F3'];
-          const formattedLoans = recentLoans.slice(0, 4).map((loan: any, index: number) => ({
-            name: loan.loanType || loan.loanProductName || 'Loan',
-            amount: loan.loanAmount || loan.amount || 0,
-            percentage: Math.round((loan.paidAmount || 0) / (loan.loanAmount || 1) * 100),
-            remainingYears: Math.ceil((loan.tenure || 0) / 12),
-            color: colors[index % colors.length]
-          }));
-          setLoans(formattedLoans);
-        }
-      } catch (error) {
-        console.error('Failed to fetch recent loans:', error);
-      }
-    };
-    fetchRecentLoans();
-  }, [providedLoans]);
+    if (providedLoans) {
+      setLoans(providedLoans);
+      setLoading(false);
+      return;
+    }
+    dispatch(fetchRecentLoans());
+  }, [providedLoans, dispatch]);
+
+  useEffect(() => {
+    if (recentLoansFromStore && recentLoansFromStore.length > 0) {
+      const colors = ['#FBB851', '#F37E20', '#4CAF50', '#2196F3'];
+      const formattedLoans = recentLoansFromStore.slice(0, 4).map((loan: any, index: number) => ({
+        name: loan.loanType || loan.loanProductName || 'Loan',
+        amount: loan.loanAmount || loan.amount || 0,
+        percentage: Math.round((loan.paidAmount || 0) / (loan.loanAmount || 1) * 100),
+        remainingYears: Math.ceil((loan.tenure || 0) / 12),
+        color: colors[index % colors.length]
+      }));
+      setLoans(formattedLoans);
+    }
+    setLoading(false);
+  }, [recentLoansFromStore]);
 
   return (
-    <Card title="My Application Profile" style={{ height: '100%' }}>
-        <p className={styles.loanrstatus}> Loan Repayment Status</p>
-
-
-        <div className={styles.appcharts}>
+    <Card title="My Application Profile" style={{ height: '100%' }} loading={loading}>
+        {loans.length === 0 && !loading ? (
+          <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
+            <p>No loan applications found</p>
+            <p style={{ fontSize: '12px' }}>Apply for a loan to see your application profile</p>
+          </div>
+        ) : (
+          <>
+            <p className={styles.loanrstatus}> Loan Repayment Status</p>
+            <div className={styles.appcharts}>
           {loans.map((loan, index) => {
             const chartData = [{ value: loan.percentage }, { value: 100 - loan.percentage }];
             const colors = [loan.color, '#EDF1F5'];
@@ -80,11 +88,12 @@ const ApplicationProfile: React.FC<ApplicationProfileProps> = ({ loans: provided
               </div>
             );
           })}
-        </div>
-        <div className={styles.completereportlink}>
-          <a href='#' onClick={(e) => e.preventDefault()}>Click here to view the complete Report</a>
-        </div>
-
+            </div>
+            <div className={styles.completereportlink}>
+              <a href='#' onClick={(e) => e.preventDefault()}>Click here to view the complete Report</a>
+            </div>
+          </>
+        )}
     </Card>
   );
 };

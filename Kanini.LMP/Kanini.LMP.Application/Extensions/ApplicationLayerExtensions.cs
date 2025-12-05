@@ -12,7 +12,7 @@ namespace Kanini.LMP.Application.Extensions
         public static IServiceCollection AddApplicationLayer(this IServiceCollection services)
         {
             // AutoMapper
-            services.AddAutoMapper(typeof(MappingProfile).Assembly);
+            services.AddAutoMapper(typeof(UserProfile), typeof(CustomerProfile), typeof(LoanApplicationProfile), typeof(LoanProductProfile), typeof(NotificationProfile));
 
             // Memory Cache for credit score caching
             services.AddMemoryCache();
@@ -21,13 +21,12 @@ namespace Kanini.LMP.Application.Extensions
             services.AddScoped<ITokenService, TokenService>();
 
             services.AddScoped<ICustomerService, CustomerService>();
-            services.AddScoped<IEligibilityService, EligibilityService>();
-            services.AddScoped<ILoanApplicationService, LoanApplicationService>();
+            // services.AddScoped<IEligibilityService, EligibilityService>();
+            // services.AddScoped<ILoanApplicationService, LoanApplicationService>();
             services.AddScoped<ILoanProductService, LoanProductService>();
-            services.AddScoped<IPaymentService, PaymentService>();
-            services.AddScoped<IEmiCalculatorService, EmiCalculatorService>();
+            // services.AddScoped<IEmiCalculatorService, EmiCalculatorService>();
             services.AddScoped<IEmailService, EmailService>();
-            services.AddScoped<IPdfService, PdfService>();
+            // services.AddScoped<IPdfService, PdfService>();
 
             services.AddScoped<IOTPService, OTPService>();
             services.AddScoped<IUserService, UserService>();

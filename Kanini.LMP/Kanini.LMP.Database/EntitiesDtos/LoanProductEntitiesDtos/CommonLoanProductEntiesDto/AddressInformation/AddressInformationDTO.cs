@@ -34,10 +34,6 @@ namespace Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.CommonLoanProdu
         [Required(ErrorMessage = "State is required.")]
         public IndianStates State { get; set; }
 
-        [Required(ErrorMessage = "Country is required.")]
-        [MaxLength(100, ErrorMessage = "Country name cannot exceed 100 characters.")]
-        public string Country { get; set; } = null!;
-
         [Required(ErrorMessage = "Zip code is required.")]
         [MaxLength(10, ErrorMessage = "Zip code cannot exceed 10 characters.")]
         [RegularExpression(@"^\d{5,10}$", ErrorMessage = "Enter a valid zip code.")]

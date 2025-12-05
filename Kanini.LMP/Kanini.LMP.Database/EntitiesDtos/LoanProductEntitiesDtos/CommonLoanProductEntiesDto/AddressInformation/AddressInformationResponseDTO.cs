@@ -14,7 +14,6 @@ namespace Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.CommonLoanProdu
         public string PermanentAddress { get; set; } = null!;
         public string District { get; set; } = null!;
         public IndianStates State { get; set; }
-        public string Country { get; set; } = null!;
         public string ZipCode { get; set; } = null!;
         public string EmailId { get; set; } = null!;
         public string MobileNumber1 { get; set; } = null!;

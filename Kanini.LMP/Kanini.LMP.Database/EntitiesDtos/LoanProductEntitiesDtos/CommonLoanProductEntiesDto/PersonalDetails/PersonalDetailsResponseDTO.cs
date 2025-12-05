@@ -21,8 +21,6 @@ namespace Kanini.LMP.Database.EntitiesDto.LoanProductEntitiesDto.CommonLoanProdu
 
         public string DistrictOfBirth { get; set; } = null!;
 
-        public string CountryOfBirth { get; set; } = null!;
-
         public string PANNumber { get; set; } = null!;
 
         public string EducationQualification { get; set; } = null!;

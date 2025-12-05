@@ -13,41 +13,40 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
         [ForeignKey(nameof(LoanApplicationBase))]
         public int LoanApplicationBaseId { get; set; }
 
-        // FK to User
-        [ForeignKey(nameof(User))]
-        public int UserId { get; set; }
-        // Residential and permanent addresses
+        public LoanApplicationBase LoanApplicationBase { get; set; } = null!;
+
         [Required]
         [MaxLength(250)]
         public string PresentAddress { get; set; } = null!;
+
         [Required]
         [MaxLength(250)]
         public string PermanentAddress { get; set; } = null!;
 
-        // Location details
         [Required]
         [MaxLength(100)]
-        public string District {  get; set; } = null!;
+        public string District { get; set; } = null!;
+
         [Required]
+        [Column(TypeName = "varchar(50)")]
         public IndianStates State { get; set; }
-        [Required]
-        [MaxLength(100)]
-        public string Country { get; set; } = null!;
+
         [Required]
         [MaxLength(10)]
         public string ZipCode { get; set; } = null!;
+
         // Contact details
-        [Required]
         [EmailAddress]
         [MaxLength(100)]
-        public string EmailId { get; set; } = null!;
+        public string? EmailId { get; set; }
+
         [Required]
         [Phone]
-        public int MobileNumber1 { get; set; } 
+        [MaxLength(15)]
+        public string MobileNumber1 { get; set; } = null!;
+
         [Phone]
-        public int MobileNumber2 { get; set;}
-
-        
-
+        [MaxLength(15)]
+        public string? MobileNumber2 { get; set; }
     }
 }

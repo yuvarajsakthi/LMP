@@ -21,8 +21,6 @@ namespace Kanini.LMP.Data.Extensions
 
             // Repository registrations
             services.AddScoped(typeof(ILMPRepository<,>), typeof(LMPRepositoy<,>));
-            services.AddScoped<IManagerAnalyticsRepository, ManagerAnalyticsRepository>();
-
             services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
 
             return services;

@@ -29,8 +29,6 @@ namespace Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEnti
         [Required]
         public DateTime AppliedDate { get; set; }
 
-        [Column(TypeName = "decimal(5,2)")]
-        public decimal? InterestRate { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         public decimal? MonthlyInstallment { get; set; }
     }

@@ -1,37 +1,37 @@
-﻿using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.PersonalLoanApplication;
-using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.HomeLoanApplication;
-using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.VehicleLoanApplication;
-using Kanini.LMP.Database.Enums;
+﻿// using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.PersonalLoanApplication;
+// using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.HomeLoanApplication;
+// using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.VehicleLoanApplication;
+// using Kanini.LMP.Database.Enums;
 
-namespace Kanini.LMP.Application.Services.Interfaces
-{
-    public interface ILoanApplicationService
-    {
-        // Personal Loan
-        Task<PersonalLoanApplicationDTO> CreatePersonalLoanAsync(PersonalLoanApplicationCreateDTO dto, int customerId);
-        Task<IReadOnlyList<PersonalLoanApplicationDTO>> GetAllPersonalLoansAsync();
-        Task<PersonalLoanApplicationDTO?> GetPersonalLoanByIdAsync(int id);
+// namespace Kanini.LMP.Application.Services.Interfaces
+// {
+//     public interface ILoanApplicationService
+//     {
+//         // Personal Loan
+//         Task<PersonalLoanApplicationDTO> CreatePersonalLoanAsync(PersonalLoanApplicationCreateDTO dto, int customerId);
+//         Task<IReadOnlyList<PersonalLoanApplicationDTO>> GetAllPersonalLoansAsync();
+//         Task<PersonalLoanApplicationDTO?> GetPersonalLoanByIdAsync(int id);
 
-        // Home Loan
-        Task<HomeLoanApplicationDTO> CreateHomeLoanAsync(HomeLoanApplicationCreateDTO dto, int customerId);
-        Task<IReadOnlyList<HomeLoanApplicationDTO>> GetAllHomeLoansAsync();
-        Task<HomeLoanApplicationDTO?> GetHomeLoanByIdAsync(int id);
+//         // Home Loan
+//         Task<HomeLoanApplicationDTO> CreateHomeLoanAsync(HomeLoanApplicationCreateDTO dto, int customerId);
+//         Task<IReadOnlyList<HomeLoanApplicationDTO>> GetAllHomeLoansAsync();
+//         Task<HomeLoanApplicationDTO?> GetHomeLoanByIdAsync(int id);
 
-        // Vehicle Loan
-        Task<VehicleLoanApplicationDTO> CreateVehicleLoanAsync(VehicleLoanApplicationCreateDTO dto, int customerId);
-        Task<IReadOnlyList<VehicleLoanApplicationDTO>> GetAllVehicleLoansAsync();
-        Task<VehicleLoanApplicationDTO?> GetVehicleLoanByIdAsync(int id);
+//         // Vehicle Loan
+//         Task<VehicleLoanApplicationDTO> CreateVehicleLoanAsync(VehicleLoanApplicationCreateDTO dto, int customerId);
+//         Task<IReadOnlyList<VehicleLoanApplicationDTO>> GetAllVehicleLoansAsync();
+//         Task<VehicleLoanApplicationDTO?> GetVehicleLoanByIdAsync(int id);
 
-        // Common
-        Task<IReadOnlyList<PersonalLoanApplicationDTO>> GetLoansByStatusAsync(ApplicationStatus status);
-        Task<PersonalLoanApplicationDTO> UpdateLoanStatusAsync(int id, ApplicationStatus status);
-        Task<int> UploadDocumentAsync(int loanApplicationBaseId, int userId, string documentName, string documentType, byte[] documentData);
+//         // Common
+//         Task<IReadOnlyList<PersonalLoanApplicationDTO>> GetLoansByStatusAsync(ApplicationStatus status);
+//         Task<PersonalLoanApplicationDTO> UpdateLoanStatusAsync(int id, ApplicationStatus status);
+//         Task<int> UploadDocumentAsync(int loanApplicationBaseId, int userId, string documentName, string documentType, byte[] documentData);
 
-        // Junction table methods
-        Task<IReadOnlyList<int>> GetApplicantsByLoanAsync(int loanApplicationBaseId);
+//         // Junction table methods
+//         Task<IReadOnlyList<int>> GetApplicantsByLoanAsync(int loanApplicationBaseId);
 
-        // Customer Dashboard methods
-        Task<IEnumerable<dynamic>> GetRecentApplicationsAsync(int customerId, int count);
-        Task<IEnumerable<dynamic>> GetCustomerApplicationsAsync(int customerId);
-    }
-}
+//         // Customer Dashboard methods
+//         Task<IEnumerable<dynamic>> GetRecentApplicationsAsync(int customerId, int count);
+//         Task<IEnumerable<dynamic>> GetCustomerApplicationsAsync(int customerId);
+//     }
+// }

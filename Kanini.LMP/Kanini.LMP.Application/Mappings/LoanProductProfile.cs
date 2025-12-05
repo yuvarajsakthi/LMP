@@ -22,7 +22,6 @@ namespace Kanini.LMP.Application.Mappings
         public LoanProductProfile()
         {
 
-            #region 10. Common Loan Product nested DTOs
             CreateMap<LoanDetailsDTO, LoanDetails>().ReverseMap();
             CreateMap<DeclarationDTO, Declaration>().ReverseMap();
             CreateMap<DocumentUploadDTO, DocumentUpload>()
@@ -44,12 +43,8 @@ namespace Kanini.LMP.Application.Mappings
             CreateMap<AddressInformationUpdateDTO, AddressInformation>();
             CreateMap<AddressInformation, AddressInformationResponseDTO>();
 
-            #endregion
-
-            #region 13. Loan Product master
             CreateMap<LoanProductDTO, LoanProduct>().ReverseMap();
             CreateMap<LoanProductDto, LoanProduct>().ReverseMap();
-            #endregion
         }
     }
 }

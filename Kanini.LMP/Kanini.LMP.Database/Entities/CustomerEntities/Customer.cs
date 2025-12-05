@@ -35,7 +35,7 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         [Required]
         [Range(0, 900)]
         [Column(TypeName = "decimal(5,2)")]
-        public decimal CreditScore { get; set; } = 0;
+        public decimal EligibilityScore { get; set; } = 0;
 
         [Required]
         public byte[] ProfileImage { get; set; } = null!;

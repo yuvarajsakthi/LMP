@@ -1,203 +1,201 @@
-using AutoMapper;
-using Kanini.LMP.Application.Services.Interfaces;
-using Kanini.LMP.Data.Repositories.Interfaces;
-using Kanini.LMP.Database.Entities.CustomerEntities;
-using Kanini.LMP.Database.Entities.LoanApplicationEntites;
-using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.PersonalLoanApplication;
-using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.HomeLoanApplication;
-using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.VehicleLoanApplication;
-using Kanini.LMP.Database.Enums;
-using Microsoft.Extensions.Logging;
-using Kanini.LMP.Data.UnitOfWork;
-using Kanini.LMP.Database.Entities;
+// using AutoMapper;
+// using Kanini.LMP.Application.Services.Interfaces;
+// using Kanini.LMP.Data.Repositories.Interfaces;
+// using Kanini.LMP.Database.Entities.CustomerEntities;
+// using Kanini.LMP.Database.Entities.LoanApplicationEntites;
+// using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.PersonalLoanApplication;
+// using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.HomeLoanApplication;
+// using Kanini.LMP.Database.EntitiesDto.LoanApplicationEntitiesDto.VehicleLoanApplication;
+// using Kanini.LMP.Database.Enums;
+// using Microsoft.Extensions.Logging;
+// using Kanini.LMP.Data.UnitOfWork;
+// using Kanini.LMP.Database.Entities;
 
-namespace Kanini.LMP.Application.Services.Implementations
-{
-    public class LoanApplicationService : ILoanApplicationService
-    {
-        private readonly ILMPRepository<LoanApplicationBase, int> _loanAppRepository;
-        private readonly ILMPRepository<PersonalLoanApplication, int> _personalLoanRepository;
-        private readonly ILMPRepository<HomeLoanApplication, int> _homeLoanRepository;
-        private readonly ILMPRepository<VehicleLoanApplication, int> _vehicleLoanRepository;
-        private readonly ILMPRepository<LoanApplicant, int> _loanApplicantRepository;
-        private readonly IEligibilityService _eligibilityService;
-        private readonly IPdfService _pdfService;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
-        private readonly ILogger<LoanApplicationService> _logger;
+// namespace Kanini.LMP.Application.Services.Implementations
+// {
+//     public class LoanApplicationService : ILoanApplicationService
+//     {
+//         private readonly ILMPRepository<LoanApplicationBase, int> _loanAppRepository;
+//         private readonly ILMPRepository<PersonalLoanApplication, int> _personalLoanRepository;
+//         private readonly ILMPRepository<HomeLoanApplication, int> _homeLoanRepository;
+//         private readonly ILMPRepository<VehicleLoanApplication, int> _vehicleLoanRepository;
+//         // private readonly IEligibilityService _eligibilityService;
+//         private readonly IPdfService _pdfService;
+//         private readonly IUnitOfWork _unitOfWork;
+//         private readonly IMapper _mapper;
+//         private readonly ILogger<LoanApplicationService> _logger;
 
-        public LoanApplicationService(
-            ILMPRepository<LoanApplicationBase, int> loanAppRepository,
-            ILMPRepository<PersonalLoanApplication, int> personalLoanRepository,
-            ILMPRepository<HomeLoanApplication, int> homeLoanRepository,
-            ILMPRepository<VehicleLoanApplication, int> vehicleLoanRepository,
-            ILMPRepository<LoanApplicant, int> loanApplicantRepository,
-            IEligibilityService eligibilityService,
-            IPdfService pdfService,
-            IUnitOfWork unitOfWork,
-            IMapper mapper,
-            ILogger<LoanApplicationService> logger)
-        {
-            _loanAppRepository = loanAppRepository;
-            _personalLoanRepository = personalLoanRepository;
-            _homeLoanRepository = homeLoanRepository;
-            _vehicleLoanRepository = vehicleLoanRepository;
-            _loanApplicantRepository = loanApplicantRepository;
-            _eligibilityService = eligibilityService;
-            _pdfService = pdfService;
-            _unitOfWork = unitOfWork;
-            _mapper = mapper;
-            _logger = logger;
-        }
+//         public LoanApplicationService(
+//             ILMPRepository<LoanApplicationBase, int> loanAppRepository,
+//             ILMPRepository<PersonalLoanApplication, int> personalLoanRepository,
+//             ILMPRepository<HomeLoanApplication, int> homeLoanRepository,
+//             ILMPRepository<VehicleLoanApplication, int> vehicleLoanRepository,
+//             // IEligibilityService eligibilityService,
+//             IPdfService pdfService,
+//             IUnitOfWork unitOfWork,
+//             IMapper mapper,
+//             ILogger<LoanApplicationService> logger)
+//         {
+//             _loanAppRepository = loanAppRepository;
+//             _personalLoanRepository = personalLoanRepository;
+//             _homeLoanRepository = homeLoanRepository;
+//             _vehicleLoanRepository = vehicleLoanRepository;
+//             // _eligibilityService = eligibilityService;
+//             _pdfService = pdfService;
+//             _unitOfWork = unitOfWork;
+//             _mapper = mapper;
+//             _logger = logger;
+//         }
 
-        public async Task<PersonalLoanApplicationDTO> CreatePersonalLoanAsync(PersonalLoanApplicationCreateDTO dto, int customerId)
-        {
-            var eligibility = await _eligibilityService.CalculateEligibilityAsync(customerId, (int)LoanType.Personal);
-            if (eligibility.EligibilityScore < 50)
-                throw new InvalidOperationException($"Customer not eligible. Score: {eligibility.EligibilityScore}");
+//         public async Task<PersonalLoanApplicationDTO> CreatePersonalLoanAsync(PersonalLoanApplicationCreateDTO dto, int customerId)
+//         {
+//             var eligibility = await _eligibilityService.CalculateEligibilityAsync(customerId, (int)LoanType.Personal);
+//             if (eligibility.EligibilityScore < 50)
+//                 throw new InvalidOperationException($"Customer not eligible. Score: {eligibility.EligibilityScore}");
             
-            var entity = _mapper.Map<PersonalLoanApplication>(dto);
-            entity.CustomerId = customerId;
-            entity.Status = ApplicationStatus.Submitted;
-            var created = await _personalLoanRepository.AddAsync(entity);
+//             var entity = _mapper.Map<PersonalLoanApplication>(dto);
+//             entity.CustomerId = customerId;
+//             entity.Status = ApplicationStatus.Submitted;
+//             var created = await _personalLoanRepository.AddAsync(entity);
             
-            await _pdfService.GenerateLoanApplicationPdfAsync(created.LoanApplicationBaseId);
+//             await _pdfService.GenerateLoanApplicationPdfAsync(created.LoanApplicationBaseId);
             
-            await CreateNotificationAsync(customerId, $"Personal loan application #{created.LoanApplicationBaseId} submitted successfully");
+//             await CreateNotificationAsync(customerId, $"Personal loan application #{created.LoanApplicationBaseId} submitted successfully");
             
-            return _mapper.Map<PersonalLoanApplicationDTO>(created);
-        }
+//             return _mapper.Map<PersonalLoanApplicationDTO>(created);
+//         }
 
-        public async Task<IReadOnlyList<PersonalLoanApplicationDTO>> GetAllPersonalLoansAsync()
-        {
-            var loans = await _personalLoanRepository.GetAllAsync();
-            return _mapper.Map<IReadOnlyList<PersonalLoanApplicationDTO>>(loans);
-        }
+//         public async Task<IReadOnlyList<PersonalLoanApplicationDTO>> GetAllPersonalLoansAsync()
+//         {
+//             var loans = await _personalLoanRepository.GetAllAsync();
+//             return _mapper.Map<IReadOnlyList<PersonalLoanApplicationDTO>>(loans);
+//         }
 
-        public async Task<PersonalLoanApplicationDTO?> GetPersonalLoanByIdAsync(int id)
-        {
-            var loan = await _personalLoanRepository.GetByIdAsync(id);
-            return loan == null ? null : _mapper.Map<PersonalLoanApplicationDTO>(loan);
-        }
+//         public async Task<PersonalLoanApplicationDTO?> GetPersonalLoanByIdAsync(int id)
+//         {
+//             var loan = await _personalLoanRepository.GetByIdAsync(id);
+//             return loan == null ? null : _mapper.Map<PersonalLoanApplicationDTO>(loan);
+//         }
 
-        public async Task<HomeLoanApplicationDTO> CreateHomeLoanAsync(HomeLoanApplicationCreateDTO dto, int customerId)
-        {
-            var eligibility = await _eligibilityService.CalculateEligibilityAsync(customerId, (int)LoanType.Home);
-            if (eligibility.EligibilityScore < 50)
-                throw new InvalidOperationException($"Customer not eligible. Score: {eligibility.EligibilityScore}");
+//         public async Task<HomeLoanApplicationDTO> CreateHomeLoanAsync(HomeLoanApplicationCreateDTO dto, int customerId)
+//         {
+//             var eligibility = await _eligibilityService.CalculateEligibilityAsync(customerId, (int)LoanType.Home);
+//             if (eligibility.EligibilityScore < 50)
+//                 throw new InvalidOperationException($"Customer not eligible. Score: {eligibility.EligibilityScore}");
             
-            var entity = _mapper.Map<HomeLoanApplication>(dto);
-            entity.CustomerId = customerId;
-            entity.Status = ApplicationStatus.Submitted;
-            var created = await _homeLoanRepository.AddAsync(entity);
+//             var entity = _mapper.Map<HomeLoanApplication>(dto);
+//             entity.CustomerId = customerId;
+//             entity.Status = ApplicationStatus.Submitted;
+//             var created = await _homeLoanRepository.AddAsync(entity);
             
-            await _pdfService.GenerateLoanApplicationPdfAsync(created.LoanApplicationBaseId);
+//             await _pdfService.GenerateLoanApplicationPdfAsync(created.LoanApplicationBaseId);
             
-            await CreateNotificationAsync(customerId, $"Home loan application #{created.LoanApplicationBaseId} submitted successfully");
+//             await CreateNotificationAsync(customerId, $"Home loan application #{created.LoanApplicationBaseId} submitted successfully");
             
-            return _mapper.Map<HomeLoanApplicationDTO>(created);
-        }
+//             return _mapper.Map<HomeLoanApplicationDTO>(created);
+//         }
 
-        public async Task<IReadOnlyList<HomeLoanApplicationDTO>> GetAllHomeLoansAsync()
-        {
-            var loans = await _homeLoanRepository.GetAllAsync();
-            return _mapper.Map<IReadOnlyList<HomeLoanApplicationDTO>>(loans);
-        }
+//         public async Task<IReadOnlyList<HomeLoanApplicationDTO>> GetAllHomeLoansAsync()
+//         {
+//             var loans = await _homeLoanRepository.GetAllAsync();
+//             return _mapper.Map<IReadOnlyList<HomeLoanApplicationDTO>>(loans);
+//         }
 
-        public async Task<HomeLoanApplicationDTO?> GetHomeLoanByIdAsync(int id)
-        {
-            var loan = await _homeLoanRepository.GetByIdAsync(id);
-            return loan == null ? null : _mapper.Map<HomeLoanApplicationDTO>(loan);
-        }
+//         public async Task<HomeLoanApplicationDTO?> GetHomeLoanByIdAsync(int id)
+//         {
+//             var loan = await _homeLoanRepository.GetByIdAsync(id);
+//             return loan == null ? null : _mapper.Map<HomeLoanApplicationDTO>(loan);
+//         }
 
-        public async Task<VehicleLoanApplicationDTO> CreateVehicleLoanAsync(VehicleLoanApplicationCreateDTO dto, int customerId)
-        {
-            var eligibility = await _eligibilityService.CalculateEligibilityAsync(customerId, (int)LoanType.Vehicle);
-            if (eligibility.EligibilityScore < 50)
-                throw new InvalidOperationException($"Customer not eligible. Score: {eligibility.EligibilityScore}");
+//         public async Task<VehicleLoanApplicationDTO> CreateVehicleLoanAsync(VehicleLoanApplicationCreateDTO dto, int customerId)
+//         {
+//             var eligibility = await _eligibilityService.CalculateEligibilityAsync(customerId, (int)LoanType.Vehicle);
+//             if (eligibility.EligibilityScore < 50)
+//                 throw new InvalidOperationException($"Customer not eligible. Score: {eligibility.EligibilityScore}");
             
-            var entity = _mapper.Map<VehicleLoanApplication>(dto);
-            entity.CustomerId = customerId;
-            entity.Status = ApplicationStatus.Submitted;
-            var created = await _vehicleLoanRepository.AddAsync(entity);
+//             var entity = _mapper.Map<VehicleLoanApplication>(dto);
+//             entity.CustomerId = customerId;
+//             entity.Status = ApplicationStatus.Submitted;
+//             var created = await _vehicleLoanRepository.AddAsync(entity);
             
-            await _pdfService.GenerateLoanApplicationPdfAsync(created.LoanApplicationBaseId);
+//             await _pdfService.GenerateLoanApplicationPdfAsync(created.LoanApplicationBaseId);
             
-            await CreateNotificationAsync(customerId, $"Vehicle loan application #{created.LoanApplicationBaseId} submitted successfully");
+//             await CreateNotificationAsync(customerId, $"Vehicle loan application #{created.LoanApplicationBaseId} submitted successfully");
             
-            return _mapper.Map<VehicleLoanApplicationDTO>(created);
-        }
+//             return _mapper.Map<VehicleLoanApplicationDTO>(created);
+//         }
 
-        public async Task<IReadOnlyList<VehicleLoanApplicationDTO>> GetAllVehicleLoansAsync()
-        {
-            var loans = await _vehicleLoanRepository.GetAllAsync();
-            return _mapper.Map<IReadOnlyList<VehicleLoanApplicationDTO>>(loans);
-        }
+//         public async Task<IReadOnlyList<VehicleLoanApplicationDTO>> GetAllVehicleLoansAsync()
+//         {
+//             var loans = await _vehicleLoanRepository.GetAllAsync();
+//             return _mapper.Map<IReadOnlyList<VehicleLoanApplicationDTO>>(loans);
+//         }
 
-        public async Task<VehicleLoanApplicationDTO?> GetVehicleLoanByIdAsync(int id)
-        {
-            var loan = await _vehicleLoanRepository.GetByIdAsync(id);
-            return loan == null ? null : _mapper.Map<VehicleLoanApplicationDTO>(loan);
-        }
+//         public async Task<VehicleLoanApplicationDTO?> GetVehicleLoanByIdAsync(int id)
+//         {
+//             var loan = await _vehicleLoanRepository.GetByIdAsync(id);
+//             return loan == null ? null : _mapper.Map<VehicleLoanApplicationDTO>(loan);
+//         }
 
-        public async Task<IReadOnlyList<PersonalLoanApplicationDTO>> GetLoansByStatusAsync(ApplicationStatus status)
-        {
-            var loans = await _personalLoanRepository.GetAllAsync(l => l.Status == status);
-            return _mapper.Map<IReadOnlyList<PersonalLoanApplicationDTO>>(loans);
-        }
+//         public async Task<IReadOnlyList<PersonalLoanApplicationDTO>> GetLoansByStatusAsync(ApplicationStatus status)
+//         {
+//             var loans = await _personalLoanRepository.GetAllAsync(l => l.Status == status);
+//             return _mapper.Map<IReadOnlyList<PersonalLoanApplicationDTO>>(loans);
+//         }
 
-        public async Task<PersonalLoanApplicationDTO> UpdateLoanStatusAsync(int id, ApplicationStatus status)
-        {
-            var loan = await _loanAppRepository.GetByIdAsync(id);
-            if (loan == null) throw new KeyNotFoundException($"Loan application {id} not found");
-            loan.Status = status;
-            var updated = await _loanAppRepository.UpdateAsync(loan);
+//         public async Task<PersonalLoanApplicationDTO> UpdateLoanStatusAsync(int id, ApplicationStatus status)
+//         {
+//             var loan = await _loanAppRepository.GetByIdAsync(id);
+//             if (loan == null) throw new KeyNotFoundException($"Loan application {id} not found");
+//             loan.Status = status;
+//             var updated = await _loanAppRepository.UpdateAsync(loan);
             
-            await CreateNotificationAsync(loan.CustomerId, $"Loan application #{id} status updated to {status}");
+//             await CreateNotificationAsync(loan.CustomerId, $"Loan application #{id} status updated to {status}");
             
-            return _mapper.Map<PersonalLoanApplicationDTO>(updated);
-        }
+//             return _mapper.Map<PersonalLoanApplicationDTO>(updated);
+//         }
 
-        public async Task<int> UploadDocumentAsync(int loanApplicationBaseId, int userId, string documentName, string documentType, byte[] documentData)
-        {
-            var loan = await _loanAppRepository.GetByIdAsync(loanApplicationBaseId);
-            if (loan == null) throw new KeyNotFoundException($"Loan application {loanApplicationBaseId} not found");
-            return loanApplicationBaseId;
-        }
+//         public async Task<int> UploadDocumentAsync(int loanApplicationBaseId, int userId, string documentName, string documentType, byte[] documentData)
+//         {
+//             var loan = await _loanAppRepository.GetByIdAsync(loanApplicationBaseId);
+//             if (loan == null) throw new KeyNotFoundException($"Loan application {loanApplicationBaseId} not found");
+//             return loanApplicationBaseId;
+//         }
 
-        public async Task<IReadOnlyList<int>> GetApplicantsByLoanAsync(int loanApplicationBaseId)
-        {
-            var applicants = await _loanApplicantRepository.GetAllAsync(a => a.LoanApplicationBaseId == loanApplicationBaseId);
-            return applicants.Select(a => a.CustomerId).ToList();
-        }
+//         public async Task<IReadOnlyList<int>> GetCustomersByLoanAsync(int loanApplicationBaseId)
+//         {
+//             var loan = await _loanAppRepository.GetByIdAsync(loanApplicationBaseId);
+//             if (loan == null) throw new KeyNotFoundException($"Loan application {loanApplicationBaseId} not found");
+//             return new List<int> { loan.CustomerId };
+//         }
 
-        public async Task<IEnumerable<dynamic>> GetRecentApplicationsAsync(int customerId, int count)
-        {
-            var loans = await _loanAppRepository.GetAllAsync(l => l.CustomerId == customerId);
-            return loans.OrderByDescending(l => l.SubmissionDate).Take(count).Select(l => new { l.LoanApplicationBaseId, l.Status, l.SubmissionDate });
-        }
+//         public async Task<IEnumerable<dynamic>> GetRecentApplicationsAsync(int customerId, int count)
+//         {
+//             var loans = await _loanAppRepository.GetAllAsync(l => l.CustomerId == customerId);
+//             return loans.OrderByDescending(l => l.SubmissionDate).Take(count).Select(l => new { l.LoanApplicationBaseId, l.Status, l.SubmissionDate });
+//         }
 
-        public async Task<IEnumerable<dynamic>> GetCustomerApplicationsAsync(int customerId)
-        {
-            var loans = await _loanAppRepository.GetAllAsync(l => l.CustomerId == customerId);
-            return loans.Select(l => new { l.LoanApplicationBaseId, l.Status, l.SubmissionDate });
-        }
+//         public async Task<IEnumerable<dynamic>> GetCustomerApplicationsAsync(int customerId)
+//         {
+//             var loans = await _loanAppRepository.GetAllAsync(l => l.CustomerId == customerId);
+//             return loans.Select(l => new { l.LoanApplicationBaseId, l.Status, l.SubmissionDate });
+//         }
 
-        private async Task CreateNotificationAsync(int customerId, string message)
-        {
-            var customer = await _unitOfWork.Customers.GetByIdAsync(customerId);
-            if (customer != null)
-            {
-                var notification = new Notification
-                {
-                    UserId = customer.UserId,
-                    NotificationMessage = message
-                };
-                await _unitOfWork.Notifications.AddAsync(notification);
-                await _unitOfWork.SaveChangesAsync();
-            }
-        }
-    }
-}
+//         private async Task CreateNotificationAsync(int customerId, string message)
+//         {
+//             var customer = await _unitOfWork.Customers.GetByIdAsync(customerId);
+//             if (customer != null)
+//             {
+//                 var notification = new Notification
+//                 {
+//                     UserId = customer.UserId,
+//                     NotificationMessage = message
+//                 };
+//                 await _unitOfWork.Notifications.AddAsync(notification);
+//                 await _unitOfWork.SaveChangesAsync();
+//             }
+//         }
+//     }
+// }
 
 
