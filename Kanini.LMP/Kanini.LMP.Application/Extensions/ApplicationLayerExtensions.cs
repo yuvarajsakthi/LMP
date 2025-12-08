@@ -29,6 +29,7 @@ namespace Kanini.LMP.Application.Extensions
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IFaqService, FaqService>();
             services.AddScoped<IPdfService, PdfService>();
+            services.AddScoped<IManagerDashboardService, ManagerDashboardService>();
             
             return services;
         }
