@@ -1,4 +1,5 @@
 using Kanini.LMP.Database.Enums;
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
 namespace Kanini.LMP.Database.EntitiesDtos.LoanApplicationDtos
@@ -25,6 +26,125 @@ namespace Kanini.LMP.Database.EntitiesDtos.LoanApplicationDtos
 
         [Required]
         public LoanPurposePersonal LoanPurpose { get; set; }
+
+        // Document Upload
+        [Required]
+        public List<DocumentUploadDTO> Documents { get; set; } = new();
+
+        // Personal Details
+        [Required]
+        public PersonalDetailsDTO PersonalDetails { get; set; } = null!;
+
+        // Address Information
+        [Required]
+        public AddressInformationDTO AddressInformation { get; set; } = null!;
+
+        // Family & Emergency Details
+        [Required]
+        public FamilyEmergencyDetailsDTO FamilyEmergencyDetails { get; set; } = null!;
+
+        // Declaration
+        [Required]
+        public DeclarationDTO Declaration { get; set; } = null!;
+    }
+
+    public class DocumentUploadDTO
+    {
+        [Required, MaxLength(255)]
+        public string DocumentName { get; set; } = string.Empty;
+
+        [Required]
+        public DocumentType DocumentType { get; set; }
+
+        public IFormFile? DocumentFile { get; set; }
+    }
+
+    public class PersonalDetailsDTO
+    {
+        [Required, MaxLength(100)]
+        public string FullName { get; set; } = null!;
+
+        [Required]
+        public DateOnly DateOfBirth { get; set; }
+
+        [Required, MaxLength(100)]
+        public string DistrictOfBirth { get; set; } = null!;
+
+        [Required, RegularExpression(@"^[A-Z]{5}[0-9]{4}[A-Z]{1}$", ErrorMessage = "Invalid PAN format.")]
+        [MaxLength(10)]
+        public string PANNumber { get; set; } = null!;
+
+        [Required]
+        public EducationQualification EducationQualification { get; set; }
+
+        [Required]
+        public ResidentialStatus ResidentialStatus { get; set; }
+
+        [Required]
+        public Gender Gender { get; set; }
+
+        [Required]
+        public IFormFile SignatureImage { get; set; } = null!;
+
+        [Required]
+        public IFormFile IDProofImage { get; set; } = null!;
+    }
+
+    public class AddressInformationDTO
+    {
+        [Required, MaxLength(250)]
+        public string PresentAddress { get; set; } = null!;
+
+        [Required, MaxLength(250)]
+        public string PermanentAddress { get; set; } = null!;
+
+        [Required, MaxLength(100)]
+        public string District { get; set; } = null!;
+
+        [Required]
+        public IndianStates State { get; set; }
+
+        [Required, MaxLength(10)]
+        public string ZipCode { get; set; } = null!;
+
+        [EmailAddress, MaxLength(100)]
+        public string? EmailId { get; set; }
+
+        [Required, Phone, MaxLength(15)]
+        public string MobileNumber1 { get; set; } = null!;
+
+        [Phone, MaxLength(15)]
+        public string? MobileNumber2 { get; set; }
+    }
+
+    public class FamilyEmergencyDetailsDTO
+    {
+        [Required, MaxLength(100)]
+        public string FullName { get; set; } = null!;
+
+        [Required, MaxLength(50)]
+        public string RelationshipWithApplicant { get; set; } = null!;
+
+        [Required, Phone]
+        public string MobileNumber { get; set; } = null!;
+
+        [Required, MaxLength(250)]
+        public string Address { get; set; } = null!;
+    }
+
+    public class DeclarationDTO
+    {
+        [Required, MaxLength(100)]
+        public string Name { get; set; } = null!;
+
+        [Required, Range(0, double.MaxValue, ErrorMessage = "Amount must be non-negative")]
+        public decimal Amount { get; set; }
+
+        [Required, MaxLength(500)]
+        public string Description { get; set; } = null!;
+
+        [Required, MaxLength(250)]
+        public string Purpose { get; set; } = null!;
     }
 
     public class PersonalLoanApplicationDTO

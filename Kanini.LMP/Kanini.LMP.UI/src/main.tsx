@@ -1,4 +1,3 @@
-import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { SnackbarProvider } from 'notistack'
 import './index.css'
@@ -11,11 +10,9 @@ if (!rootElement) {
 
 try {
   createRoot(rootElement).render(
-    <StrictMode>
       <SnackbarProvider maxSnack={3}>
         <App />
-      </SnackbarProvider>
-    </StrictMode>,
+      </SnackbarProvider>,
   );
 } catch (error) {
   console.error('Failed to render React app:', error);

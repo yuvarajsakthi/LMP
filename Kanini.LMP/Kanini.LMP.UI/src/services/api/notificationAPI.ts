@@ -15,46 +15,17 @@ export interface Notification {
 }
 
 export const notificationAPI = {
-  async getMyNotifications(): Promise<Notification[]> {
+  async getAllNotifications(): Promise<Notification[]> {
     return ApiService.execute(async () => {
-      const response = await axiosInstance.get<ApiResponse<Notification[]>>(
-        API_ENDPOINTS.GET_MY_NOTIFICATIONS
-      );
+      const response = await axiosInstance.get<ApiResponse<Notification[]>>(API_ENDPOINTS.GET_ALL_NOTIFICATIONS);
       return response;
     });
   },
 
-  async getUnreadNotifications(): Promise<Notification[]> {
+  async deleteNotification(notificationId: number): Promise<{ message: string }> {
     return ApiService.execute(async () => {
-      const response = await axiosInstance.get<ApiResponse<Notification[]>>(
-        API_ENDPOINTS.GET_UNREAD_NOTIFICATIONS
-      );
-      return response;
-    });
-  },
-
-  async getUnreadCount(): Promise<{ count: number }> {
-    return ApiService.execute(async () => {
-      const response = await axiosInstance.get<ApiResponse<{ count: number }>>(
-        API_ENDPOINTS.GET_UNREAD_COUNT
-      );
-      return response;
-    });
-  },
-
-  async markAsRead(notificationId: number): Promise<Notification> {
-    return ApiService.execute(async () => {
-      const response = await axiosInstance.put<ApiResponse<Notification>>(
-        `${API_ENDPOINTS.MARK_NOTIFICATION_READ}/${notificationId}`
-      );
-      return response;
-    });
-  },
-
-  async markAllAsRead(): Promise<{ success: boolean; message: string }> {
-    return ApiService.execute(async () => {
-      const response = await axiosInstance.put<ApiResponse<{ success: boolean; message: string }>>(
-        API_ENDPOINTS.MARK_ALL_NOTIFICATIONS_READ
+      const response = await axiosInstance.delete<ApiResponse<{ message: string }>>(
+        `${API_ENDPOINTS.DELETE_NOTIFICATION}/${notificationId}`
       );
       return response;
     });

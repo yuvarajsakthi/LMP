@@ -14,4 +14,7 @@ export { default as SideNavBar } from './sideNavBar/SideNavBar';
 // Loan Components
 export { default as LoanTypes } from './loanTypes/LoanTypes';
 
+// Notification Components
+export { default as NotificationModal } from './notification/NotificationModal';
+
 

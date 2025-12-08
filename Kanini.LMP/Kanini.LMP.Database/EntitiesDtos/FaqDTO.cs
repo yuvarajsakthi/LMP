@@ -10,6 +10,8 @@ namespace Kanini.LMP.Database.EntitiesDto
         [Required(ErrorMessage = "CustomerId is required")]
         public int CustomerId { get; set; }
 
+        public string? CustomerName { get; set; }
+
         [Required(ErrorMessage = "Question is required")]
         public string Question { get; set; } = null!;
 

@@ -8,7 +8,10 @@ namespace Kanini.LMP.Application.Mappings
     {
         public FaqProfile()
         {
-            CreateMap<FaqDTO, Faq>().ReverseMap();
+            CreateMap<FaqDTO, Faq>()
+                .ForMember(dest => dest.CustomerId, opt => opt.MapFrom(src => src.CustomerId))
+                .ReverseMap()
+                .ForMember(dest => dest.CustomerName, opt => opt.Ignore());
         }
     }
 }

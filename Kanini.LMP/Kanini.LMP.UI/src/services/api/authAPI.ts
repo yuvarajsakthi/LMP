@@ -2,6 +2,7 @@ import axiosInstance from './axiosInstance';
 import { jwtDecode } from 'jwt-decode';
 import { secureStorage } from '../../utils/secureStorage';
 import { ApiService } from './apiService';
+import { API_ENDPOINTS } from '../../config';
 import type { LoginCredentials, RegisterCredentials, DecodedToken, ApiResponse } from '../../types';
 
 // Backend response types (matching C# controller responses)
@@ -15,9 +16,15 @@ interface LoginResponseData {
 }
 
 const processTokenResponse = (responseData: LoginResponseData): { token: string; user: DecodedToken } => {
-  const { token, role, username } = responseData;
+  let { token, role, username } = responseData;
   
-  if (!token || typeof token !== 'string') {
+  // Handle token as object with value property
+  if (token && typeof token === 'object' && 'value' in token) {
+    token = (token as any).value;
+  }
+  
+  if (!token || typeof token !== 'string' || token.trim() === '') {
+    console.error('Token validation failed:', { token, responseData });
     throw new Error('Invalid token received from server');
   }
   
@@ -38,6 +45,8 @@ const processTokenResponse = (responseData: LoginResponseData): { token: string;
       FullName: username || decodedToken.name || decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
       username: username,
       email: decodedToken.email,
+      customerId: decodedToken.CustomerId || decodedToken.customerId,
+      CustomerId: decodedToken.CustomerId || decodedToken.customerId,
       ...decodedToken
     };
     
@@ -61,7 +70,7 @@ export const authAPI = {
       formData.append('PasswordHash', credentials.PasswordHash);
       
       const response = await axiosInstance.post<ApiResponse<LoginResponseData>>(
-        '/auth/login', 
+        API_ENDPOINTS.USER_LOGIN, 
         formData
       );
       return response;
@@ -80,48 +89,17 @@ export const authAPI = {
     });
   },
 
-  async sendLoginOTP(data: {
+  async sendOTP(data: {
     email: string;
+    purpose: 'LOGIN' | 'REGISTER' | 'FORGETPASSWORD';
   }): Promise<{ message: string; userId: number }> {
     return ApiService.execute(async () => {
       const formData = new FormData();
       formData.append('Email', data.email);
-      formData.append('Purpose', 'LOGIN');
+      formData.append('Purpose', data.purpose);
       
       const response = await axiosInstance.post<ApiResponse<{ message: string; userId: number }>>(
-        '/auth/sendotp',
-        formData
-      );
-      return response;
-    });
-  },
-
-  async sendRegisterOTP(data: {
-    email: string;
-  }): Promise<{ message: string; userId: number }> {
-    return ApiService.execute(async () => {
-      const formData = new FormData();
-      formData.append('Email', data.email);
-      formData.append('Purpose', 'REGISTER');
-      
-      const response = await axiosInstance.post<ApiResponse<{ message: string; userId: number }>>(
-        '/auth/sendotp',
-        formData
-      );
-      return response;
-    });
-  },
-
-  async sendForgetPasswordOTP(data: {
-    email: string;
-  }): Promise<{ message: string; userId: number }> {
-    return ApiService.execute(async () => {
-      const formData = new FormData();
-      formData.append('Email', data.email);
-      formData.append('Purpose', 'FORGETPASSWORD');
-      
-      const response = await axiosInstance.post<ApiResponse<{ message: string; userId: number }>>(
-        '/auth/sendotp',
+        API_ENDPOINTS.SEND_OTP,
         formData
       );
       return response;
@@ -138,7 +116,7 @@ export const authAPI = {
       formData.append('OTP', data.otp);
       
       const response = await axiosInstance.post<ApiResponse<LoginResponseData>>(
-        '/auth/login/otp',
+        API_ENDPOINTS.VERIFY_LOGIN_OTP,
         formData
       );
       return response;
@@ -159,9 +137,15 @@ export const authAPI = {
       formData.append('DateOfBirth', data.dateOfBirth);
       formData.append('Gender', data.gender.toString());
       formData.append('PhoneNumber', data.phoneNumber);
+      formData.append('PANNumber', data.panNumber);
+      formData.append('AadhaarNumber', data.aadhaarNumber);
+      formData.append('AnnualIncome', data.annualIncome.toString());
+      if (data.homeOwnershipStatus !== undefined) {
+        formData.append('HomeOwnershipStatus', data.homeOwnershipStatus.toString());
+      }
       
       const response = await axiosInstance.post<ApiResponse<{ message: string; userId: number }>>(
-        '/auth/register',
+        API_ENDPOINTS.USER_REGISTER,
         formData
       );
       return response;
@@ -171,14 +155,29 @@ export const authAPI = {
   async verifyOTP(data: {
     email: string;
     otp: string;
-  }): Promise<{ message: string }> {
+    purpose: string;
+  }): Promise<{ message: string; token?: string; username?: string; role?: string }> {
     return ApiService.execute(async () => {
       const formData = new FormData();
       formData.append('Email', data.email);
       formData.append('OTP', data.otp);
+      formData.append('Purpose', data.purpose);
+      
+      const response = await axiosInstance.post<ApiResponse<{ message: string; token?: string; username?: string; role?: string }>>(
+        API_ENDPOINTS.VERIFY_OTP,
+        formData
+      );
+      return response;
+    });
+  },
+
+  async forgotPassword(data: { email: string }): Promise<{ message: string }> {
+    return ApiService.execute(async () => {
+      const formData = new FormData();
+      formData.append('Email', data.email);
       
       const response = await axiosInstance.post<ApiResponse<{ message: string }>>(
-        '/auth/verify/otp',
+        API_ENDPOINTS.FORGOT_PASSWORD,
         formData
       );
       return response;
@@ -197,7 +196,7 @@ export const authAPI = {
       formData.append('NewPassword', data.newPassword);
       
       const response = await axiosInstance.post<ApiResponse<{ message: string }>>(
-        '/auth/reset-password', 
+        API_ENDPOINTS.RESET_PASSWORD, 
         formData
       );
       return response;

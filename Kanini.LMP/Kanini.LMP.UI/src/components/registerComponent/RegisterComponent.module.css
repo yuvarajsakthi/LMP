@@ -89,6 +89,11 @@
   font-weight: 500;
 }
 
+.label::after {
+  content: " *";
+  color: #ff4d4f !important;
+}
+
 .input {
   width: 100%;
   padding: 0.75rem;

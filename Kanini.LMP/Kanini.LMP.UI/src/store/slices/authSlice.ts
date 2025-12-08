@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { authAPI } from '../../services/api/authAPI';
 import { secureStorage } from '../../utils/secureStorage';
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../../config/constants/messages';
 import type { LoginCredentials, RegisterCredentials, DecodedToken } from '../../types';
 
 interface AuthState {
@@ -17,6 +18,7 @@ const initialState: AuthState = {
   error: null,
 };
 
+// Endpoint: API_ENDPOINTS.USER_LOGIN
 export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials: LoginCredentials, { rejectWithValue }) => {
@@ -28,7 +30,7 @@ export const loginUser = createAsyncThunk(
         return { requiresVerification: true, email: error.email, message: error.message };
       }
       return rejectWithValue({
-        message: error.message || 'Login failed',
+        message: error.message || 'Invalid credentials',
         statusCode: error.statusCode || 500,
         errors: error.errors || []
       });
@@ -36,6 +38,7 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+// Endpoint: API_ENDPOINTS.USER_REGISTER
 export const registerUser = createAsyncThunk(
   'auth/register',
   async (credentials: RegisterCredentials, { rejectWithValue }) => {
@@ -44,7 +47,7 @@ export const registerUser = createAsyncThunk(
       return response;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.message || 'Registration failed',
+        message: error.message || ERROR_MESSAGES.REGISTRATION_FAILED,
         statusCode: error.statusCode || 500,
         errors: error.errors || []
       });
@@ -52,15 +55,67 @@ export const registerUser = createAsyncThunk(
   }
 );
 
+// Endpoint: API_ENDPOINTS.SEND_OTP
+export const sendOTP = createAsyncThunk(
+  'auth/sendOTP',
+  async (data: { email: string; purpose: 'LOGIN' | 'REGISTER' | 'FORGETPASSWORD' }, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.sendOTP(data);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue({
+        message: error.message || ERROR_MESSAGES.OTP_SEND_FAILED,
+        statusCode: error.statusCode || 500,
+        errors: error.errors || []
+      });
+    }
+  }
+);
+
+// Endpoint: API_ENDPOINTS.VERIFY_OTP
+export const verifyOTP = createAsyncThunk(
+  'auth/verifyOTP',
+  async (data: { email: string; otp: string; purpose: string }, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.verifyOTP(data);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue({
+        message: error.message || ERROR_MESSAGES.OTP_VERIFY_FAILED,
+        statusCode: error.statusCode || 500,
+        errors: error.errors || []
+      });
+    }
+  }
+);
+
+// Endpoint: API_ENDPOINTS.FORGOT_PASSWORD
+export const forgotPassword = createAsyncThunk(
+  'auth/forgotPassword',
+  async (data: { email: string }, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.forgotPassword(data);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue({
+        message: error.message || ERROR_MESSAGES.OTP_SEND_FAILED,
+        statusCode: error.statusCode || 500,
+        errors: error.errors || []
+      });
+    }
+  }
+);
+
+// Endpoint: API_ENDPOINTS.RESET_PASSWORD
 export const resetPassword = createAsyncThunk(
   'auth/resetPassword',
   async (data: { email: string; otp: string; newPassword: string }, { rejectWithValue }) => {
     try {
       const response = await authAPI.resetPassword(data);
-      return response.message || 'Password reset successfully';
+      return response.message || SUCCESS_MESSAGES.PASSWORD_UPDATED;
     } catch (error: any) {
       return rejectWithValue({
-        message: error.message || 'Failed to reset password',
+        message: error.message || ERROR_MESSAGES.PASSWORD_UPDATE_FAILED,
         statusCode: error.statusCode || 500,
         errors: error.errors || []
       });
@@ -114,20 +169,20 @@ const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         const error = action.payload as any;
-        state.error = error?.message || 'Login failed';
+        state.error = error?.message || 'Invalid credentials';
       })
       .addCase(registerUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(registerUser.fulfilled, (state, action) => {
+      .addCase(registerUser.fulfilled, (state) => {
         state.isLoading = false;
         state.error = null;
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
         const error = action.payload as any;
-        state.error = error?.message || 'Registration failed';
+        state.error = error?.message || ERROR_MESSAGES.REGISTRATION_FAILED;
       })
       .addCase(resetPassword.pending, (state) => {
         state.isLoading = true;
@@ -140,7 +195,46 @@ const authSlice = createSlice({
       .addCase(resetPassword.rejected, (state, action) => {
         state.isLoading = false;
         const error = action.payload as any;
-        state.error = error?.message || 'Failed to reset password';
+        state.error = error?.message || ERROR_MESSAGES.PASSWORD_UPDATE_FAILED;
+      })
+      .addCase(sendOTP.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(sendOTP.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(sendOTP.rejected, (state, action) => {
+        state.isLoading = false;
+        const error = action.payload as any;
+        state.error = error?.message || ERROR_MESSAGES.OTP_SEND_FAILED;
+      })
+      .addCase(verifyOTP.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(verifyOTP.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(verifyOTP.rejected, (state, action) => {
+        state.isLoading = false;
+        const error = action.payload as any;
+        state.error = error?.message || ERROR_MESSAGES.OTP_VERIFY_FAILED;
+      })
+      .addCase(forgotPassword.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(forgotPassword.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(forgotPassword.rejected, (state, action) => {
+        state.isLoading = false;
+        const error = action.payload as any;
+        state.error = error?.message || ERROR_MESSAGES.OTP_SEND_FAILED;
       });
   },
 });

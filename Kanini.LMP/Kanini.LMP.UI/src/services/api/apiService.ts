@@ -4,9 +4,7 @@ import type { ApiResponse, ErrorResponse } from '../../types';
 import { ApiException } from '../../types';
 
 export class ApiService {
-  /**
-   * Handles successful API responses from backend
-   */
+
   static handleSuccess<T>(response: AxiosResponse<ApiResponse<T>>): T {
     const { data } = response;
     
@@ -27,9 +25,6 @@ export class ApiService {
     return data.data as T;
   }
 
-  /**
-   * Handles API errors (both structured ApiResponse and GlobalExceptionMiddleware responses)
-   */
   static handleError(error: AxiosError): never {
     let message = 'An unexpected error occurred';
     let errors: string[] = [];
@@ -74,9 +69,6 @@ export class ApiService {
     throw new ApiException(message, statusCode, errors, details);
   }
 
-  /**
-   * Shows error messages to the user
-   */
   private static showErrorMessages(message: string, errors?: string[], details?: string): void {
     // Don't show authentication errors on dashboard (user may not be logged in)
     const authErrors = ['Failed to retrieve loan products', 'Failed to retrieve eligibility score'];
@@ -116,9 +108,6 @@ export class ApiService {
     }
   }
 
-  /**
-   * Creates a success response (for local operations)
-   */
   static createSuccessResponse<T>(data: T, message?: string): ApiResponse<T> {
     return {
       success: true,
@@ -127,9 +116,6 @@ export class ApiService {
     };
   }
 
-  /**
-   * Creates an error response (for local operations)
-   */
   static createErrorResponse(
     message: string,
     errors?: string[]

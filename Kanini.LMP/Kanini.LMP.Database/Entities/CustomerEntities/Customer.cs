@@ -42,7 +42,13 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         public DateTime? UpdatedAt { get; set; }
 
         public HomeOwnershipStatus? HomeOwnershipStatus { get; set; }
+        
+        [Required]
+        [MaxLength(12)]
         public string AadhaarNumber { get; set; } = null!;
+        
+        [Required]
+        [MaxLength(10)]
         public string PANNumber { get; set; } = null!;
 
         [NotMapped]

@@ -1,20 +1,19 @@
 import { useState, useRef } from "react";
 import { Typography, Input, Button, message } from 'antd';
-import { useDispatch, useSelector } from 'react-redux';
 import { LeftOutlined } from '@ant-design/icons';
 import { LoanAcceleratorLogo } from '../../assets';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import ForgotPassword from "./ForgotPasswordComponent.module.css";
 import { COMMON_ROUTES, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../../config';
-import { resetPassword } from '../../store/slices/authSlice';
-import type { RootState, AppDispatch } from '../../store';
+import { resetPassword, forgotPassword, verifyOTP } from '../../store/slices/authSlice';
+import { useAppDispatch, useAppSelector } from '../../hooks';
 import type { InputRef } from 'antd';
 
 const { Title } = Typography;
 
 const ForgotPasswordComponent = () => {
-    const dispatch = useDispatch<AppDispatch>();
-    const { isLoading } = useSelector((state: RootState) => state.auth);
+    const dispatch = useAppDispatch();
+    const { isLoading } = useAppSelector((state) => state.auth);
     const [showOTPInput, setShowOTPInput] = useState(false);
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
@@ -30,8 +29,7 @@ const ForgotPasswordComponent = () => {
             return;
         }
         try {
-            const { authAPI } = await import('../../services');
-            await authAPI.sendForgetPasswordOTP({ email });
+            await dispatch(forgotPassword({ email })).unwrap();
             setShowOTPInput(true);
             setStatus(SUCCESS_MESSAGES.OTP_SENT);
             setOTP(Array(6).fill(''));
@@ -40,26 +38,26 @@ const ForgotPasswordComponent = () => {
             }
             message.success(SUCCESS_MESSAGES.OTP_SENT);
         } catch (error: any) {
-            message.error(error || ERROR_MESSAGES.OTP_SEND_FAILED);
+            message.error(error.message || ERROR_MESSAGES.OTP_SEND_FAILED);
         }
     };
 
-    const handleVerifyOTP = () => {
+    const handleVerifyOTP = async () => {
+        const otpValue = otp.join('');
+        if (!otpValue || otpValue.length !== 6 || !/^\d{6}$/.test(otpValue)) {
+            message.error('Please enter a valid 6-digit OTP');
+            return;
+        }
+        
         try {
-            const otpValue = otp.join('');
-            if (!otpValue || otpValue.length !== 6 || !/^\d{6}$/.test(otpValue)) {
-                setStatus(ERROR_MESSAGES.OTP_VERIFY_FAILED);
-                setOtpVerified(false);
-                message.error(ERROR_MESSAGES.OTP_VERIFY_FAILED);
-                return;
-            }
+            await dispatch(verifyOTP({ email, otp: otpValue, purpose: 'RESET_PASSWORD' })).unwrap();
             setStatus(SUCCESS_MESSAGES.OTP_VERIFIED);
             setOtpVerified(true);
             message.success(SUCCESS_MESSAGES.OTP_VERIFIED);
-        } catch (error) {
+        } catch (error: any) {
             setStatus(ERROR_MESSAGES.OTP_VERIFY_FAILED);
             setOtpVerified(false);
-            message.error(ERROR_MESSAGES.OTP_VERIFY_FAILED);
+            message.error(error.message || ERROR_MESSAGES.OTP_VERIFY_FAILED);
         }
     };
     const handleArrowNavigation = (index: number, event: React.KeyboardEvent) => {

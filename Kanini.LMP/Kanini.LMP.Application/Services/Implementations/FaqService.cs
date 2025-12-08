@@ -42,7 +42,22 @@ namespace Kanini.LMP.Application.Services.Implementations
             try
             {
                 var faqs = await _unitOfWork.Faqs.GetAllAsync();
-                return _mapper.Map<List<FaqDTO>>(faqs);
+                var faqDtos = _mapper.Map<List<FaqDTO>>(faqs);
+                
+                foreach (var faqDto in faqDtos)
+                {
+                    if (faqDto.CustomerId > 0)
+                    {
+                        var customer = await _unitOfWork.Customers.GetAsync(c => c.CustomerId == faqDto.CustomerId);
+                        if (customer != null)
+                        {
+                            var user = await _unitOfWork.Users.GetByIdAsync(customer.UserId);
+                            faqDto.CustomerName = user?.FullName ?? "Unknown Customer";
+                        }
+                    }
+                }
+                
+                return faqDtos;
             }
             catch (Exception ex)
             {
@@ -83,8 +98,14 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             try
             {
-                var faq = _mapper.Map<Faq>(entity);
-                var updated = await _unitOfWork.Faqs.UpdateAsync(faq);
+                var existingFaq = await _unitOfWork.Faqs.GetByIdAsync(entity.Id);
+                if (existingFaq == null)
+                    throw new InvalidOperationException($"FAQ with ID {entity.Id} not found");
+
+                existingFaq.Answer = entity.Answer;
+                existingFaq.Status = entity.Status;
+                
+                var updated = await _unitOfWork.Faqs.UpdateAsync(existingFaq);
                 await _unitOfWork.SaveChangesAsync();
                 return _mapper.Map<FaqDTO>(updated);
             }

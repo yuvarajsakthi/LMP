@@ -43,7 +43,8 @@ const Sidebar = ({ collapsed = false }: SidebarProps) => {
 
     const managerMenuItems = [
         { key: MANAGER_ROUTES.MANAGER_DASHBOARD, icon: <DashboardOutlined />, label: 'Dashboard', onClick: handleNavigation(MANAGER_ROUTES.MANAGER_DASHBOARD) },
-        { key: MANAGER_ROUTES.APPLIED_LOAN, icon: <FileTextOutlined />, label: 'Applied Loans', onClick: handleNavigation(MANAGER_ROUTES.APPLIED_LOAN) }
+        { key: MANAGER_ROUTES.APPLIED_LOAN, icon: <FileTextOutlined />, label: 'Applied Loans', onClick: handleNavigation(MANAGER_ROUTES.APPLIED_LOAN) },
+        { key: MANAGER_ROUTES.MANAGER_FAQ, icon: <QuestionCircleOutlined />, label: "FAQ's", onClick: handleNavigation(MANAGER_ROUTES.MANAGER_FAQ) }
     ];
 
     const menuItems = isManager ? managerMenuItems : customerMenuItems;

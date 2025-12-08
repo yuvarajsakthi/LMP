@@ -19,6 +19,5 @@ export const MANAGER_ROUTES = {
   MANAGER_DASHBOARD: '/manager-dashboard',
   APPLIED_LOAN: '/applied-loan',
   MANAGER_APPLICATIONS: '/manager/applications',
-  MANAGER_APPROVALS: '/manager/approvals',
-  
+  MANAGER_FAQ: '/manager/faq',  
 } as const;

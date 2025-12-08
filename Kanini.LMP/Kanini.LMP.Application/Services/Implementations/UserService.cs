@@ -133,7 +133,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             var user = await _unitOfWork.Users.GetAsync(u => u.Email == email.Value);
             if (user == null) return new BoolDTO { Value = false };
 
-            user.PasswordHash = PasswordService.HashPassword(newPassword.Value);
+            user.PasswordHash = newPassword.Value;
             user.UpdatedAt = DateTime.UtcNow;
             await _unitOfWork.Users.UpdateAsync(user);
             await _unitOfWork.SaveChangesAsync();

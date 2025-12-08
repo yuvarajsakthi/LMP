@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import styles from './EligibilityScore.module.css';
 import { Card } from "antd";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useAuth } from "../../../context";
-import { customerDashboardAPI } from "../../../services/api/customerDashboardAPI";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { getEligibilityScore } from "../../../store/slices/eligibilitySlice";
 
 interface EligibilityScoreProps {
   score?: number;
@@ -11,23 +12,18 @@ interface EligibilityScoreProps {
 
 const EligibilityScore: React.FC<EligibilityScoreProps> = ({ score }) => {
   const { token } = useAuth();
-  const [eligibilityData, setEligibilityData] = useState<any>(null);
+  const dispatch = useAppDispatch();
+  const { score: eligibilityData } = useAppSelector((state) => state.eligibility);
 
   useEffect(() => {
-    const fetchEligibility = async () => {
-      try {
-        const data = await customerDashboardAPI.getEligibilityScore();
-        setEligibilityData(data);
-      } catch (error: any) {
-        // Use default score if API fails
-        setEligibilityData({ eligibilityScore: 750 });
-      }
-    };
-    fetchEligibility();
-  }, []);
+    const customerId = token?.CustomerId || token?.customerId;
+    if (customerId) {
+      dispatch(getEligibilityScore(customerId));
+    }
+  }, [dispatch, token]);
 
-  const eScore = score || eligibilityData?.eligibilityScore || token?.EligibilityScore || 250;
-  const eligibilityPercentage = eScore / 1000;
+  const eScore = score ?? eligibilityData?.eligibilityScore ?? token?.EligibilityScore ?? 0;
+  const eligibilityPercentage = eScore / 900;
 
   const gaugeData = [
     { value: eligibilityPercentage * 100 },
@@ -72,7 +68,7 @@ const EligibilityScore: React.FC<EligibilityScoreProps> = ({ score }) => {
               </Pie>
             </PieChart>
           </ResponsiveContainer>
-          <div className={styles.scoreText}>{eScore}</div>
+          <div className={styles.scoreText}>{eligibilityData ? eScore : '...'}</div>
         </div>
         <br />
         <br />
@@ -83,6 +79,11 @@ const EligibilityScore: React.FC<EligibilityScoreProps> = ({ score }) => {
               {getCreditScoreLabel()}!
             </span>
           </p>
+          {eligibilityData?.status && (
+            <p className={styles.csp1}>
+              Status: <strong>{eligibilityData.status}</strong>
+            </p>
+          )}
         </div>
       </Card>
   );
