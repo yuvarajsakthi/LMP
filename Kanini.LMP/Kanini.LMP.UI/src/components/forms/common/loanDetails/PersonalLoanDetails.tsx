@@ -11,8 +11,6 @@ const PersonalLoanDetails: React.FC<PersonalLoanDetailsProps> = ({ onNext }) => 
   const dispatch = useAppDispatch();
 
   const handleSubmit = async (values: any) => {
-    // Save to Redux or context
-    console.log('Personal Loan Details:', values);
     onNext();
   };
 

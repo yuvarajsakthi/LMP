@@ -15,9 +15,7 @@ const ManagerFAQ = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    dispatch(getAllFaqs()).then((result) => {
-      console.log('FAQ Response:', result);
-    });
+    dispatch(getAllFaqs());
   }, [dispatch]);
 
   const handleAnswerSubmit = async (faqId: number, customerId: number, question: string) => {
@@ -74,9 +72,7 @@ const ManagerFAQ = () => {
           <List
             loading={loading}
             dataSource={faqs}
-            renderItem={(faq) => {
-              console.log('FAQ Item:', faq);
-              return (
+            renderItem={(faq) => (
               <List.Item
                 key={faq.id}
                 style={{
@@ -143,8 +139,7 @@ const ManagerFAQ = () => {
                   </Button>
                 )}
               </List.Item>
-            );
-            }}
+            )}
           />
         </Card>
       </div>

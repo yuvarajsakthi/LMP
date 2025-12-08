@@ -5,7 +5,6 @@ export { default as FAQ } from './customer/faq/FAQ';
 export { default as EmiCalculatorPage } from './customer/emiCalculator/EmiCalculatorPage';
 export { default as ViewStatus } from './customer/viewStatus/ViewStatus';
 export { default as Settings } from './customer/settings/Settings';
-export { default as ApplyLoan } from './customer/applyLoan/ApplyLoan';
 export { default as LoanTypes } from './customer/loanTypes/LoanTypes';
 export { default as LoanApplicationForm } from './customer/loanApplicationForm/LoanApplicationForm';
 export { default as Unauthorized } from './auth/unauthorized/Unauthorized';

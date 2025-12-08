@@ -65,9 +65,9 @@ Gender: {customer?.Gender}
 ----------------------------------------
 LOAN DETAILS
 ----------------------------------------
-Requested Amount: ₹{loan.RequestedLoanAmount:N2}
+Requested Amount: ₹{loan.RequestedAmount:N2}
 Tenure: {loan.TenureMonths} months
-Interest Rate: {loan.InterestRate ?? 0}%
+Monthly Installment: ₹{loan.MonthlyInstallment ?? 0:N2}
 
 ----------------------------------------
 EMPLOYMENT DETAILS
@@ -108,9 +108,9 @@ Gender: {customer?.Gender}
 ----------------------------------------
 LOAN DETAILS
 ----------------------------------------
-Requested Amount: ₹{loan.RequestedLoanAmount:N2}
+Requested Amount: ₹{loan.RequestedAmount:N2}
 Tenure: {loan.TenureMonths} months
-Interest Rate: {loan.InterestRate ?? 0}%
+Monthly Installment: ₹{loan.MonthlyInstallment ?? 0:N2}
 
 ----------------------------------------
 PROPERTY DETAILS
@@ -155,9 +155,9 @@ Gender: {customer?.Gender}
 ----------------------------------------
 LOAN DETAILS
 ----------------------------------------
-Requested Amount: ₹{loan.RequestedLoanAmount:N2}
+Requested Amount: ₹{loan.RequestedAmount:N2}
 Tenure: {loan.TenureMonths} months
-Interest Rate: {loan.InterestRate ?? 0}%
+Monthly Installment: ₹{loan.MonthlyInstallment ?? 0:N2}
 
 ----------------------------------------
 VEHICLE DETAILS

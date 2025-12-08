@@ -13,21 +13,27 @@ export interface EligibilityProfileRequest {
 }
 
 export interface EligibilityScore {
-  customerId: number;
-  creditScore: number;
-  eligibilityScore: number;
-  eligibilityStatus: string;
-  calculatedOn: string;
+  customerId?: number;
+  CustomerId?: number;
+  creditScore?: number;
+  eligibilityScore?: number;
+  EligibilityScore?: number;
+  eligibilityStatus?: string;
+  Status?: string;
+  status?: string;
+  calculatedOn?: string;
 }
 
 export const eligibilityAPI = {
   async getEligibilityScore(customerId: number): Promise<any> {
-    return ApiService.execute(async () => {
-      const response = await axiosInstance.get<ApiResponse<any>>(
+    try {
+      const response = await axiosInstance.get(
         `${API_ENDPOINTS.GET_ELIGIBILITY_SCORE}/${customerId}`
       );
-      return response;
-    });
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
   },
 
   async calculateEligibility(customerId: number): Promise<EligibilityScore> {

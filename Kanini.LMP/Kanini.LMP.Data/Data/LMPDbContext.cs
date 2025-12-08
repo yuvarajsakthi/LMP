@@ -2,7 +2,6 @@ using Kanini.LMP.Database.Entities;
 using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.Entities.LoanApplicationEntites;
 using Kanini.LMP.Database.Entities.LoanProductEntities;
-using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
 using Kanini.LMP.Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,15 +17,9 @@ namespace Kanini.LMP.Data.Data
         public DbSet<PersonalLoanApplication> PersonalLoanApplications => Set<PersonalLoanApplication>();
         public DbSet<HomeLoanApplication> HomeLoanApplications => Set<HomeLoanApplication>();
         public DbSet<VehicleLoanApplication> VehicleLoanApplications => Set<VehicleLoanApplication>();
-        public DbSet<DocumentUpload> DocumentUploads => Set<DocumentUpload>();
         public DbSet<LoanProduct> LoanProducts => Set<LoanProduct>();
         public DbSet<EMIPlan> EMIPlans => Set<EMIPlan>();
         public DbSet<Notification> Notifications => Set<Notification>();
-        public DbSet<AddressInformation> AddressInformations => Set<AddressInformation>();
-        public DbSet<PersonalDetails> PersonalDetails => Set<PersonalDetails>();
-        public DbSet<FamilyEmergencyDetails> FamilyEmergencyDetails => Set<FamilyEmergencyDetails>();
-        public DbSet<LoanDetails> LoanDetails => Set<LoanDetails>();
-        public DbSet<Declaration> Declarations => Set<Declaration>();
         public DbSet<Faq> Faqs => Set<Faq>();
 
         protected override void OnModelCreating(ModelBuilder b)

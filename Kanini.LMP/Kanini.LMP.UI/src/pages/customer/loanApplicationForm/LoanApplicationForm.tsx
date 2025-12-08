@@ -65,9 +65,9 @@ function LoanApplicationFormContent() {
     
     switch (step) {
       case 1:
-        if (isHome) return <HomeLoanDetails onNext={handleNext} />;
-        if (isVehicle) return <VehicleLoanDetails onNext={handleNext} />;
-        return <PersonalLoanDetails onNext={handleNext} />;
+        if (isHome) return <HomeLoanDetails onNext={handleNext} onPrevious={() => navigate(-1)} />;
+        if (isVehicle) return <VehicleLoanDetails onNext={handleNext} onPrevious={() => navigate(-1)} />;
+        return <PersonalLoanDetails onNext={handleNext} onPrevious={() => navigate(-1)} />;
       case 2:
         return <LoanDocuments onNext={handleNext} onPrevious={handleBack} />;
       case 3:
@@ -118,7 +118,13 @@ function LoanApplicationFormContent() {
             </Col>
             
             <Col xs={24} sm={24} md={24} lg={6} xl={6}>
-              <ApplicationSummary currentStep={step - 1} totalSteps={6} />
+              <ApplicationSummary 
+                currentStep={step - 1} 
+                totalSteps={6}
+                loanAmount={state.formData.loanDetails?.requestedLoanAmount}
+                tenure={state.formData.loanDetails?.tenureMonths}
+                documentsUploaded={state.formData.documents?.length > 0}
+              />
             </Col>
           </Row>
         </div>

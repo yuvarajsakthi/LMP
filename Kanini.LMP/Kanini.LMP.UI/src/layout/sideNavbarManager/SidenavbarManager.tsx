@@ -85,7 +85,7 @@ const SidenavbarManager = () => {
       {/* Logo Section */}
       <div className="manager-sidebar-header">
         <img src={logo} alt="Logo" className="manager-sidebar-logo" />
-        {!collapsed && <span className="manager-sidebar-title">LOAN ACCELERATOR</span>}
+        {!collapsed && <span className="manager-sidebar-title">LMP</span>}
       </div>
 
       <div className="manager-sidebar-divider" />

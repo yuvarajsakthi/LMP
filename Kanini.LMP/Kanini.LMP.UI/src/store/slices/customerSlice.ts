@@ -13,10 +13,10 @@ const initialState: CustomerState = {
   error: null,
 };
 
-export const fetchCustomerByUserId = createAsyncThunk(
-  'customer/fetchByUserId',
-  async (userId: number) => {
-    return await customerAPI.getCustomerByUserId(userId);
+export const fetchCustomerById = createAsyncThunk(
+  'customer/fetchById',
+  async (customerId: number) => {
+    return await customerAPI.getCustomerById(customerId);
   }
 );
 
@@ -38,15 +38,15 @@ const customerSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchCustomerByUserId.pending, (state) => {
+      .addCase(fetchCustomerById.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchCustomerByUserId.fulfilled, (state, action) => {
+      .addCase(fetchCustomerById.fulfilled, (state, action) => {
         state.loading = false;
         state.currentCustomer = action.payload;
       })
-      .addCase(fetchCustomerByUserId.rejected, (state, action) => {
+      .addCase(fetchCustomerById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to fetch customer';
       })

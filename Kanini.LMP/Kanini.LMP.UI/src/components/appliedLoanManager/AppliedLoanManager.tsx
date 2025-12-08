@@ -155,15 +155,6 @@ const AppliedLoanManager: React.FC = () => {
         getData();
     }, []);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Accept': return '#52c41a';
-      case 'Reject': return '#ff4d4f';
-      case 'Pending': return '#faad14';
-      case 'Closed': return '#8c8c8c';
-      default: return '#d9d9d9';
-    }
-  };
 
   const columns = [
     {
@@ -399,7 +390,7 @@ const AppliedLoanManager: React.FC = () => {
       <div className={styles.appliedloanContainer}>
         <div className={styles.header}>
           <h2>Applied Loans</h2>
-          <p>Loan Accelerator | Applied Loans</p>
+          <p>LMP | Applied Loans</p>
         </div>
         
         <Divider />

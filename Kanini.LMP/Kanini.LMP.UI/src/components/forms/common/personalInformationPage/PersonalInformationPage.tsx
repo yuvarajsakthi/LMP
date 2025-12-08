@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Input, DatePicker, Select, Card, message } from 'antd';
 import { NextButtonArrow } from '../../../../assets';
+import { useLoanApplication } from '../../../../context';
 import styles from './PersonalInformationPage.module.css';
 
 interface PersonalInformationProps {
@@ -25,6 +26,7 @@ interface DistrictOption {
 }
 
 const PersonalInformationPage: React.FC<PersonalInformationProps> = ({ onNext, onPrevious }) => {
+  const { state, dispatch } = useLoanApplication();
   const [form] = Form.useForm<PersonalInformationForm>();
   const [districtOptions, setDistrictOptions] = useState<DistrictOption[]>([]);
 
@@ -37,11 +39,15 @@ const PersonalInformationPage: React.FC<PersonalInformationProps> = ({ onNext, o
       { label: 'Kolkata', value: 'kolkata' }
     ];
     setDistrictOptions(mockDistricts);
+    
+    if (state.formData.personalDetails) {
+      form.setFieldsValue(state.formData.personalDetails as any);
+    }
   }, []);
 
   const handleSubmit = async (values: PersonalInformationForm) => {
     try {
-      console.log('Personal information:', values);
+      dispatch({ type: 'UPDATE_FORM_DATA', payload: { section: 'personalDetails', data: values } });
       message.success('Personal information saved successfully');
       onNext?.();
     } catch (error) {

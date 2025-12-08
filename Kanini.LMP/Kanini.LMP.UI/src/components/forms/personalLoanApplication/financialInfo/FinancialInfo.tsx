@@ -28,7 +28,6 @@ const FinancialInfo: React.FC<FinancialInfoProps> = ({ onNext, onPrevious }) => 
 
   const handleSubmit = async (values: FinancialInfoForm) => {
     try {
-      console.log('Financial information:', values);
       message.success('Financial information saved successfully');
       onNext?.();
     } catch (error) {

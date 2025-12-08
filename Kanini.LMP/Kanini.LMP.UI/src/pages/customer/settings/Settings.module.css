@@ -17,27 +17,25 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-
-
-.card .ant-card-head-title {
+.card :global(.ant-card-head-title) {
   font-size: 16px;
   font-weight: 500;
 }
 
 .formGroup {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .formGroup label {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
   font-weight: 500;
   color: #262626;
 }
 
 .input {
   width: 100%;
-  padding: 8px 12px;
+  padding: 10px 12px;
   border: 1px solid #d9d9d9;
   border-radius: 6px;
   font-size: 14px;
@@ -60,4 +58,58 @@
   font-size: 12px;
   margin-top: 4px;
   display: block;
+}
+
+.dropzone {
+  border: 2px dashed #d9d9d9;
+  border-radius: 8px;
+  padding: 30px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: #fafafa;
+}
+
+.dropzone:hover {
+  border-color: #1890ff;
+  background: #f0f5ff;
+}
+
+.dropzoneActive {
+  border-color: #1890ff;
+  background: #e6f7ff;
+}
+
+.dropzoneContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.dropzoneContent p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.previewImage {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #1890ff;
+}
+
+.preview p {
+  margin: 0;
+  color: #666;
+  font-size: 13px;
 }

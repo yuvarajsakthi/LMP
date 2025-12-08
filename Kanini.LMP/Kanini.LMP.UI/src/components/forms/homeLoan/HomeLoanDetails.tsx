@@ -5,11 +5,18 @@ import { useLoanApplication } from '../../../context';
 
 interface HomeLoanDetailsProps {
   onNext: () => void;
+  onPrevious?: () => void;
 }
 
-const HomeLoanDetails: React.FC<HomeLoanDetailsProps> = ({ onNext }) => {
+const HomeLoanDetails: React.FC<HomeLoanDetailsProps> = ({ onNext, onPrevious }) => {
   const [form] = Form.useForm();
-  const { dispatch } = useLoanApplication();
+  const { state, dispatch } = useLoanApplication();
+
+  React.useEffect(() => {
+    if (state.formData.loanDetails) {
+      form.setFieldsValue(state.formData.loanDetails);
+    }
+  }, []);
 
   const handleSubmit = (values: any) => {
     dispatch({
@@ -98,7 +105,10 @@ const HomeLoanDetails: React.FC<HomeLoanDetailsProps> = ({ onNext }) => {
         </Form.Item>
 
         <Form.Item>
-          <Button type="primary" htmlType="submit" block>Next</Button>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            {onPrevious && <Button onClick={onPrevious}>BACK</Button>}
+            <Button type="primary" htmlType="submit">NEXT</Button>
+          </div>
         </Form.Item>
       </Form>
     </Card>

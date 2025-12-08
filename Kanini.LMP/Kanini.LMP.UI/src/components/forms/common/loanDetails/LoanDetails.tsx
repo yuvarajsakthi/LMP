@@ -25,7 +25,6 @@ const LoanDetails: React.FC<LoanDetailsProps> = ({ onNext, onPrevious }) => {
 
   const handleSubmit = async (values: LoanDetailsForm) => {
     try {
-      console.log('Loan details:', values);
       message.success('Loan details saved successfully');
       onNext?.();
     } catch (error) {

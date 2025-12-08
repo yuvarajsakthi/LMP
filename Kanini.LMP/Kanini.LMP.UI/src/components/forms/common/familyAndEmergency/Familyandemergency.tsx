@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Input, Form, Radio, Button, Divider, Card, message } from 'antd';
 import { NextButtonArrow } from '../../../../assets';
+import { useLoanApplication } from '../../../../context';
 import styles from './Familyandemergency.module.css';
 
 interface FamilyEmergencyProps {
@@ -24,11 +25,18 @@ interface FamilyEmergencyForm {
 }
 
 const Familyandemergency: React.FC<FamilyEmergencyProps> = ({ onNext, onPrevious }) => {
+  const { state, dispatch } = useLoanApplication();
   const [form] = Form.useForm<FamilyEmergencyForm>();
+
+  useEffect(() => {
+    if (state.formData.familyEmergencyDetails) {
+      form.setFieldsValue(state.formData.familyEmergencyDetails as any);
+    }
+  }, []);
 
   const handleSubmit = async (values: FamilyEmergencyForm) => {
     try {
-      console.log('Family and Emergency details:', values);
+      dispatch({ type: 'UPDATE_FORM_DATA', payload: { section: 'familyEmergencyDetails', data: values } });
       message.success('Family and emergency details saved successfully');
       onNext?.();
     } catch (error) {

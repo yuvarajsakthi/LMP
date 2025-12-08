@@ -11,7 +11,6 @@ const VehicleLoanDetails: React.FC<VehicleLoanDetailsProps> = ({ onNext }) => {
   const dispatch = useAppDispatch();
 
   const handleSubmit = async (values: any) => {
-    console.log('Vehicle Loan Details:', values);
     onNext();
   };
 

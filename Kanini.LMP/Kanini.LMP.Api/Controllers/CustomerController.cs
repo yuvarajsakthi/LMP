@@ -102,13 +102,10 @@ namespace Kanini.LMP.Api.Controllers
         }
 
         [HttpPut(ApiConstants.Routes.CustomerController.Update)]
-        public async Task<ActionResult<ApiResponse<CustomerDTO>>> UpdateCustomer(int id, [FromForm] CustomerUpdateDTO customerDto, IFormFile? profileImage)
+        public async Task<ActionResult<ApiResponse<CustomerDTO>>> UpdateCustomer(IdDTO id, [FromForm] CustomerUpdateDTO customerDto, IFormFile? profileImage)
         {
             try
             {
-                if (id != customerDto.CustomerId)
-                    return BadRequest(ApiResponse<CustomerDTO>.ErrorResponse("ID mismatch"));
-
                 if (profileImage != null)
                 {
                     using var ms = new MemoryStream();
@@ -116,7 +113,7 @@ namespace Kanini.LMP.Api.Controllers
                     customerDto.ProfileImage = ms.ToArray();
                 }
 
-                var updated = await _customerService.Update(customerDto);
+                var updated = await _customerService.Update(id, customerDto);
                 return Ok(ApiResponse<CustomerDTO>.SuccessResponse(updated));
             }
             catch (Exception)
@@ -153,7 +150,7 @@ namespace Kanini.LMP.Api.Controllers
                     settingsDto.ProfileImage = ms.ToArray();
                 }
 
-                await _customerService.Update(settingsDto);
+                await _customerService.Update(new IdDTO { Id = customer.CustomerId }, settingsDto);
 
                 return Ok(ApiResponse<object>.SuccessResponse(new { message = "Settings updated successfully" }));
             }
