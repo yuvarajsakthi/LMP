@@ -9,22 +9,16 @@ namespace Kanini.LMP.Application.Mappings
         public LoanApplicationDTOProfile()
         {
             // Personal Loan Application mappings
-            CreateMap<PersonalLoanApplicationCreateDTO, PersonalLoanApplication>();
-            CreateMap<PersonalLoanApplicationUpdateDTO, PersonalLoanApplication>();
             CreateMap<PersonalLoanApplication, PersonalLoanApplicationDTO>().ReverseMap();
-            CreateMap<PersonalLoanApplication, PersonalLoanApplicationResponseDTO>();
+            CreateMap<PersonalLoanApplication, UpdatePersonalLoanApplicationDTO>();
 
             // Home Loan Application mappings
-            CreateMap<HomeLoanApplicationCreateDTO, HomeLoanApplication>();
-            CreateMap<HomeLoanApplicationUpdateDTO, HomeLoanApplication>();
             CreateMap<HomeLoanApplication, HomeLoanApplicationDTO>().ReverseMap();
-            CreateMap<HomeLoanApplication, HomeLoanApplicationResponseDTO>();
+            CreateMap<HomeLoanApplication, UpdateHomeLoanApplicationDTO>();
 
             // Vehicle Loan Application mappings
-            CreateMap<VehicleLoanApplicationCreateDTO, VehicleLoanApplication>();
-            CreateMap<VehicleLoanApplicationUpdateDTO, VehicleLoanApplication>();
             CreateMap<VehicleLoanApplication, VehicleLoanApplicationDTO>().ReverseMap();
-            CreateMap<VehicleLoanApplication, VehicleLoanApplicationResponseDTO>();
+            CreateMap<VehicleLoanApplication, UpdateVehicleLoanApplicationDTO>();
         }
     }
 }

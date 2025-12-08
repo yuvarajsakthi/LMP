@@ -15,8 +15,7 @@ namespace Kanini.LMP.Database.Entities.LoanApplicationEntites
         [Required]
         [MaxLength(100)]
         public string City { get; set; } = null!;
-        [Required]
-        public int ZipCode { get; set; }
+        
         [Required]
         public OwnershipType OwnershipType { get; set; }
         [Required]

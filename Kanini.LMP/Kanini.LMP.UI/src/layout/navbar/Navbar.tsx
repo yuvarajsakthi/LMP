@@ -1,9 +1,12 @@
+import { useEffect } from "react";
 import { Avatar, Dropdown, Space, Typography } from "antd";
 import { UserOutlined, LogoutOutlined, SettingOutlined } from "@ant-design/icons";
 import { useAuth } from "../../context";
 import { useNavigate } from "react-router-dom";
 import { COMMON_ROUTES, CUSTOMER_ROUTES } from "../../config";
 import { NotificationModal } from "../../components";
+import { useAppDispatch, useAppSelector } from "../../hooks";
+import { fetchCustomerById } from "../../store";
 import styles from "./Navbar.module.css";
 
 const { Text } = Typography;
@@ -11,6 +14,8 @@ const { Text } = Typography;
 const Navbar = () => {
   const { token, logout } = useAuth();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { currentCustomer } = useAppSelector((state) => state.customer);
 
   const handleLogout = () => {
     logout();
@@ -48,13 +53,27 @@ const Navbar = () => {
 
   const userMenuItems = isManager ? managerMenuItems : customerMenuItems;
 
+  useEffect(() => {
+    if (!isManager && token?.CustomerId) {
+      dispatch(fetchCustomerById(parseInt(token.CustomerId)));
+    }
+  }, [token?.CustomerId, isManager, dispatch]);
+
+  const profileImage = (currentCustomer?.profileImageBase64 || currentCustomer?.profileImage)
+    ? `data:image/jpeg;base64,${currentCustomer.profileImageBase64 || currentCustomer.profileImage}` 
+    : null;
+
   return (
     <div className={styles.navbar}>
       <div className={styles.navRight}>
         <NotificationModal />
         <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
           <Space className={styles.userSection}>
-            <Avatar icon={<UserOutlined />} className={styles.avatar} />
+            <Avatar 
+              src={profileImage || undefined} 
+              icon={<UserOutlined />} 
+              className={styles.avatar} 
+            />
             <Text className={styles.userName}>{token?.FullName || token?.name || token?.username || token?.email || 'User'}</Text>
           </Space>
         </Dropdown>

@@ -12,11 +12,12 @@
 
 .inputSection {
   flex: 1;
-  min-width: 280px;
+  min-width: 250px;
+  max-width: 400px;
 }
 
 .inputGroup {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .inputGroup .ant-input {
@@ -40,12 +41,13 @@
 }
 
 .chartSection {
-  flex: 1;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
-  min-width: 250px;
+  width: 200px;
+  height: 200px;
 }
 
 .emiChartText {
@@ -109,13 +111,14 @@
 
 .amountdisplay {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  margin-top: 20px;
-  padding: 20px;
-  border-radius: 12px;
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 8px;
   font-size: 14px;
   border: 1px solid #dee2e6;
+  gap: 12px;
 }
 
 .headcal {
@@ -132,9 +135,10 @@
 
 .align {
   display: flex;
-  gap: 40px;
+  gap: 24px;
   margin-top: 0px;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .select1 {
@@ -142,11 +146,11 @@
   height: 40px;
   border-radius: 8px;
   font-size: 14px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 /* Responsive design */
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .align {
     flex-direction: column;
     gap: 20px;
@@ -154,17 +158,25 @@
   
   .chartSection {
     order: -1;
+    width: 100%;
   }
   
+  .headcal {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .legend {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
   .amountdisplay {
     flex-direction: column;
     gap: 16px;
     text-align: center;
-  }
-  
-  .legend {
-    justify-content: center;
-    margin-top: 12px;
   }
   
   .rateandtime {
@@ -175,11 +187,33 @@
   .inputSection {
     min-width: 100%;
   }
+  
+  .trp, .emiLabel123 {
+    padding: 8px 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .headcal {
+    padding: 0;
+  }
+  
+  .emititle {
+    font-size: 16px;
+  }
+  
+  .legend {
+    flex-wrap: wrap;
+  }
+  
+  .emiChartText .emiAmount {
+    font-size: 16px;
+  }
 }
 
 .rateandtime {
   display: flex;
-  gap: 12px;
+  gap: 8px;
 }
 
 .rateandtime .ant-input {

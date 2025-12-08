@@ -38,19 +38,19 @@ const ApplicationSummary: React.FC<ApplicationSummaryProps> = ({
         </div>
 
         <div className={styles.detailsSection}>
-          {loanAmount && (
-            <div className={styles.detailItem}>
-              <Text className={styles.detailLabel}>Loan Amount:</Text>
-              <Text className={styles.detailValue}>₹ {loanAmount.toLocaleString()}</Text>
-            </div>
-          )}
+          <div className={styles.detailItem}>
+            <Text className={styles.detailLabel}>Loan Amount:</Text>
+            <Text className={styles.detailValue}>
+              {loanAmount ? `₹ ${loanAmount.toLocaleString()}` : '-'}
+            </Text>
+          </div>
 
-          {tenure && (
-            <div className={styles.detailItem}>
-              <Text className={styles.detailLabel}>Tenure:</Text>
-              <Text className={styles.detailValue}>{tenure} months</Text>
-            </div>
-          )}
+          <div className={styles.detailItem}>
+            <Text className={styles.detailLabel}>Tenure:</Text>
+            <Text className={styles.detailValue}>
+              {tenure ? `${tenure} months` : '-'}
+            </Text>
+          </div>
 
           <div className={styles.detailItem}>
             <Text className={styles.detailLabel}>Document uploaded:</Text>

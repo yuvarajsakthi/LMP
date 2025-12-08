@@ -7,17 +7,17 @@ namespace Kanini.LMP.Application.Services.Interfaces
     public interface ILoanApplicationService
     {
         // Personal Loan
-        Task<PersonalLoanApplicationDTO> CreatePersonalLoanAsync(PersonalLoanApplicationCreateDTO dto, IdDTO customerId);
+        Task<PersonalLoanApplicationDTO> CreatePersonalLoanAsync(PersonalLoanApplicationDTO dto, IdDTO customerId);
         Task<IReadOnlyList<PersonalLoanApplicationDTO>> GetAllPersonalLoansAsync();
         Task<PersonalLoanApplicationDTO?> GetPersonalLoanByIdAsync(IdDTO id);
 
         // Home Loan
-        Task<HomeLoanApplicationDTO> CreateHomeLoanAsync(HomeLoanApplicationCreateDTO dto, IdDTO customerId);
+        Task<HomeLoanApplicationDTO> CreateHomeLoanAsync(HomeLoanApplicationDTO dto, IdDTO customerId);
         Task<IReadOnlyList<HomeLoanApplicationDTO>> GetAllHomeLoansAsync();
         Task<HomeLoanApplicationDTO?> GetHomeLoanByIdAsync(IdDTO id);
 
         // Vehicle Loan
-        Task<VehicleLoanApplicationDTO> CreateVehicleLoanAsync(VehicleLoanApplicationCreateDTO dto, IdDTO customerId);
+        Task<VehicleLoanApplicationDTO> CreateVehicleLoanAsync(VehicleLoanApplicationDTO dto, IdDTO customerId);
         Task<IReadOnlyList<VehicleLoanApplicationDTO>> GetAllVehicleLoansAsync();
         Task<VehicleLoanApplicationDTO?> GetVehicleLoanByIdAsync(IdDTO id);
 

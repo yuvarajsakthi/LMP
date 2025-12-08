@@ -58,7 +58,7 @@ const SideNavBar = () => {
                 selectedKeys={[selectedKey]}
             >
                 <Menu.Item className={SideNavBarCss.logo} icon={<img src={Logo1} width={25} height={25} alt="Logo"></img>}>
-                    Loan Accelerator
+                    LMP
                 </Menu.Item>
                 <hr />
                 <Menu.Item icon={collapsed ? <img src={Arrow} alt="Toggle" /> : <img src={LogOut} alt="Toggle" />} onClick={toggleCollapsed}></Menu.Item>

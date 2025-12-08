@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Kanini.LMP.Database.Entities.LoanProductEntities;
-using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
 using Kanini.LMP.Database.EntitiesDtos;
 using System;
 using System.Collections.Generic;

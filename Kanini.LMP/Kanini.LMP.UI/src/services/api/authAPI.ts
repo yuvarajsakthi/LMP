@@ -30,7 +30,6 @@ const processTokenResponse = (responseData: LoginResponseData): { token: string;
   
   try {
     const decodedToken = jwtDecode<any>(token);
-    console.log('Decoded token:', decodedToken);
     
     // Use role from response data (more reliable than JWT parsing)
     const userRole = role || decodedToken.role || 
@@ -208,7 +207,7 @@ export const authAPI = {
       secureStorage.removeToken();
       sessionStorage.removeItem('eligibilityModalShown');
     } catch (error) {
-      console.error('Logout error:', error);
+      // Silent error handling
     }
   }
 };

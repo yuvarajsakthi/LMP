@@ -130,9 +130,9 @@ const Login = () => {
   return (
     <div className={LoginComponentCss.loginContainer}>
       <div className={LoginComponentCss.header}>
-        <img src={LoanAcceleratorLogo} alt="Loan Accelerator" className={LoginComponentCss.logo} />
+        <img src={LoanAcceleratorLogo} alt="LMP" className={LoginComponentCss.logo} />
         <h2 className={LoginComponentCss.brandName}>
-          <span className={LoginComponentCss.brandHighlight}>Loan</span> Accelerator
+          <span className={LoginComponentCss.brandHighlight}>LMP</span>
         </h2>
       </div>
 

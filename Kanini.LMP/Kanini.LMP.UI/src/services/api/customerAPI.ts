@@ -11,12 +11,16 @@ export interface Customer {
   occupation: string;
   annualIncome: number;
   creditScore: number;
-  gender?: number;
-  homeOwnershipStatus?: number;
+  gender?: number | string;
+  homeOwnershipStatus?: number | string;
   age?: number;
   profileImageBase64?: string;
+  profileImage?: string;
+  profileImageUrl?: string;
   applicationIds?: number[];
   updatedAt?: string;
+  aadhaarNumber?: string;
+  panNumber?: string;
 }
 
 export interface CustomerSettings {
@@ -25,13 +29,18 @@ export interface CustomerSettings {
   phoneNumber: string;
   occupation: string;
   annualIncome: number;
+  homeOwnershipStatus?: string;
+  aadhaarNumber?: string;
+  panNumber?: string;
 }
 
 export interface UpdateCustomerSettings {
-  fullName: string;
   phoneNumber: string;
   occupation: string;
   annualIncome: number;
+  homeOwnershipStatus?: string;
+  aadhaarNumber?: string;
+  panNumber?: string;
 }
 
 export const customerAPI = {
@@ -57,10 +66,22 @@ export const customerAPI = {
   },
 
   async getCustomerSettings(userId: number): Promise<CustomerSettings> {
-    return ApiService.execute(async () => {
-      const response = await axiosInstance.get<ApiResponse<CustomerSettings>>(`${API_ENDPOINTS.GET_CUSTOMER_SETTINGS}/${userId}`);
-      return response;
-    });
+    const settingsResponse = await axiosInstance.get<ApiResponse<any>>(`${API_ENDPOINTS.GET_CUSTOMER_SETTINGS}/${userId}`);
+    const customerResponse = await axiosInstance.get<ApiResponse<Customer>>(`${API_ENDPOINTS.GET_CUSTOMER_BY_ID}/user/${userId}`);
+    
+    const settings = settingsResponse.data.data || settingsResponse.data;
+    const customerData = customerResponse.data.data as Customer;
+    
+    return {
+      fullName: settings.fullName,
+      email: settings.email,
+      phoneNumber: customerData.phoneNumber,
+      occupation: customerData.occupation,
+      annualIncome: customerData.annualIncome,
+      homeOwnershipStatus: typeof customerData.homeOwnershipStatus === 'string' ? customerData.homeOwnershipStatus : (customerData.homeOwnershipStatus !== undefined ? ['Rented', 'Owned', 'Mortage'][customerData.homeOwnershipStatus] : undefined),
+      aadhaarNumber: customerData.aadhaarNumber,
+      panNumber: customerData.panNumber
+    };
   },
 
   async updateCustomer(id: number, data: Partial<Customer>, profileImage?: File): Promise<Customer> {
@@ -80,14 +101,29 @@ export const customerAPI = {
   async updateCustomerSettings(userId: number, settings: UpdateCustomerSettings, profileImage?: File): Promise<{ message: string }> {
     return ApiService.execute(async () => {
       const formData = new FormData();
-      formData.append('FullName', settings.fullName);
       formData.append('PhoneNumber', settings.phoneNumber);
       formData.append('Occupation', settings.occupation);
       formData.append('AnnualIncome', settings.annualIncome.toString());
-      if (profileImage) formData.append('profileImage', profileImage);
+      
+      if (settings.homeOwnershipStatus) {
+        formData.append('HomeOwnershipStatus', settings.homeOwnershipStatus);
+      }
+      
+      if (settings.aadhaarNumber) {
+        formData.append('AadhaarNumber', settings.aadhaarNumber);
+      }
+      
+      if (settings.panNumber) {
+        formData.append('PANNumber', settings.panNumber);
+      }
+      
+      if (profileImage) {
+        formData.append('profileImage', profileImage);
+      }
       
       const response = await axiosInstance.put<ApiResponse<{ message: string }>>(`${API_ENDPOINTS.UPDATE_CUSTOMER_SETTINGS}/${userId}`, formData);
       return response;
     });
-  }
+  },
+
 };

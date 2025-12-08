@@ -22,7 +22,7 @@ namespace Kanini.LMP.Api.Controllers
         }
 
         [HttpPost(ApiConstants.Routes.LoanApplicationFlowController.CreatePersonal)]
-        public async Task<ActionResult<ApiResponse<PersonalLoanApplicationDTO>>> CreatePersonalLoan(int customerId, [FromForm] PersonalLoanApplicationCreateDTO dto)
+        public async Task<ActionResult<ApiResponse<PersonalLoanApplicationDTO>>> CreatePersonalLoan(int customerId, [FromForm] PersonalLoanApplicationDTO dto)
         {
             try
             {
@@ -40,7 +40,7 @@ namespace Kanini.LMP.Api.Controllers
         }
 
         [HttpPost(ApiConstants.Routes.LoanApplicationFlowController.CreateHome)]
-        public async Task<ActionResult<ApiResponse<HomeLoanApplicationDTO>>> CreateHomeLoan(int customerId, [FromForm] HomeLoanApplicationCreateDTO dto)
+        public async Task<ActionResult<ApiResponse<HomeLoanApplicationDTO>>> CreateHomeLoan(int customerId, [FromForm] HomeLoanApplicationDTO dto)
         {
             try
             {
@@ -58,7 +58,7 @@ namespace Kanini.LMP.Api.Controllers
         }
 
         [HttpPost(ApiConstants.Routes.LoanApplicationFlowController.CreateVehicle)]
-        public async Task<ActionResult<ApiResponse<VehicleLoanApplicationDTO>>> CreateVehicleLoan(int customerId, [FromForm] VehicleLoanApplicationCreateDTO dto)
+        public async Task<ActionResult<ApiResponse<VehicleLoanApplicationDTO>>> CreateVehicleLoan(int customerId, [FromForm] VehicleLoanApplicationDTO dto)
         {
             try
             {

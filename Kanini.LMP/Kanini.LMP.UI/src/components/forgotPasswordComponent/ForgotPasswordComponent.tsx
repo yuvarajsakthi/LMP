@@ -133,9 +133,9 @@ const ForgotPasswordComponent = () => {
     return (
         <div className={ForgotPassword.forgotPasswordContainer}>
             <div className={ForgotPassword.header}>
-                <img src={LoanAcceleratorLogo} alt="Loan Accelerator" className={ForgotPassword.logo} />
+                <img src={LoanAcceleratorLogo} alt="LMP" className={ForgotPassword.logo} />
                 <h2 className={ForgotPassword.brandName}>
-                    <span className={ForgotPassword.brandHighlight}>Loan</span> Accelerator
+                    <span className={ForgotPassword.brandHighlight}>LMP</span>
                 </h2>
             </div>
 

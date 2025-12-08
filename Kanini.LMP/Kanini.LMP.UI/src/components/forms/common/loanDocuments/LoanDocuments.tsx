@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
-import { Form, Button, Card, Typography, message, Upload } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Form, Button, Card, Typography, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
+import { useDropzone } from 'react-dropzone';
 import { NextButtonArrow } from '../../../../assets';
+import { useLoanApplication } from '../../../../context';
 import styles from './LoanDocuments.module.css';
-import type { UploadFile, UploadProps } from 'antd';
 
 interface LoanDocumentsProps {
   onNext?: () => void;
@@ -12,25 +13,46 @@ interface LoanDocumentsProps {
 }
 
 const LoanDocuments: React.FC<LoanDocumentsProps> = ({ onNext, onPrevious }) => {
-  const [passportPhoto, setPassportPhoto] = useState<UploadFile[]>([]);
-  const [signature, setSignature] = useState<UploadFile[]>([]);
-  const [idProof, setIdProof] = useState<UploadFile[]>([]);
+  const { state, dispatch } = useLoanApplication();
+  const [passportPhoto, setPassportPhoto] = useState<File | null>(null);
+  const [signature, setSignature] = useState<File | null>(null);
+  const [idProof, setIdProof] = useState<File | null>(null);
+
+  useEffect(() => {
+    const docs = state.formData.documents;
+    if (docs && docs.length > 0) {
+      // Restore files from context if available
+      const passportDoc = docs.find(d => d.documentName === 'passportPhoto');
+      const signatureDoc = docs.find(d => d.documentName === 'signature');
+      const idProofDoc = docs.find(d => d.documentName === 'idProof');
+      
+      if (passportDoc?.documentFile) setPassportPhoto(passportDoc.documentFile);
+      if (signatureDoc?.documentFile) setSignature(signatureDoc.documentFile);
+      if (idProofDoc?.documentFile) setIdProof(idProofDoc.documentFile);
+    }
+  }, []);
 
   const handleSubmit = () => {
-    if (passportPhoto.length === 0) {
+    if (!passportPhoto) {
       message.warning('Please upload passport size photo');
       return;
     }
-    if (signature.length === 0) {
+    if (!signature) {
       message.warning('Please upload signature');
       return;
     }
-    if (idProof.length === 0) {
+    if (!idProof) {
       message.warning('Please upload ID proof');
       return;
     }
 
-    console.log('Documents uploaded:', { passportPhoto, signature, idProof });
+    const documents = [
+      { documentName: 'passportPhoto', documentType: 0, documentFile: passportPhoto },
+      { documentName: 'signature', documentType: 0, documentFile: signature },
+      { documentName: 'idProof', documentType: 0, documentFile: idProof }
+    ];
+    
+    dispatch({ type: 'UPDATE_FORM_DATA', payload: { section: 'documents', data: documents } });
     message.success('Documents uploaded successfully');
     onNext?.();
   };
@@ -38,21 +60,23 @@ const LoanDocuments: React.FC<LoanDocumentsProps> = ({ onNext, onPrevious }) => 
   const handleBack = () => {
     onPrevious?.();
   };
-  const uploadProps: UploadProps = {
-    beforeUpload: (file) => {
-      const isImage = file.type.startsWith('image/');
-      if (!isImage) {
-        message.error('You can only upload image files!');
+  const createDropzone = (onDrop: (file: File) => void) => useDropzone({
+    accept: { 'image/*': ['.jpg', '.jpeg', '.png'] },
+    maxFiles: 1,
+    maxSize: 2 * 1024 * 1024,
+    onDrop: (acceptedFiles) => {
+      if (acceptedFiles.length > 0) {
+        onDrop(acceptedFiles[0]);
       }
-      const isLt2M = file.size / 1024 / 1024 < 2;
-      if (!isLt2M) {
-        message.error('Image must be smaller than 2MB!');
-      }
-      return false; // Prevent auto upload
     },
-    accept: '.jpg,.jpeg,.png',
-    maxCount: 1,
-  };
+    onDropRejected: () => {
+      message.error('Please upload a valid image file (jpg/png) smaller than 2MB');
+    }
+  });
+
+  const passportDropzone = createDropzone(setPassportPhoto);
+  const signatureDropzone = createDropzone(setSignature);
+  const idProofDropzone = createDropzone(setIdProof);
 
   return (
     <Card className={styles.container}>
@@ -64,47 +88,44 @@ const LoanDocuments: React.FC<LoanDocumentsProps> = ({ onNext, onPrevious }) => 
       <Form onFinish={handleSubmit} className={styles.form}>
         <div className={styles.uploadSection}>
           <Typography.Text className={styles.label}>Passport Size Photo *</Typography.Text>
-          <Upload
-            {...uploadProps}
-            fileList={passportPhoto}
-            onChange={({ fileList }) => setPassportPhoto(fileList)}
-            className={styles.upload}
-          >
-            <Button icon={<UploadOutlined />} className={styles.uploadButton}>
-              Select File
-            </Button>
-          </Upload>
-          <Typography.Text className={styles.hint}>Upload passport size photo (jpg/png)</Typography.Text>
+          <div {...passportDropzone.getRootProps()} className={styles.dropzone}>
+            <input {...passportDropzone.getInputProps()} />
+            <UploadOutlined style={{ fontSize: 24, marginBottom: 8 }} />
+            {passportPhoto ? (
+              <Typography.Text>{passportPhoto.name}</Typography.Text>
+            ) : (
+              <Typography.Text>Drag & drop or click to select file</Typography.Text>
+            )}
+          </div>
+          <Typography.Text className={styles.hint}>Upload passport size photo (jpg/png, max 2MB)</Typography.Text>
         </div>
 
         <div className={styles.uploadSection}>
           <Typography.Text className={styles.label}>Signature *</Typography.Text>
-          <Upload
-            {...uploadProps}
-            fileList={signature}
-            onChange={({ fileList }) => setSignature(fileList)}
-            className={styles.upload}
-          >
-            <Button icon={<UploadOutlined />} className={styles.uploadButton}>
-              Select File
-            </Button>
-          </Upload>
-          <Typography.Text className={styles.hint}>Upload signature (jpg/png)</Typography.Text>
+          <div {...signatureDropzone.getRootProps()} className={styles.dropzone}>
+            <input {...signatureDropzone.getInputProps()} />
+            <UploadOutlined style={{ fontSize: 24, marginBottom: 8 }} />
+            {signature ? (
+              <Typography.Text>{signature.name}</Typography.Text>
+            ) : (
+              <Typography.Text>Drag & drop or click to select file</Typography.Text>
+            )}
+          </div>
+          <Typography.Text className={styles.hint}>Upload signature (jpg/png, max 2MB)</Typography.Text>
         </div>
 
         <div className={styles.uploadSection}>
           <Typography.Text className={styles.label}>ID Proof *</Typography.Text>
-          <Upload
-            {...uploadProps}
-            fileList={idProof}
-            onChange={({ fileList }) => setIdProof(fileList)}
-            className={styles.upload}
-          >
-            <Button icon={<UploadOutlined />} className={styles.uploadButton}>
-              Select File
-            </Button>
-          </Upload>
-          <Typography.Text className={styles.hint}>Upload ID proof (jpg/png)</Typography.Text>
+          <div {...idProofDropzone.getRootProps()} className={styles.dropzone}>
+            <input {...idProofDropzone.getInputProps()} />
+            <UploadOutlined style={{ fontSize: 24, marginBottom: 8 }} />
+            {idProof ? (
+              <Typography.Text>{idProof.name}</Typography.Text>
+            ) : (
+              <Typography.Text>Drag & drop or click to select file</Typography.Text>
+            )}
+          </div>
+          <Typography.Text className={styles.hint}>Upload ID proof (jpg/png, max 2MB)</Typography.Text>
         </div>
 
         <div className={styles.buttonContainer}>

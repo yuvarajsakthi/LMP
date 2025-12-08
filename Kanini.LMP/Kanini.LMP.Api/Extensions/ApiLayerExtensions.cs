@@ -50,6 +50,7 @@ namespace Kanini.LMP.Api.Extensions
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "LMP API", Version = "v1" });
                 c.CustomSchemaIds(type => type.FullName);
+                c.SchemaFilter<Kanini.LMP.Api.Filters.FormFileSchemaFilter>();
 
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {

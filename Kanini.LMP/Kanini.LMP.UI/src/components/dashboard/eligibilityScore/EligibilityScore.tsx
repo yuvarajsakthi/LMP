@@ -13,16 +13,16 @@ interface EligibilityScoreProps {
 const EligibilityScore: React.FC<EligibilityScoreProps> = ({ score }) => {
   const { token } = useAuth();
   const dispatch = useAppDispatch();
-  const { score: eligibilityData } = useAppSelector((state) => state.eligibility);
+  const { score: eligibilityData, loading } = useAppSelector((state) => state.eligibility);
 
   useEffect(() => {
     const customerId = token?.CustomerId || token?.customerId;
     if (customerId) {
-      dispatch(getEligibilityScore(customerId));
+      dispatch(getEligibilityScore(Number(customerId)));
     }
   }, [dispatch, token]);
 
-  const eScore = score ?? eligibilityData?.eligibilityScore ?? token?.EligibilityScore ?? 0;
+  const eScore = score ?? eligibilityData?.EligibilityScore ?? eligibilityData?.eligibilityScore ?? eligibilityData?.creditScore ?? token?.EligibilityScore ?? 0;
   const eligibilityPercentage = eScore / 900;
 
   const gaugeData = [
@@ -48,6 +48,14 @@ const EligibilityScore: React.FC<EligibilityScoreProps> = ({ score }) => {
     return styles.poorColor;
   };
 
+  const getStatusColor = () => {
+    const status = ((eligibilityData as any)?.status || eligibilityData?.Status || eligibilityData?.eligibilityStatus || '').toLowerCase();
+    if (status.includes('highly') || status.includes('excellent')) return '#30BF78';
+    if (status.includes('eligible') || status.includes('good')) return '#FAAD14';
+    if (status.includes('not') || status.includes('poor')) return '#F4664A';
+    return '#666';
+  };
+
   return (
     <Card title="Eligibility Score" extra={<a href="#">Generate Report</a>} style={{ height: '100%' }}>
         <div className={styles.gauge}>
@@ -68,8 +76,13 @@ const EligibilityScore: React.FC<EligibilityScoreProps> = ({ score }) => {
               </Pie>
             </PieChart>
           </ResponsiveContainer>
-          <div className={styles.scoreText}>{eligibilityData ? eScore : '...'}</div>
+          <div className={styles.scoreText}>{loading ? '...' : eScore}</div>
         </div>
+        {!loading && eligibilityData && (
+          <p className={styles.csp1} style={{ textAlign: 'center', marginTop: '10px' }}>
+            Status: <strong style={{ color: getStatusColor() }}>{(eligibilityData as any)?.status || eligibilityData?.Status || eligibilityData?.eligibilityStatus || 'Not Available'}</strong>
+          </p>
+        )}
         <br />
         <br />
         <div className={styles.scoreInfo}>
@@ -79,11 +92,6 @@ const EligibilityScore: React.FC<EligibilityScoreProps> = ({ score }) => {
               {getCreditScoreLabel()}!
             </span>
           </p>
-          {eligibilityData?.status && (
-            <p className={styles.csp1}>
-              Status: <strong>{eligibilityData.status}</strong>
-            </p>
-          )}
         </div>
       </Card>
   );

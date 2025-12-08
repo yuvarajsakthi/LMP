@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, List, Button, Input, message, Tag, Space } from 'antd';
+import { Card, Button, Input, message, Tag, Space, Flex, Spin } from 'antd';
 import { QuestionCircleOutlined, PlusOutlined, CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import Layout from '../../../layout/Layout';
 import { useAppDispatch, useAppSelector } from '../../../hooks';
@@ -97,58 +97,63 @@ const FAQ = () => {
             )}
           </div>
           
-          <List
-            loading={loading}
-            dataSource={faqs}
-            renderItem={(faq) => (
-              <List.Item
-                key={faq.id}
-                style={{
-                  flexDirection: 'column',
-                  alignItems: 'stretch',
-                  padding: '20px',
-                  border: '1px solid #f0f0f0',
-                  borderRadius: '8px',
-                  marginBottom: '16px'
-                }}
-              >
-                <div style={{ marginBottom: '12px' }}>
-                  <Space>
-                    {(faq.status?.toLowerCase() === 'pending' || faq.status === '0' || !faq.answer) ? (
-                      <Tag icon={<ClockCircleOutlined />} color="warning">Pending</Tag>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <Spin size="large" />
+            </div>
+          ) : (
+            <Flex vertical gap="middle">
+              {faqs.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>No questions yet</div>
+              ) : (
+                faqs.map((faq) => (
+                  <div
+                    key={faq.id}
+                    style={{
+                      padding: '20px',
+                      border: '1px solid #f0f0f0',
+                      borderRadius: '8px'
+                    }}
+                  >
+                    <div style={{ marginBottom: '12px' }}>
+                      <Space>
+                        {(faq.status?.toLowerCase() === 'pending' || faq.status === '0' || !faq.answer) ? (
+                          <Tag icon={<ClockCircleOutlined />} color="warning">Pending</Tag>
+                        ) : (
+                          <Tag icon={<CheckCircleOutlined />} color="success">Answered</Tag>
+                        )}
+                      </Space>
+                    </div>
+
+                    <div style={{ marginBottom: '12px' }}>
+                      <strong style={{ fontSize: '16px', color: '#262626' }}>Q: {faq.question}</strong>
+                    </div>
+
+                    {faq.answer ? (
+                      <div style={{ 
+                        backgroundColor: '#f6ffed', 
+                        padding: '12px', 
+                        borderRadius: '4px',
+                        borderLeft: '3px solid #52c41a'
+                      }}>
+                        <strong style={{ color: '#52c41a' }}>A: </strong>
+                        <span>{faq.answer}</span>
+                      </div>
                     ) : (
-                      <Tag icon={<CheckCircleOutlined />} color="success">Answered</Tag>
+                      <div style={{ 
+                        backgroundColor: '#fff7e6', 
+                        padding: '12px', 
+                        borderRadius: '4px',
+                        borderLeft: '3px solid #faad14'
+                      }}>
+                        <span style={{ color: '#999', fontStyle: 'italic' }}>Waiting for manager's response...</span>
+                      </div>
                     )}
-                  </Space>
-                </div>
-
-                <div style={{ marginBottom: '12px' }}>
-                  <strong style={{ fontSize: '16px', color: '#262626' }}>Q: {faq.question}</strong>
-                </div>
-
-                {faq.answer ? (
-                  <div style={{ 
-                    backgroundColor: '#f6ffed', 
-                    padding: '12px', 
-                    borderRadius: '4px',
-                    borderLeft: '3px solid #52c41a'
-                  }}>
-                    <strong style={{ color: '#52c41a' }}>A: </strong>
-                    <span>{faq.answer}</span>
                   </div>
-                ) : (
-                  <div style={{ 
-                    backgroundColor: '#fff7e6', 
-                    padding: '12px', 
-                    borderRadius: '4px',
-                    borderLeft: '3px solid #faad14'
-                  }}>
-                    <span style={{ color: '#999', fontStyle: 'italic' }}>Waiting for manager's response...</span>
-                  </div>
-                )}
-              </List.Item>
-            )}
-          />
+                ))
+              )}
+            </Flex>
+          )}
         </Card>
       </div>
     </Layout>

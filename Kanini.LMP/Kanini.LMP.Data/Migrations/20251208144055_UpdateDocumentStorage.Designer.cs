@@ -4,6 +4,7 @@ using Kanini.LMP.Data.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Kanini.LMP.Data.Migrations
 {
     [DbContext(typeof(LmpDbContext))]
-    partial class LmpDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251208144055_UpdateDocumentStorage")]
+    partial class UpdateDocumentStorage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -147,29 +150,23 @@ namespace Kanini.LMP.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LoanApplicationBaseId"));
 
-                    b.Property<DateTime>("AppliedDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateOnly?>("ApprovedDate")
                         .HasColumnType("date");
 
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CustomerRefCustomerId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("District")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<byte[]>("DocumentData")
+                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<string>("DocumentName")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<decimal?>("InterestRate")
+                        .HasColumnType("decimal(5,2)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -177,50 +174,9 @@ namespace Kanini.LMP.Data.Migrations
                     b.Property<int>("LoanProductType")
                         .HasColumnType("int");
 
-                    b.Property<int>("MobileNumber")
-                        .HasColumnType("int");
-
-                    b.Property<decimal?>("MonthlyInstallment")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("PermanentAddress")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<string>("PresentAddress")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
                     b.Property<string>("RejectionReason")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("RelationAddress")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<string>("RelationFullName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("RelationshipWithApplicant")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<decimal>("RequestedAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<byte[]>("SignatureImage")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("State")
-                        .IsRequired()
-                        .HasColumnType("varchar(50)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -228,18 +184,9 @@ namespace Kanini.LMP.Data.Migrations
                     b.Property<DateOnly>("SubmissionDate")
                         .HasColumnType("date");
 
-                    b.Property<int>("TenureMonths")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ZipCode")
-                        .HasMaxLength(10)
-                        .HasColumnType("int");
-
                     b.HasKey("LoanApplicationBaseId");
 
                     b.HasIndex("CustomerId");
-
-                    b.HasIndex("CustomerRefCustomerId");
 
                     b.ToTable("LoanApplicationBases", (string)null);
 
@@ -270,6 +217,228 @@ namespace Kanini.LMP.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Faqs");
+                });
+
+            modelBuilder.Entity("Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities.AddressInformation", b =>
+                {
+                    b.Property<int>("AddressInformationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AddressInformationId"));
+
+                    b.Property<string>("District")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("EmailId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("LoanApplicationBaseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MobileNumber1")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<string>("MobileNumber2")
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<string>("PermanentAddress")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("PresentAddress")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("ZipCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("AddressInformationId");
+
+                    b.HasIndex("LoanApplicationBaseId")
+                        .IsUnique();
+
+                    b.ToTable("AddressInformations");
+                });
+
+            modelBuilder.Entity("Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities.Declaration", b =>
+                {
+                    b.Property<int>("DeclarationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DeclarationId"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("LoanApplicationBaseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.HasKey("DeclarationId");
+
+                    b.HasIndex("LoanApplicationBaseId")
+                        .IsUnique();
+
+                    b.ToTable("Declarations");
+                });
+
+            modelBuilder.Entity("Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities.FamilyEmergencyDetails", b =>
+                {
+                    b.Property<int>("FamilyEmergencyDetailsId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FamilyEmergencyDetailsId"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("LoanApplicationBaseId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MobileNumber")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RelationshipWithApplicant")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("FamilyEmergencyDetailsId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("LoanApplicationBaseId")
+                        .IsUnique();
+
+                    b.ToTable("FamilyEmergencyDetails");
+                });
+
+            modelBuilder.Entity("Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities.LoanDetails", b =>
+                {
+                    b.Property<int>("LoanDetailsId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LoanDetailsId"));
+
+                    b.Property<DateTime>("AppliedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LoanApplicationBaseId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("MonthlyInstallment")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("RequestedAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("TenureMonths")
+                        .HasColumnType("int");
+
+                    b.HasKey("LoanDetailsId");
+
+                    b.HasIndex("LoanApplicationBaseId")
+                        .IsUnique();
+
+                    b.ToTable("LoanDetails");
+                });
+
+            modelBuilder.Entity("Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities.PersonalDetails", b =>
+                {
+                    b.Property<int>("PersonalDetailsId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PersonalDetailsId"));
+
+                    b.Property<DateOnly>("DateOfBirth")
+                        .HasColumnType("date");
+
+                    b.Property<string>("DistrictOfBirth")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("EducationQualification")
+                        .HasMaxLength(100)
+                        .HasColumnType("int");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("IDProofImage")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<int>("LoanApplicationBaseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PANNumber")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("ResidentialStatus")
+                        .HasMaxLength(50)
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("SignatureImage")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.HasKey("PersonalDetailsId");
+
+                    b.HasIndex("LoanApplicationBaseId")
+                        .IsUnique();
+
+                    b.ToTable("PersonalDetails");
                 });
 
             modelBuilder.Entity("Kanini.LMP.Database.Entities.LoanProductEntities.LoanProduct", b =>
@@ -420,6 +589,9 @@ namespace Kanini.LMP.Data.Migrations
                     b.Property<int>("PropertyType")
                         .HasColumnType("int");
 
+                    b.Property<int>("ZipCode")
+                        .HasColumnType("int");
+
                     b.ToTable("HomeLoanApplications", (string)null);
                 });
 
@@ -510,15 +682,70 @@ namespace Kanini.LMP.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Kanini.LMP.Database.Entities.CustomerEntities.Customer", "CustomerRef")
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities.AddressInformation", b =>
+                {
+                    b.HasOne("Kanini.LMP.Database.Entities.CustomerEntities.LoanApplicationBase", "LoanApplicationBase")
+                        .WithOne("AddressInformation")
+                        .HasForeignKey("Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities.AddressInformation", "LoanApplicationBaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LoanApplicationBase");
+                });
+
+            modelBuilder.Entity("Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities.Declaration", b =>
+                {
+                    b.HasOne("Kanini.LMP.Database.Entities.CustomerEntities.LoanApplicationBase", "LoanApplicationBase")
+                        .WithOne("Declaration")
+                        .HasForeignKey("Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities.Declaration", "LoanApplicationBaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LoanApplicationBase");
+                });
+
+            modelBuilder.Entity("Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities.FamilyEmergencyDetails", b =>
+                {
+                    b.HasOne("Kanini.LMP.Database.Entities.CustomerEntities.Customer", "Customer")
                         .WithMany()
-                        .HasForeignKey("CustomerRefCustomerId")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Kanini.LMP.Database.Entities.CustomerEntities.LoanApplicationBase", "LoanApplicationBase")
+                        .WithOne("FamilyEmergencyDetails")
+                        .HasForeignKey("Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities.FamilyEmergencyDetails", "LoanApplicationBaseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Customer");
 
-                    b.Navigation("CustomerRef");
+                    b.Navigation("LoanApplicationBase");
+                });
+
+            modelBuilder.Entity("Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities.LoanDetails", b =>
+                {
+                    b.HasOne("Kanini.LMP.Database.Entities.CustomerEntities.LoanApplicationBase", "LoanApplicationBase")
+                        .WithOne("LoanDetails")
+                        .HasForeignKey("Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities.LoanDetails", "LoanApplicationBaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LoanApplicationBase");
+                });
+
+            modelBuilder.Entity("Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities.PersonalDetails", b =>
+                {
+                    b.HasOne("Kanini.LMP.Database.Entities.CustomerEntities.LoanApplicationBase", "LoanApplicationBase")
+                        .WithOne("PersonalDetails")
+                        .HasForeignKey("Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities.PersonalDetails", "LoanApplicationBaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LoanApplicationBase");
                 });
 
             modelBuilder.Entity("Kanini.LMP.Database.Entities.Notification", b =>
@@ -566,6 +793,24 @@ namespace Kanini.LMP.Data.Migrations
             modelBuilder.Entity("Kanini.LMP.Database.Entities.CustomerEntities.Customer", b =>
                 {
                     b.Navigation("LoanApplications");
+                });
+
+            modelBuilder.Entity("Kanini.LMP.Database.Entities.CustomerEntities.LoanApplicationBase", b =>
+                {
+                    b.Navigation("AddressInformation")
+                        .IsRequired();
+
+                    b.Navigation("Declaration")
+                        .IsRequired();
+
+                    b.Navigation("FamilyEmergencyDetails")
+                        .IsRequired();
+
+                    b.Navigation("LoanDetails")
+                        .IsRequired();
+
+                    b.Navigation("PersonalDetails")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

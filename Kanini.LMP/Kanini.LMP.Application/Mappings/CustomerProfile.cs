@@ -14,7 +14,8 @@ namespace Kanini.LMP.Application.Mappings
             CreateMap<CustomerCreateDTO, Customer>();
             CreateMap<CustomerUpdateDTO, Customer>();
             CreateMap<Customer, CustomerDTO>()
-                .ForMember(d => d.Age, o => o.MapFrom(s => s.Age));
+                .ForMember(d => d.Age, o => o.MapFrom(s => s.Age))
+                .ForMember(d => d.ProfileImageBase64, o => o.MapFrom(s => s.ProfileImage != null ? Convert.ToBase64String(s.ProfileImage) : null));
             CreateMap<Customer, CustomerResponseDTO>()
                 .ForMember(d => d.Age, o => o.MapFrom(s => s.Age));
 

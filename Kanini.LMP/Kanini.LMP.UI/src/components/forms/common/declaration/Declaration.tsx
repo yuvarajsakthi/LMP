@@ -82,10 +82,34 @@ const Declaration: React.FC<DeclarationProps> = ({
           monthlyIncome: formData.loanDetails.monthlyIncome!,
           workExperienceYears: formData.loanDetails.workExperienceYears!,
           loanPurpose: formData.loanDetails.loanPurpose!,
-          documents: formData.documents,
-          personalDetails: formData.personalDetails as any,
-          addressInformation: formData.addressInformation as any,
-          familyEmergencyDetails: formData.familyEmergencyDetails as any,
+          documents: formData.documents || [],
+          personalDetails: {
+            fullName: formData.personalDetails.fullName || '',
+            dateOfBirth: formData.personalDetails.dateOfBirth || '',
+            districtOfBirth: formData.personalDetails.districtOfBirth || '',
+            panNumber: formData.personalDetails.panNumber || '',
+            educationQualification: formData.personalDetails.educationQualification || 0,
+            residentialStatus: formData.personalDetails.residentialStatus || 0,
+            gender: formData.personalDetails.gender || 0,
+            signatureImage: formData.personalDetails.signatureImage!,
+            idProofImage: formData.personalDetails.idProofImage!
+          },
+          addressInformation: {
+            presentAddress: formData.addressInformation.presentAddress || '',
+            permanentAddress: formData.addressInformation.permanentAddress || '',
+            district: formData.addressInformation.district || '',
+            state: formData.addressInformation.state || 0,
+            zipCode: formData.addressInformation.zipCode || '',
+            emailId: formData.addressInformation.emailId,
+            mobileNumber1: formData.addressInformation.mobileNumber1 || '',
+            mobileNumber2: formData.addressInformation.mobileNumber2
+          },
+          familyEmergencyDetails: {
+            fullName: formData.familyEmergencyDetails.fullName || '',
+            relationshipWithApplicant: formData.familyEmergencyDetails.relationshipWithApplicant || '',
+            mobileNumber: formData.familyEmergencyDetails.mobileNumber || '',
+            address: formData.familyEmergencyDetails.address || ''
+          },
           declaration: declarationData
         };
         await submitPersonalLoan(payload);
@@ -102,10 +126,34 @@ const Declaration: React.FC<DeclarationProps> = ({
           propertyCost: formData.loanDetails.propertyCost!,
           downPayment: formData.loanDetails.downPayment!,
           loanPurpose: formData.loanDetails.loanPurpose!,
-          documents: formData.documents,
-          personalDetails: formData.personalDetails as any,
-          addressInformation: formData.addressInformation as any,
-          familyEmergencyDetails: formData.familyEmergencyDetails as any,
+          documents: formData.documents || [],
+          personalDetails: {
+            fullName: formData.personalDetails.fullName || '',
+            dateOfBirth: formData.personalDetails.dateOfBirth || '',
+            districtOfBirth: formData.personalDetails.districtOfBirth || '',
+            panNumber: formData.personalDetails.panNumber || '',
+            educationQualification: formData.personalDetails.educationQualification || 0,
+            residentialStatus: formData.personalDetails.residentialStatus || 0,
+            gender: formData.personalDetails.gender || 0,
+            signatureImage: formData.personalDetails.signatureImage!,
+            idProofImage: formData.personalDetails.idProofImage!
+          },
+          addressInformation: {
+            presentAddress: formData.addressInformation.presentAddress || '',
+            permanentAddress: formData.addressInformation.permanentAddress || '',
+            district: formData.addressInformation.district || '',
+            state: formData.addressInformation.state || 0,
+            zipCode: formData.addressInformation.zipCode || '',
+            emailId: formData.addressInformation.emailId,
+            mobileNumber1: formData.addressInformation.mobileNumber1 || '',
+            mobileNumber2: formData.addressInformation.mobileNumber2
+          },
+          familyEmergencyDetails: {
+            fullName: formData.familyEmergencyDetails.fullName || '',
+            relationshipWithApplicant: formData.familyEmergencyDetails.relationshipWithApplicant || '',
+            mobileNumber: formData.familyEmergencyDetails.mobileNumber || '',
+            address: formData.familyEmergencyDetails.address || ''
+          },
           declaration: declarationData
         };
         await submitHomeLoan(payload);
@@ -121,10 +169,34 @@ const Declaration: React.FC<DeclarationProps> = ({
           onRoadPrice: formData.loanDetails.onRoadPrice!,
           downPayment: formData.loanDetails.downPayment!,
           loanPurposeVehicle: formData.loanDetails.loanPurposeVehicle!,
-          documents: formData.documents,
-          personalDetails: formData.personalDetails as any,
-          addressInformation: formData.addressInformation as any,
-          familyEmergencyDetails: formData.familyEmergencyDetails as any,
+          documents: formData.documents || [],
+          personalDetails: {
+            fullName: formData.personalDetails.fullName || '',
+            dateOfBirth: formData.personalDetails.dateOfBirth || '',
+            districtOfBirth: formData.personalDetails.districtOfBirth || '',
+            panNumber: formData.personalDetails.panNumber || '',
+            educationQualification: formData.personalDetails.educationQualification || 0,
+            residentialStatus: formData.personalDetails.residentialStatus || 0,
+            gender: formData.personalDetails.gender || 0,
+            signatureImage: formData.personalDetails.signatureImage!,
+            idProofImage: formData.personalDetails.idProofImage!
+          },
+          addressInformation: {
+            presentAddress: formData.addressInformation.presentAddress || '',
+            permanentAddress: formData.addressInformation.permanentAddress || '',
+            district: formData.addressInformation.district || '',
+            state: formData.addressInformation.state || 0,
+            zipCode: formData.addressInformation.zipCode || '',
+            emailId: formData.addressInformation.emailId,
+            mobileNumber1: formData.addressInformation.mobileNumber1 || '',
+            mobileNumber2: formData.addressInformation.mobileNumber2
+          },
+          familyEmergencyDetails: {
+            fullName: formData.familyEmergencyDetails.fullName || '',
+            relationshipWithApplicant: formData.familyEmergencyDetails.relationshipWithApplicant || '',
+            mobileNumber: formData.familyEmergencyDetails.mobileNumber || '',
+            address: formData.familyEmergencyDetails.address || ''
+          },
           declaration: declarationData
         };
         await submitVehicleLoan(payload);

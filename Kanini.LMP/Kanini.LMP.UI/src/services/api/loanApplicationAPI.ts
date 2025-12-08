@@ -1,11 +1,10 @@
-import axios from 'axios';
+import axiosInstance from './axiosInstance';
 import type {
   PersonalLoanApplicationCreateDTO,
   HomeLoanApplicationCreateDTO,
   VehicleLoanApplicationCreateDTO
 } from '../../types/loanApplicationCreate';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 export const loanApplicationAPI = {
   createPersonalLoan: async (customerId: number, data: PersonalLoanApplicationCreateDTO) => {
@@ -66,14 +65,9 @@ export const loanApplicationAPI = {
     formData.append('Declaration.Description', data.declaration.description);
     formData.append('Declaration.Purpose', data.declaration.purpose);
 
-    const response = await axios.post(
-      `${API_BASE_URL}/api/LoanApplicationFlow/personal/${customerId}`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      }
+    const response = await axiosInstance.post(
+      `/api/LoanApplicationFlow/personal/${customerId}`,
+      formData
     );
     return response.data;
   },
@@ -142,14 +136,9 @@ export const loanApplicationAPI = {
     formData.append('Declaration.Description', data.declaration.description);
     formData.append('Declaration.Purpose', data.declaration.purpose);
 
-    const response = await axios.post(
-      `${API_BASE_URL}/api/LoanApplicationFlow/home/${customerId}`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      }
+    const response = await axiosInstance.post(
+      `/api/LoanApplicationFlow/home/${customerId}`,
+      formData
     );
     return response.data;
   },
@@ -217,14 +206,9 @@ export const loanApplicationAPI = {
     formData.append('Declaration.Description', data.declaration.description);
     formData.append('Declaration.Purpose', data.declaration.purpose);
 
-    const response = await axios.post(
-      `${API_BASE_URL}/api/LoanApplicationFlow/vehicle/${customerId}`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      }
+    const response = await axiosInstance.post(
+      `/api/LoanApplicationFlow/vehicle/${customerId}`,
+      formData
     );
     return response.data;
   }

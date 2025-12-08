@@ -27,7 +27,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             _pdfService = pdfService;
         }
 
-        public async Task<PersonalLoanApplicationDTO> CreatePersonalLoanAsync(PersonalLoanApplicationCreateDTO dto, IdDTO customerId)
+        public async Task<PersonalLoanApplicationDTO> CreatePersonalLoanAsync(PersonalLoanApplicationDTO dto, IdDTO customerId)
         {
             var eligibility = await _eligibilityService.CalculateEligibilityAsync(customerId, new IdDTO { Id = (int)LoanType.Personal });
             if (eligibility.EligibilityScore < 50)
@@ -57,7 +57,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             return loan == null ? null : _mapper.Map<PersonalLoanApplicationDTO>(loan);
         }
 
-        public async Task<HomeLoanApplicationDTO> CreateHomeLoanAsync(HomeLoanApplicationCreateDTO dto, IdDTO customerId)
+        public async Task<HomeLoanApplicationDTO> CreateHomeLoanAsync(HomeLoanApplicationDTO dto, IdDTO customerId)
         {
             var eligibility = await _eligibilityService.CalculateEligibilityAsync(customerId, new IdDTO { Id = (int)LoanType.Home });
             if (eligibility.EligibilityScore < 50)
@@ -87,7 +87,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             return loan == null ? null : _mapper.Map<HomeLoanApplicationDTO>(loan);
         }
 
-        public async Task<VehicleLoanApplicationDTO> CreateVehicleLoanAsync(VehicleLoanApplicationCreateDTO dto, IdDTO customerId)
+        public async Task<VehicleLoanApplicationDTO> CreateVehicleLoanAsync(VehicleLoanApplicationDTO dto, IdDTO customerId)
         {
             var eligibility = await _eligibilityService.CalculateEligibilityAsync(customerId, new IdDTO { Id = (int)LoanType.Vehicle });
             if (eligibility.EligibilityScore < 50)

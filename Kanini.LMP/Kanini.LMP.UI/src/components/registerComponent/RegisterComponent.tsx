@@ -202,9 +202,9 @@ const RegisterComponent = () => {
     return (
       <div className={RegisterCss.registerContainer}>
         <div className={RegisterCss.header}>
-          <img src={LoanAcceleratorLogo} alt="Loan Accelerator" className={RegisterCss.logo} />
+          <img src={LoanAcceleratorLogo} alt="LMP" className={RegisterCss.logo} />
           <h2 className={RegisterCss.brandName}>
-            <span className={RegisterCss.brandHighlight}>Loan</span> Accelerator
+            <span className={RegisterCss.brandHighlight}>LMP</span>
           </h2>
         </div>
 
@@ -247,9 +247,9 @@ const RegisterComponent = () => {
   return (
     <div className={RegisterCss.registerContainer}>
       <div className={RegisterCss.header}>
-        <img src={LoanAcceleratorLogo} alt="Loan Accelerator" className={RegisterCss.logo} />
+        <img src={LoanAcceleratorLogo} alt="LMP" className={RegisterCss.logo} />
         <h2 className={RegisterCss.brandName}>
-          <span className={RegisterCss.brandHighlight}>Loan</span> Accelerator
+          <span className={RegisterCss.brandHighlight}>LMP</span>
         </h2>
       </div>
 

@@ -9,7 +9,7 @@ const LoginRegister = () => {
             <div className={LoginRegisterCss.content}>
                 <img src={Logo} alt="Logo" className={LoginRegisterCss.logo} />
                 <p className={LoginRegisterCss.welcome}>
-                    Welcome to <span className={LoginRegisterCss.brandHighlight}>Loan Accelerator</span>
+                    Welcome to <span className={LoginRegisterCss.brandHighlight}>LMP</span>
                 </p>
                 <p className={LoginRegisterCss.subText}>Login to access your account</p>
             </div>

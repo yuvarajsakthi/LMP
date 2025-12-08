@@ -54,8 +54,8 @@ namespace Kanini.LMP.Application.Services.Implementations
                 return await CalculateAndCreateEmiPlanAsync(
                     loanApplicationId,
                     new IdDTO { Id = personalLoan.CustomerId },
-                    personalLoan.RequestedLoanAmount,
-                    personalLoan.InterestRate ?? 0,
+                    personalLoan.RequestedAmount,
+                    10.5m,
                     personalLoan.TenureMonths,
                     LoanType.Personal);
             }
@@ -66,8 +66,8 @@ namespace Kanini.LMP.Application.Services.Implementations
                 return await CalculateAndCreateEmiPlanAsync(
                     loanApplicationId,
                     new IdDTO { Id = homeLoan.CustomerId },
-                    homeLoan.RequestedLoanAmount,
-                    homeLoan.InterestRate ?? 0,
+                    homeLoan.RequestedAmount,
+                    8.5m,
                     homeLoan.TenureMonths,
                     LoanType.Home);
             }
@@ -78,8 +78,8 @@ namespace Kanini.LMP.Application.Services.Implementations
                 return await CalculateAndCreateEmiPlanAsync(
                     loanApplicationId,
                     new IdDTO { Id = vehicleLoan.CustomerId },
-                    vehicleLoan.RequestedLoanAmount,
-                    vehicleLoan.InterestRate ?? 0,
+                    vehicleLoan.RequestedAmount,
+                    9.5m,
                     vehicleLoan.TenureMonths,
                     LoanType.Vehicle);
             }

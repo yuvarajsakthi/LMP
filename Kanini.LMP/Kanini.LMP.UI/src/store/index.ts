@@ -29,3 +29,4 @@ export * from './slices/eligibilitySlice';
 export * from './slices/faqSlice';
 export * from './slices/loanApplicationSlice';
 export * from './slices/notificationSlice';
+export { fetchCustomerById } from './slices/customerSlice';

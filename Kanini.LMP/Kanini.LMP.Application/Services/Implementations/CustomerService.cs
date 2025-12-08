@@ -116,16 +116,16 @@ namespace Kanini.LMP.Application.Services.Implementations
             }
         }
 
-        public async Task<CustomerDTO> Update(CustomerUpdateDTO entity)
+        public async Task<CustomerDTO> Update(IdDTO customerId, CustomerUpdateDTO entity)
         {
             try
             {
-                _logger.LogInformation("Updating customer with ID: {CustomerId}", entity.CustomerId);
+                _logger.LogInformation("Updating customer with ID: {CustomerId}", customerId);
 
-                var existingCustomer = await _unitOfWork.Customers.GetByIdAsync(entity.CustomerId);
+                var existingCustomer = await _unitOfWork.Customers.GetByIdAsync(customerId.Id);
                 if (existingCustomer == null)
                 {
-                    _logger.LogWarning("Customer with ID {CustomerId} not found for update", entity.CustomerId);
+                    _logger.LogWarning("Customer with ID {CustomerId} not found for update", customerId);
                     throw new KeyNotFoundException(ApplicationConstants.ErrorMessages.CustomerNotFound);
                 }
 
@@ -135,12 +135,12 @@ namespace Kanini.LMP.Application.Services.Implementations
                 var updated = await _unitOfWork.Customers.UpdateAsync(existingCustomer);
                 await _unitOfWork.SaveChangesAsync();
 
-                _logger.LogInformation("Customer updated successfully with ID: {CustomerId}", entity.CustomerId);
+                _logger.LogInformation("Customer updated successfully with ID: {CustomerId}", customerId);
                 return _mapper.Map<CustomerDTO>(updated);
             }
             catch (Exception ex) when (!(ex is KeyNotFoundException))
             {
-                _logger.LogError(ex, "Error updating customer with ID: {CustomerId}", entity.CustomerId);
+                _logger.LogError(ex, "Error updating customer with ID: {CustomerId}", customerId);
                 throw new InvalidOperationException("Failed to update customer", ex);
             }
         }

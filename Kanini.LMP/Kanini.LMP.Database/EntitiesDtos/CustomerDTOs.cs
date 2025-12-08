@@ -47,12 +47,11 @@ namespace Kanini.LMP.Database.EntitiesDtos.CustomerDtos
         public string AadhaarNumber { get; set; } = null!;
         public string PANNumber { get; set; } = null!;
         public int Age { get; set; }
+        public string? ProfileImageBase64 { get; set; }
     }
 
     public class CustomerUpdateDTO
     {
-        [Required]
-        public int CustomerId { get; set; }
 
         [Required]
         [RegularExpression(@"^(\+91[-\s]?)?[6-9]\d{9}$")]

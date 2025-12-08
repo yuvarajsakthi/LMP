@@ -43,25 +43,28 @@
   margin-bottom: 8px;
 }
 
-.upload {
+.dropzone {
+  border: 2px dashed #d9d9d9;
+  border-radius: 6px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: white;
   margin-bottom: 8px;
 }
 
-.uploadButton {
-  background: #2c76c9;
-  border-color: #2c76c9;
-  color: white;
-}
-
-.uploadButton:hover {
-  background: #1e5ba8;
-  border-color: #1e5ba8;
+.dropzone:hover {
+  border-color: #1890ff;
+  background: #f0f7ff;
 }
 
 .hint {
+  display: block;
   color: #666;
   font-size: 12px;
   font-style: italic;
+  margin-top: 4px;
 }
 
 .buttonContainer {
