@@ -70,6 +70,7 @@ namespace Kanini.LMP.Database.EntitiesDtos.CustomerDtos
         public HomeOwnershipStatus? HomeOwnershipStatus { get; set; }
         public string? AadhaarNumber { get; set; }
         public string? PANNumber { get; set; }
+        public byte[]? ProfileImage { get; set; }
     }
 
     public class CustomerResponseDTO

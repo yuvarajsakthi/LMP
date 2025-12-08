@@ -91,7 +91,7 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             var emiPlan = (await _unitOfWork.EMIPlans.GetAllAsync(e => e.CustomerId == customerId.Id && !e.IsCompleted)).FirstOrDefault();
             if (emiPlan == null)
-                return null;
+                return null!;
 
             var dashboard = _mapper.Map<EMIDashboardDTO>(emiPlan);
             dashboard.NextPaymentDate = emiPlan.NextPaymentDate ?? DateTime.UtcNow;

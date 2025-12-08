@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Typography, Input, Button, message } from "antd";
-import { useDispatch, useSelector } from 'react-redux';
 import { LoanAcceleratorLogo } from "../../assets";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import LoginComponentCss from "./LoginComponent.module.css";
@@ -8,13 +7,13 @@ import { useAuth } from "../../context";
 import type { LoginCredentials, InputChangeEvent } from "../../types";
 import { COMMON_ROUTES, CUSTOMER_ROUTES, MANAGER_ROUTES, USER_ROLES } from "../../config";
 import { validateField } from "../../utils";
-import { loginUser } from "../../store/slices/authSlice";
-import type { RootState, AppDispatch } from "../../store";
+import { useAppDispatch, useAppSelector } from "../../hooks";
+import { loginUser, sendOTP, verifyOTP } from "../../store";
 const { Title } = Typography;
 
 const Login = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const isLoading = useSelector((state: RootState) => (state.auth as any).isLoading);
+  const dispatch = useAppDispatch();
+  const { isLoading } = useAppSelector(state => state.auth);
   const { setToken } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -49,12 +48,11 @@ const Login = () => {
       return;
     }
     try {
-      const { authAPI } = await import('../../services');
-      await authAPI.sendLoginOTP({ email });
+      await dispatch(sendOTP({ email, purpose: 'LOGIN' })).unwrap();
       setOtpSent(true);
       message.success('OTP sent to your email');
     } catch (error: any) {
-      console.error('Failed to send OTP:', error);
+      message.error(error.message || 'Failed to send OTP');
     }
   };
 
@@ -65,9 +63,7 @@ const Login = () => {
         return;
       }
       try {
-        const { authAPI } = await import('../../services');
-        
-        await authAPI.verifyOTP({ email, otp });
+        await dispatch(verifyOTP({ email, otp, purpose: 'REGISTER' })).unwrap();
         message.success('Account verified! Logging you in...');
         
         const loginData: LoginCredentials = { Username: email, PasswordHash: password };
@@ -106,7 +102,7 @@ const Login = () => {
         const result = await dispatch(loginUser(loginData)).unwrap();
         
         if ('requiresVerification' in result && result.requiresVerification) {
-          message.warning('Account not verified. OTP sent to your email.');
+          message.warning('Account not verified. Please verify with OTP to continue.');
           setUseOTPLogin(true);
           setOtpSent(true);
           return;

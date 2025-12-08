@@ -26,15 +26,22 @@ namespace Kanini.LMP.Application.Services.Implementations
             
             _cache.Set(cacheKey, otp, TimeSpan.FromMinutes(5));
             
-            await _emailService.SendOTPEmailAsync(new OTPEmailDto
-            {
-                Email = email.Value,
-                Name = email.Value.Split('@')[0],
-                OTP = otp,
-                Purpose = purpose.Value
-            });
+            _logger.LogInformation($"OTP generated for email {email.Value}, purpose: {purpose.Value}, OTP: {otp}");
             
-            _logger.LogInformation($"OTP generated for email {email.Value}, purpose: {purpose.Value}");
+            try
+            {
+                await _emailService.SendOTPEmailAsync(new OTPEmailDto
+                {
+                    Email = email.Value,
+                    Name = email.Value.Split('@')[0],
+                    OTP = otp,
+                    Purpose = purpose.Value
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning($"Failed to send email, but OTP is cached. OTP: {otp}, Error: {ex.Message}");
+            }
             return new StringDTO { Value = otp };
         }
 

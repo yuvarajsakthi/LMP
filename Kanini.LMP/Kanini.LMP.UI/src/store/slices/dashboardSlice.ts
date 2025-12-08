@@ -42,7 +42,7 @@ export const fetchRecentLoans = createAsyncThunk(
 
 export const fetchEligibilityScore = createAsyncThunk(
   'dashboard/fetchEligibilityScore',
-  async () => await customerDashboardAPI.getEligibilityScore()
+  async (customerId: number) => await customerDashboardAPI.getEligibilityScore(customerId)
 );
 
 export const fetchApplicationStatus = createAsyncThunk(

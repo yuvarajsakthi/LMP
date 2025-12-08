@@ -15,7 +15,9 @@ namespace Kanini.LMP.Application.Mappings
             CreateMap<User, UserDTO>().ReverseMap();
             CreateMap<User, UserResponseDTO>();
             CreateMap<CustomerRegistrationDTO, User>();
-            CreateMap<CustomerRegistrationDTO, Customer>();
+            CreateMap<CustomerRegistrationDTO, Customer>()
+                .ForMember(d => d.PANNumber, o => o.MapFrom(s => s.PANNumber))
+                .ForMember(d => d.AadhaarNumber, o => o.MapFrom(s => s.AadhaarNumber));
         }
     }
 }

@@ -1,46 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, List, Input, Button, message, Tag, Space } from 'antd';
 import { QuestionCircleOutlined, CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import Layout from '../../../layout/Layout';
-import axios from 'axios';
-import { useAuth } from '../../../context';
+import { useAppDispatch, useAppSelector } from '../../../hooks';
+import { getAllFaqs, updateFaq } from '../../../store/slices/faqSlice';
 
-const { TextArea } = Input;
+const { TextArea } = Input; 
 
-interface FAQ {
-  id: number;
-  customerId: number;
-  question: string;
-  answer: string | null;
-  status: number;
-}
-
-const ManagerFAQ: React.FC = () => {
-  const { token } = useAuth();
-  const [faqs, setFaqs] = useState<FAQ[]>([]);
-  const [loading, setLoading] = useState(true);
+const ManagerFAQ = () => {
+  const dispatch = useAppDispatch();
+  const { faqs, loading } = useAppSelector((state) => state.faq);
   const [answeringId, setAnsweringId] = useState<number | null>(null);
   const [answerText, setAnswerText] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchFAQs();
-  }, []);
+    dispatch(getAllFaqs()).then((result) => {
+      console.log('FAQ Response:', result);
+    });
+  }, [dispatch]);
 
-  const fetchFAQs = async () => {
-    try {
-      const res = await axios.get('/api/Faq', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setFaqs(res.data?.data || []);
-    } catch (error) {
-      message.error('Failed to fetch FAQs');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAnswerSubmit = async (faqId: number) => {
+  const handleAnswerSubmit = async (faqId: number, customerId: number, question: string) => {
     if (!answerText.trim()) {
       message.warning('Please enter an answer');
       return;
@@ -48,17 +28,19 @@ const ManagerFAQ: React.FC = () => {
 
     setSubmitting(true);
     try {
-      await axios.put(`/api/Faq/${faqId}`, {
+      await dispatch(updateFaq({
         id: faqId,
-        answer: answerText,
-        status: 1
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+        faq: {
+          id: faqId,
+          customerId,
+          question,
+          answer: answerText,
+          status: '1'
+        }
+      })).unwrap();
       message.success('Answer submitted successfully');
       setAnsweringId(null);
       setAnswerText('');
-      fetchFAQs();
     } catch (error) {
       message.error('Failed to submit answer');
     } finally {
@@ -66,14 +48,16 @@ const ManagerFAQ: React.FC = () => {
     }
   };
 
-  const getStatusTag = (status: number) => {
-    switch (status) {
-      case 0:
+  const getStatusTag = (status: string | undefined) => {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+      case '0':
         return <Tag icon={<ClockCircleOutlined />} color="warning">Pending</Tag>;
-      case 1:
+      case 'answered':
+      case '1':
         return <Tag icon={<CheckCircleOutlined />} color="success">Answered</Tag>;
       default:
-        return <Tag color="default">Unknown</Tag>;
+        return <Tag color="default">{status || 'Unknown'}</Tag>;
     }
   };
 
@@ -90,7 +74,9 @@ const ManagerFAQ: React.FC = () => {
           <List
             loading={loading}
             dataSource={faqs}
-            renderItem={(faq) => (
+            renderItem={(faq) => {
+              console.log('FAQ Item:', faq);
+              return (
               <List.Item
                 key={faq.id}
                 style={{
@@ -105,7 +91,7 @@ const ManagerFAQ: React.FC = () => {
                 <div style={{ marginBottom: '12px' }}>
                   <Space>
                     {getStatusTag(faq.status)}
-                    <span style={{ color: '#999', fontSize: '12px' }}>Customer ID: {faq.customerId}</span>
+                    {faq.customerName && <span style={{ color: '#999', fontSize: '12px' }}>Customer: {faq.customerName}</span>}
                   </Space>
                 </div>
 
@@ -136,7 +122,7 @@ const ManagerFAQ: React.FC = () => {
                       <Button
                         type="primary"
                         loading={submitting}
-                        onClick={() => handleAnswerSubmit(faq.id)}
+                        onClick={() => handleAnswerSubmit(faq.id!, faq.customerId!, faq.question)}
                       >
                         Submit Answer
                       </Button>
@@ -151,13 +137,14 @@ const ManagerFAQ: React.FC = () => {
                 ) : (
                   <Button
                     type="primary"
-                    onClick={() => setAnsweringId(faq.id)}
+                    onClick={() => setAnsweringId(faq.id!)}
                   >
                     Answer Question
                   </Button>
                 )}
               </List.Item>
-            )}
+            );
+            }}
           />
         </Card>
       </div>

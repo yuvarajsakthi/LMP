@@ -32,7 +32,8 @@ namespace Kanini.LMP.Data.Migrations
 
                     b.Property<string>("AadhaarNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(12)
+                        .HasColumnType("nvarchar(12)");
 
                     b.Property<decimal>("AnnualIncome")
                         .HasColumnType("decimal(18,2)");
@@ -56,7 +57,8 @@ namespace Kanini.LMP.Data.Migrations
 
                     b.Property<string>("PANNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
@@ -95,11 +97,20 @@ namespace Kanini.LMP.Data.Migrations
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime?>("LastPaymentDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("LoanApplicationBaseId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("MonthlyEMI")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("NextPaymentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PaidInstallments")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("PrincipleAmount")
                         .HasColumnType("decimal(18,2)");

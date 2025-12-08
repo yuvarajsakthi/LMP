@@ -102,12 +102,19 @@ namespace Kanini.LMP.Api.Controllers
         }
 
         [HttpPut(ApiConstants.Routes.CustomerController.Update)]
-        public async Task<ActionResult<ApiResponse<CustomerDTO>>> UpdateCustomer(int id, CustomerUpdateDTO customerDto)
+        public async Task<ActionResult<ApiResponse<CustomerDTO>>> UpdateCustomer(int id, [FromForm] CustomerUpdateDTO customerDto, IFormFile? profileImage)
         {
             try
             {
                 if (id != customerDto.CustomerId)
                     return BadRequest(ApiResponse<CustomerDTO>.ErrorResponse("ID mismatch"));
+
+                if (profileImage != null)
+                {
+                    using var ms = new MemoryStream();
+                    await profileImage.CopyToAsync(ms);
+                    customerDto.ProfileImage = ms.ToArray();
+                }
 
                 var updated = await _customerService.Update(customerDto);
                 return Ok(ApiResponse<CustomerDTO>.SuccessResponse(updated));
@@ -119,7 +126,7 @@ namespace Kanini.LMP.Api.Controllers
         }
 
         [HttpPut(ApiConstants.Routes.CustomerController.UpdateSettings)]
-        public async Task<ActionResult<ApiResponse<object>>> UpdateSettings(int userId, CustomerUpdateDTO settingsDto)
+        public async Task<ActionResult<ApiResponse<object>>> UpdateSettings(int userId, [FromForm] CustomerUpdateDTO settingsDto, IFormFile? profileImage)
         {
             try
             {
@@ -138,6 +145,13 @@ namespace Kanini.LMP.Api.Controllers
                     Email = user.Email
                 };
                 await _userService.UpdateUserAsync(userUpdate);
+
+                if (profileImage != null)
+                {
+                    using var ms = new MemoryStream();
+                    await profileImage.CopyToAsync(ms);
+                    settingsDto.ProfileImage = ms.ToArray();
+                }
 
                 await _customerService.Update(settingsDto);
 

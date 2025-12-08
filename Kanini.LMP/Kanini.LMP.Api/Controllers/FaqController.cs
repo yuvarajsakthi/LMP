@@ -21,7 +21,7 @@ namespace Kanini.LMP.Api.Controllers
 
         [HttpPost(ApiConstants.Routes.FaqController.Create)]
         [Authorize(Roles = "Customer")]
-        public async Task<ActionResult<ApiResponse<FaqDTO>>> CreateFaq([FromBody] FaqDTO faqDto)
+        public async Task<ActionResult<ApiResponse<FaqDTO>>> CreateFaq([FromForm] FaqDTO faqDto)
         {
             try
             {
@@ -84,7 +84,7 @@ namespace Kanini.LMP.Api.Controllers
 
         [HttpPut(ApiConstants.Routes.FaqController.Update)]
         [Authorize(Roles = "Manager")]
-        public async Task<ActionResult<ApiResponse<FaqDTO>>> UpdateFaq(int id, [FromBody] FaqDTO faqDto)
+        public async Task<ActionResult<ApiResponse<FaqDTO>>> UpdateFaq(int id, [FromForm] FaqDTO faqDto)
         {
             try
             {

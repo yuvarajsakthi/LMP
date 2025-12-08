@@ -15,8 +15,8 @@ import {
 import { HiLockClosed } from 'react-icons/hi';
 import { HiDocumentText } from 'react-icons/hi2';
 import Layout from '../../../layout/Layout';
-import { loanAPI } from '../../../services/api/loanAPI';
-import type { LoanCategory } from '../../../types/loan';
+import { useAppDispatch, useAppSelector } from '../../../hooks';
+import { fetchLoanCategories } from '../../../store/slices/loanApplicationSlice';
 import styles from './ApplyLoan.module.css';
 
 const { Title, Text } = Typography;
@@ -37,25 +37,13 @@ const getIconForCategory = (categoryName: string): React.ReactNode => {
 
 const ApplyLoan: React.FC = () => {
   const navigate = useNavigate();
-  const [loanCategories, setLoanCategories] = useState<LoanCategory[]>([]);
+  const dispatch = useAppDispatch();
+  const { loanCategories, loading } = useAppSelector((state) => state.loanApplication);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchLoanCategories = async () => {
-      try {
-        setLoading(true);
-        const categories = await loanAPI.getLoanCategories();
-        setLoanCategories(categories);
-      } catch (error) {
-        console.error('Error fetching loan categories:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLoanCategories();
-  }, []);
+    dispatch(fetchLoanCategories());
+  }, [dispatch]);
 
   const handleCategorySelect = (categoryId: number) => {
     setSelectedCategory(categoryId);
@@ -63,7 +51,7 @@ const ApplyLoan: React.FC = () => {
 
   const handleNext = () => {
     if (selectedCategory) {
-      const category = loanCategories.find(c => c.loanProductId === selectedCategory);
+      const category = loanCategories.find((c: any) => c.loanProductId === selectedCategory);
       navigate('/loan-application-form', { state: { selectedCategory: category } });
     }
   };

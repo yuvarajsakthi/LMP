@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Modal, Form, Input, Select, Button, Radio, InputNumber, Divider, Card, Progress, Tag } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, BankOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
-import { useApi } from '../../hooks';
-import { loanAPI } from '../../services/api/loanAPI';
+import { useAppDispatch, useAppSelector } from '../../hooks';
+import { checkEligibility } from '../../store/slices/eligibilitySlice';
 import styles from './EligibilityModal.module.css';
 
 interface EligibilityModalProps {
@@ -14,8 +14,8 @@ interface EligibilityModalProps {
 const EligibilityModal: React.FC<EligibilityModalProps> = ({ visible, onClose }) => {
   const [form] = Form.useForm();
   const [isExisting, setIsExisting] = useState(false);
-  const [result, setResult] = useState<any>(null);
-  const { loading, execute } = useApi();
+  const dispatch = useAppDispatch();
+  const { checkResult, loading } = useAppSelector((state) => state.eligibility);
 
   const handleSubmit = async (values: any) => {
     const request = {
@@ -23,18 +23,11 @@ const EligibilityModal: React.FC<EligibilityModalProps> = ({ visible, onClose })
       ...values
     };
 
-    const response = await execute(() => 
-      loanAPI.checkEligibility(request)
-    );
-
-    if (response) {
-      setResult(response);
-    }
+    await dispatch(checkEligibility(request));
   };
 
   const resetForm = () => {
     form.resetFields();
-    setResult(null);
     setIsExisting(false);
   };
 
@@ -43,7 +36,7 @@ const EligibilityModal: React.FC<EligibilityModalProps> = ({ visible, onClose })
     onClose();
   };
 
-  if (result) {
+  if (checkResult) {
     return (
       <Modal
         title="Eligibility Results"
@@ -51,7 +44,7 @@ const EligibilityModal: React.FC<EligibilityModalProps> = ({ visible, onClose })
         onCancel={handleClose}
         footer={[
           <Button key="close" onClick={handleClose}>Close</Button>,
-          <Button key="check-again" onClick={() => setResult(null)}>Check Again</Button>
+          <Button key="check-again" onClick={resetForm}>Check Again</Button>
         ]}
         width={800}
       >
@@ -62,20 +55,20 @@ const EligibilityModal: React.FC<EligibilityModalProps> = ({ visible, onClose })
               <div className={styles.scoreDisplay}>
                 <Progress
                   type="circle"
-                  percent={Math.round((result.eligibilityScore / 850) * 100)}
-                  format={() => result.eligibilityScore}
-                  strokeColor={result.eligibilityScore >= 650 ? '#52c41a' : result.eligibilityScore >= 550 ? '#faad14' : '#ff4d4f'}
+                  percent={Math.round((checkResult.eligibilityScore / 850) * 100)}
+                  format={() => checkResult.eligibilityScore}
+                  strokeColor={checkResult.eligibilityScore >= 650 ? '#52c41a' : checkResult.eligibilityScore >= 550 ? '#faad14' : '#ff4d4f'}
                 />
               </div>
               <p className={styles.creditScore}>
-                Credit Score: {result.creditScore.score} ({result.creditScore.range})
+                Credit Score: {checkResult.creditScore.score} ({checkResult.creditScore.range})
               </p>
             </div>
-            <p className={styles.message}>{result.message}</p>
+            <p className={styles.message}>{checkResult.message}</p>
           </Card>
 
           <Card title="Available Loan Products" className={styles.productsCard}>
-            {result.products.map((product: any) => (
+            {checkResult.products.map((product: any) => (
               <div key={product.productId} className={styles.productItem}>
                 <div className={styles.productInfo}>
                   <span className={styles.productName}>{product.productName}</span>
@@ -91,10 +84,10 @@ const EligibilityModal: React.FC<EligibilityModalProps> = ({ visible, onClose })
             ))}
           </Card>
 
-          {result.improvementTips.length > 0 && (
+          {checkResult.improvementTips.length > 0 && (
             <Card title="Improvement Tips" className={styles.tipsCard}>
               <ul>
-                {result.improvementTips.map((tip: string, index: number) => (
+                {checkResult.improvementTips.map((tip: string, index: number) => (
                   <li key={index}>{tip}</li>
                 ))}
               </ul>

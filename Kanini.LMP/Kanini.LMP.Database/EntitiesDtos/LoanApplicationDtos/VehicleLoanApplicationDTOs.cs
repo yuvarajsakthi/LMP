@@ -1,4 +1,5 @@
 using Kanini.LMP.Database.Enums;
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
 namespace Kanini.LMP.Database.EntitiesDtos.LoanApplicationDtos
@@ -37,6 +38,26 @@ namespace Kanini.LMP.Database.EntitiesDtos.LoanApplicationDtos
 
         [Required]
         public LoanPurposeVehicle LoanPurposeVehicle { get; set; }
+
+        // Document Upload
+        [Required]
+        public List<DocumentUploadDTO> Documents { get; set; } = new();
+
+        // Personal Details
+        [Required]
+        public PersonalDetailsDTO PersonalDetails { get; set; } = null!;
+
+        // Address Information
+        [Required]
+        public AddressInformationDTO AddressInformation { get; set; } = null!;
+
+        // Family & Emergency Details
+        [Required]
+        public FamilyEmergencyDetailsDTO FamilyEmergencyDetails { get; set; } = null!;
+
+        // Declaration
+        [Required]
+        public DeclarationDTO Declaration { get; set; } = null!;
     }
 
     public class VehicleLoanApplicationDTO

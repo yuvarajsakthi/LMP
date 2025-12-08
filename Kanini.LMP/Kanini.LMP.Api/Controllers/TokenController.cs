@@ -32,18 +32,24 @@ namespace Kanini.LMP.Api.Controllers
         {
             try
             {
+                Console.WriteLine($"Login attempt - Username: {loginDto?.Username}");
+                
                 if (loginDto == null || string.IsNullOrEmpty(loginDto.Username) || string.IsNullOrEmpty(loginDto.PasswordHash))
                     return BadRequest(ApiResponse<object>.ErrorResponse("Username and password are required"));
 
                 var user = await _userService.GetUserByEmailAsync(new StringDTO { Value = loginDto.Username });
                 
+                Console.WriteLine($"User found: {user != null}, Status: {user?.Status}");
+                
                 if (user == null)
-                    return Unauthorized(ApiResponse<object>.ErrorResponse("Invalid credentials"));
+                    return Unauthorized(ApiResponse<object>.ErrorResponse("User not found"));
             
                 var passwordValid = PasswordService.VerifyPassword(loginDto.PasswordHash, user.PasswordHash);
                 
+                Console.WriteLine($"Password valid: {passwordValid}");
+                
                 if (!passwordValid)
-                    return Unauthorized(ApiResponse<object>.ErrorResponse("Invalid credentials"));
+                    return Unauthorized(ApiResponse<object>.ErrorResponse("Incorrect password"));
 
                 if (user.Status == Database.Enums.UserStatus.Pending)
                 {

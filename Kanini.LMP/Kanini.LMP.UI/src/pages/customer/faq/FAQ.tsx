@@ -1,45 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { Collapse, Card, Button, Input, message, Tag } from 'antd';
+import { useState, useEffect } from 'react';
+import { Card, List, Button, Input, message, Tag, Space } from 'antd';
 import { QuestionCircleOutlined, PlusOutlined, CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import Layout from '../../../layout/Layout';
-import axios from 'axios';
+import { useAppDispatch, useAppSelector } from '../../../hooks';
+import { createFaq, getFaqsByCustomerId } from '../../../store/slices/faqSlice';
 import { useAuth } from '../../../context';
 
 const { TextArea } = Input;
 
-interface FAQ {
-  id: number;
-  customerId: number;
-  question: string;
-  answer: string | null;
-  status: number;
-}
-
 const FAQ = () => {
+  const dispatch = useAppDispatch();
   const { token } = useAuth();
-  const [faqs, setFaqs] = useState<FAQ[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { faqs, loading } = useAppSelector((state) => state.faq);
   const [showNewQuestion, setShowNewQuestion] = useState(false);
   const [newQuestion, setNewQuestion] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchFAQs();
-  }, []);
-
-  const fetchFAQs = async () => {
-    try {
-      const customerId = localStorage.getItem('customerId');
-      const res = await axios.get(`/api/Faq/customer/${customerId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setFaqs(res.data?.data || []);
-    } catch (error) {
-      message.error('Failed to fetch FAQs');
-    } finally {
-      setLoading(false);
+    const customerId = token?.customerId || token?.CustomerId;
+    if (customerId) {
+      dispatch(getFaqsByCustomerId(parseInt(customerId)));
     }
-  };
+  }, [dispatch, token]);
 
   const handleSubmitQuestion = async () => {
     if (!newQuestion.trim()) {
@@ -49,17 +31,19 @@ const FAQ = () => {
 
     setSubmitting(true);
     try {
-      const customerId = localStorage.getItem('customerId');
-      await axios.post('/api/Faq', {
-        customerId: parseInt(customerId || '0'),
+      const customerId = token?.customerId || token?.CustomerId;
+      if (!customerId) {
+        message.error('Customer ID not found');
+        return;
+      }
+      await dispatch(createFaq({
+        customerId: parseInt(customerId),
         question: newQuestion
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      })).unwrap();
       message.success('Question submitted successfully');
       setNewQuestion('');
       setShowNewQuestion(false);
-      fetchFAQs();
+      dispatch(getFaqsByCustomerId(parseInt(customerId)));
     } catch (error) {
       message.error('Failed to submit question');
     } finally {
@@ -113,32 +97,62 @@ const FAQ = () => {
             )}
           </div>
           
-          <Collapse 
-            accordion
+          <List
             loading={loading}
-            items={faqs.map(item => ({
-              key: item.id.toString(),
-              label: (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>{item.question}</span>
-                  {item.status === 0 ? (
-                    <Tag icon={<ClockCircleOutlined />} color="warning">Pending</Tag>
-                  ) : (
-                    <Tag icon={<CheckCircleOutlined />} color="success">Answered</Tag>
-                  )}
+            dataSource={faqs}
+            renderItem={(faq) => (
+              <List.Item
+                key={faq.id}
+                style={{
+                  flexDirection: 'column',
+                  alignItems: 'stretch',
+                  padding: '20px',
+                  border: '1px solid #f0f0f0',
+                  borderRadius: '8px',
+                  marginBottom: '16px'
+                }}
+              >
+                <div style={{ marginBottom: '12px' }}>
+                  <Space>
+                    {(faq.status?.toLowerCase() === 'pending' || faq.status === '0' || !faq.answer) ? (
+                      <Tag icon={<ClockCircleOutlined />} color="warning">Pending</Tag>
+                    ) : (
+                      <Tag icon={<CheckCircleOutlined />} color="success">Answered</Tag>
+                    )}
+                  </Space>
                 </div>
-              ),
-              children: item.answer ? (
-                <p style={{ color: '#52c41a', fontWeight: 500 }}>{item.answer}</p>
-              ) : (
-                <p style={{ color: '#999', fontStyle: 'italic' }}>Waiting for manager's response...</p>
-              )
-            }))}
+
+                <div style={{ marginBottom: '12px' }}>
+                  <strong style={{ fontSize: '16px', color: '#262626' }}>Q: {faq.question}</strong>
+                </div>
+
+                {faq.answer ? (
+                  <div style={{ 
+                    backgroundColor: '#f6ffed', 
+                    padding: '12px', 
+                    borderRadius: '4px',
+                    borderLeft: '3px solid #52c41a'
+                  }}>
+                    <strong style={{ color: '#52c41a' }}>A: </strong>
+                    <span>{faq.answer}</span>
+                  </div>
+                ) : (
+                  <div style={{ 
+                    backgroundColor: '#fff7e6', 
+                    padding: '12px', 
+                    borderRadius: '4px',
+                    borderLeft: '3px solid #faad14'
+                  }}>
+                    <span style={{ color: '#999', fontStyle: 'italic' }}>Waiting for manager's response...</span>
+                  </div>
+                )}
+              </List.Item>
+            )}
           />
         </Card>
       </div>
     </Layout>
   );
-};}
+};
 
 export default FAQ;

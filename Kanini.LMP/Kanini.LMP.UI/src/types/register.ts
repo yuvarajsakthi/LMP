@@ -5,6 +5,10 @@ export interface RegisterCredentials {
   dateOfBirth: string;
   gender: number;
   phoneNumber: string;
+  panNumber: string;
+  aadhaarNumber: string;
+  annualIncome: number;
+  homeOwnershipStatus?: number;
 }
 
 export interface RegisterResponse {

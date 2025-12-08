@@ -12,6 +12,8 @@ export interface LoginResponse {
 export interface DecodedToken {
   role: string;
   FullName?: string;
+  customerId?: string;
+  CustomerId?: string;
   [key: string]: any;
 }
 

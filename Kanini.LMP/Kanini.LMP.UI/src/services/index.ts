@@ -3,10 +3,6 @@ export { requestInterceptor, requestErrorHandler } from './api/Interceptors/requ
 export { responseInterceptor, responseErrorHandler } from './api/Interceptors/responseInterceptor';
 export { ApiService } from './api/apiService';
 export { authAPI } from './api/authAPI';
-export { loanAPI } from './api/loanAPI';
 export { customerAPI } from './api/customerAPI';
-export { emiAPI } from './api/emiAPI';
-export { documentAPI } from './api/documentAPI';
-export { paymentAPI } from './api/paymentAPI';
 export { notificationAPI } from './api/notificationAPI';
-export { managerAPI } from './api/managerAPI';
+export { loanAPI, loanApplicationAPI } from './api/loanApplicationAPI';
