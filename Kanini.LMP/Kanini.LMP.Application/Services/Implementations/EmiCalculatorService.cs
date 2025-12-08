@@ -87,6 +87,43 @@ namespace Kanini.LMP.Application.Services.Implementations
             throw new InvalidOperationException("Loan application not found or not in Disbursed status");
         }
 
+        public async Task<EMIDashboardDTO> GetCustomerEMIDashboardAsync(IdDTO customerId)
+        {
+            var emiPlan = (await _unitOfWork.EMIPlans.GetAllAsync(e => e.CustomerId == customerId.Id && !e.IsCompleted)).FirstOrDefault();
+            if (emiPlan == null)
+                return null;
+
+            var dashboard = _mapper.Map<EMIDashboardDTO>(emiPlan);
+            dashboard.NextPaymentDate = emiPlan.NextPaymentDate ?? DateTime.UtcNow;
+            dashboard.CanPayNow = emiPlan.LastPaymentDate == null || DateTime.UtcNow >= emiPlan.LastPaymentDate.Value.AddMonths(1).AddDays(-5);
+
+            return dashboard;
+        }
+
+        public async Task<bool> PayMonthlyEMIAsync(IdDTO emiId)
+        {
+            var emiPlan = await _unitOfWork.EMIPlans.GetByIdAsync(emiId.Id);
+            if (emiPlan == null || emiPlan.IsCompleted)
+                return false;
+
+            if (emiPlan.LastPaymentDate != null && DateTime.UtcNow < emiPlan.LastPaymentDate.Value.AddMonths(1).AddDays(-5))
+                return false;
+
+            emiPlan.PaidInstallments++;
+            emiPlan.LastPaymentDate = DateTime.UtcNow;
+            emiPlan.NextPaymentDate = DateTime.UtcNow.AddMonths(1);
+
+            if (emiPlan.PaidInstallments >= emiPlan.TermMonths)
+            {
+                emiPlan.IsCompleted = true;
+                emiPlan.Status = EMIPlanStatus.Closed;
+            }
+
+            await _unitOfWork.EMIPlans.UpdateAsync(emiPlan);
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
         private decimal AdjustInterestRate(decimal baseRate, LoanType loanType)
         {
             return loanType switch

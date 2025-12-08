@@ -38,6 +38,9 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         public EMIPlanStatus Status { get; set; } = EMIPlanStatus.Active;
         [Required]
         public bool IsCompleted { get; set; }
+        public int PaidInstallments { get; set; } = 0;
+        public DateTime? LastPaymentDate { get; set; }
+        public DateTime? NextPaymentDate { get; set; }
         public LoanApplicationBase? LoanApplicationBase { get; set; }
         public Customer? Customer { get; set; }
     }
