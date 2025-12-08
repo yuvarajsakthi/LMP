@@ -46,6 +46,9 @@ namespace Kanini.LMP.Database.EntitiesDtos.EMIPlanDtos
         public decimal TotalRepaymentAmount { get; set; }
         public EMIPlanStatus Status { get; set; }
         public bool IsCompleted { get; set; }
+        public int PaidInstallments { get; set; }
+        public DateTime? LastPaymentDate { get; set; }
+        public DateTime? NextPaymentDate { get; set; }
     }
 
     public class EMIPlanUpdateDTO

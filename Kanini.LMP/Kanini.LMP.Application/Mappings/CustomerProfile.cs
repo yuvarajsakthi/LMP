@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Database.Entities.CustomerEntities;
 using Kanini.LMP.Database.EntitiesDtos.CustomerDtos;
 using Kanini.LMP.Database.EntitiesDtos.EMIPlanDtos;
@@ -34,6 +35,11 @@ namespace Kanini.LMP.Application.Mappings
             CreateMap<EMIPlanUpdateDTO, EMIPlan>();
             CreateMap<EMIPlan, EMIPlanDTO>().ReverseMap();
             CreateMap<EMIPlan, EMIPlanResponseDTO>();
+            
+            CreateMap<EMIPlan, EMIDashboardDTO>()
+                .ForMember(d => d.RemainingAmount, o => o.MapFrom(s => s.MonthlyEMI * (s.TermMonths - s.PaidInstallments)))
+                .ForMember(d => d.RemainingInstallments, o => o.MapFrom(s => s.TermMonths - s.PaidInstallments))
+                .ForMember(d => d.CanPayNow, o => o.Ignore());
         }
     }
 }
