@@ -1,3 +1,4 @@
+using Kanini.LMP.Api.Constants;
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Database.EntitiesDtos;
 using Microsoft.AspNetCore.Authorization;
@@ -6,8 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace Kanini.LMP.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    [Authorize(Roles = "Manager")]
+    [Route(ApiConstants.Routes.ApiController)]
+    [Authorize(Roles = ApiConstants.Roles.Manager)]
     public class ManagerDashboardController : ControllerBase
     {
         private readonly IManagerDashboardService _service;
@@ -17,55 +18,49 @@ namespace Kanini.LMP.Api.Controllers
             _service = service;
         }
 
-        // 1. Dashboard - Stats and Graphs
-        [HttpGet("stats")]
+        [HttpGet(ApiConstants.Routes.ManagerDashboardController.Stats)]
         public async Task<IActionResult> GetDashboardStats()
         {
             var stats = await _service.GetDashboardStatsAsync();
             return Ok(stats);
         }
 
-        // 2. Applied Loans - View All
-        [HttpGet("loans")]
+        [HttpGet(ApiConstants.Routes.ManagerDashboardController.Loans)]
         public async Task<IActionResult> GetAllLoanApplications()
         {
             var applications = await _service.GetAllLoanApplicationsAsync();
             return Ok(applications);
         }
 
-        // 2. Applied Loans - View by ID (with EMI and Documents)
-        [HttpGet("loans/{id}")]
+        [HttpGet(ApiConstants.Routes.ManagerDashboardController.LoanById)]
         public async Task<IActionResult> GetLoanApplicationById(int id)
         {
             var application = await _service.GetLoanApplicationByIdAsync(id);
-            if (application == null) return NotFound("Loan application not found");
+            if (application == null) return NotFound(ApiConstants.ErrorMessages.LoanApplicationNotFound);
             return Ok(application);
         }
 
-        // 2. Applied Loans - Filter by Status
-        [HttpGet("loans/status/{status}")]
+        [HttpGet(ApiConstants.Routes.ManagerDashboardController.LoansByStatus)]
         public async Task<IActionResult> GetLoanApplicationsByStatus(string status)
         {
             var applications = await _service.GetLoanApplicationsByStatusAsync(status);
             return Ok(applications);
         }
 
-        // 2. Applied Loans - Update Status (Approve/Reject)
-        [HttpPut("loans/status")]
+        [HttpPut(ApiConstants.Routes.ManagerDashboardController.UpdateStatus)]
         public async Task<IActionResult> UpdateApplicationStatus([FromBody] UpdateApplicationStatusDTO dto)
         {
             var result = await _service.UpdateApplicationStatusAsync(dto);
-            if (!result) return BadRequest("Failed to update application status");
-            return Ok(new { message = "Application status updated successfully" });
+            if (!result) return BadRequest(ApiConstants.ErrorMessages.FailedToUpdateApplicationStatus);
+            return Ok(new { message = ApiConstants.SuccessMessages.ApplicationStatusUpdatedSuccessfully });
         }
 
-        // 2. Applied Loans - Disburse Payment
-        [HttpPost("loans/{id}/disburse")]
+        [HttpPost(ApiConstants.Routes.ManagerDashboardController.DisburseLoan)]
         public async Task<IActionResult> DisburseLoan(int id)
         {
             var result = await _service.DisburseLoanAsync(id);
-            if (!result) return BadRequest("Failed to disburse loan. Loan must be approved first.");
-            return Ok(new { message = "Loan disbursed successfully" });
+            if (!result) return BadRequest(ApiConstants.ErrorMessages.FailedToDisburseLoan);
+            return Ok(new { message = ApiConstants.SuccessMessages.LoanDisbursedSuccessfully });
         }
     }
 }
