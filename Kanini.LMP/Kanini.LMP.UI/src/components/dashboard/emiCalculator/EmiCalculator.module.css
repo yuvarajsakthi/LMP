@@ -12,8 +12,9 @@
 
 .inputSection {
   flex: 1;
-  min-width: 250px;
-  max-width: 400px;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
 }
 
 .inputGroup {
@@ -46,7 +47,8 @@
   flex-direction: column;
   align-items: center;
   position: relative;
-  width: 200px;
+  width: 100%;
+  max-width: 200px;
   height: 200px;
 }
 
@@ -114,11 +116,12 @@
   justify-content: space-around;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   margin-top: 16px;
-  padding: 16px;
+  padding: 12px 8px;
   border-radius: 8px;
   font-size: 14px;
   border: 1px solid #dee2e6;
-  gap: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .headcal {
@@ -137,8 +140,9 @@
   display: flex;
   gap: 24px;
   margin-top: 0px;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .select1 {
@@ -150,6 +154,22 @@
 }
 
 /* Responsive design */
+@media (max-width: 1200px) {
+  .align {
+    flex-wrap: wrap;
+  }
+  
+  .inputSection {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+  
+  .chartSection {
+    flex: 1 1 100%;
+    margin: 0 auto;
+  }
+}
+
 @media (max-width: 992px) {
   .align {
     flex-direction: column;
@@ -159,6 +179,7 @@
   .chartSection {
     order: -1;
     width: 100%;
+    max-width: 300px;
   }
   
   .headcal {
@@ -190,6 +211,15 @@
   
   .trp, .emiLabel123 {
     padding: 8px 0;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  .trp:last-child, .emiLabel123:last-child {
+    border-bottom: none;
+  }
+  
+  .chartSection {
+    max-width: 250px;
   }
 }
 
@@ -204,10 +234,24 @@
   
   .legend {
     flex-wrap: wrap;
+    gap: 12px;
   }
   
   .emiChartText .emiAmount {
-    font-size: 16px;
+    font-size: 14px;
+  }
+  
+  .emiChartText .emiLabel {
+    font-size: 10px;
+  }
+  
+  .chartSection {
+    width: 180px;
+    height: 180px;
+  }
+  
+  .trp p:last-child, .emiLabel123 p:last-child {
+    font-size: 14px;
   }
 }
 
@@ -233,6 +277,8 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
+  flex: 1;
+  min-width: 0;
 }
 
 .trp p:first-child, .emiLabel123 p:first-child {
@@ -243,8 +289,10 @@
 }
 
 .trp p:last-child, .emiLabel123 p:last-child {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #042747;
   margin: 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }

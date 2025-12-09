@@ -78,18 +78,7 @@ namespace Kanini.LMP.Api.Controllers
             {
                 var customerId = GetCustomerId();
                 var applications = await _loanApplicationService.GetCustomerApplicationsAsync(new IdDTO { Id = customerId });
-                
-                var result = applications.Select(app => new
-                {
-                    ApplicationId = app.LoanApplicationBaseId,
-                    LoanType = app.LoanType.ToString(),
-                    Amount = app.LoanAmount,
-                    Status = app.Status.ToString(),
-                    AppliedDate = app.ApplicationDate,
-                    LastUpdated = app.LastModified
-                });
-
-                return Ok(ApiResponse<object>.SuccessResponse(result));
+                return Ok(ApiResponse<object>.SuccessResponse(applications));
             }
             catch (Exception)
             {

@@ -24,6 +24,6 @@ namespace Kanini.LMP.Application.Services.Interfaces
         // Customer Dashboard methods
         Task<IEnumerable<dynamic>> GetRecentApplicationsAsync(IdDTO customerId, IdDTO count);
         Task<IEnumerable<dynamic>> GetCustomerApplicationsAsync(IdDTO customerId);
-        Task<dynamic> UpdateLoanStatusAsync(IdDTO loanId, ApplicationStatus status);
+        Task<dynamic> UpdateLoanStatusAsync(IdDTO loanId, ApplicationStatus status, string? rejectionReason = null);
     }
 }

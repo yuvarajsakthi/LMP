@@ -37,10 +37,10 @@ interface LoanApplicationState {
   formData: {
     loanDetails: LoanDetailsData;
     documents: DocumentUploadDTO[];
-    personalDetails: Partial<PersonalDetailsDTO>;
-    addressInformation: Partial<AddressInformationDTO>;
-    familyEmergencyDetails: Partial<FamilyEmergencyDetailsDTO>;
-    declaration: Partial<DeclarationDTO>;
+    personalDetails: PersonalDetailsDTO;
+    addressInformation: AddressInformationDTO;
+    familyEmergencyDetails: FamilyEmergencyDetailsDTO;
+    declaration: DeclarationDTO;
   };
 }
 

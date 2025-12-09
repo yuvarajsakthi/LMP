@@ -1,68 +1,74 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Tag, Button, Modal, Form, Input, InputNumber, Select, message, Space } from 'antd';
-import { EyeOutlined } from '@ant-design/icons';
-import { managerDashboardAPI } from '../../services/api/managerDashboardAPI';
+import { Table, Tag, Button, Modal, Form, Input, Select, message, Space, Popconfirm } from 'antd';
+import { EyeOutlined, DollarOutlined } from '@ant-design/icons';
+import { fetchAllLoans, fetchLoanById, updateManagerLoanStatus, disburseLoan, clearSelectedLoan } from '../../store';
 import styles from './AppliedLoanManager.module.css';
 import type { LoanApplicationDetail } from '../../types/managerDashboard';
+import { useAppDispatch, useAppSelector } from '../../hooks';
 
 const { Option } = Select;
 const { TextArea } = Input;
 
 const AppliedLoanManager: React.FC = () => {
-  const [loans, setLoans] = useState<LoanApplicationDetail[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedLoan, setSelectedLoan] = useState<LoanApplicationDetail | null>(null);
+  const dispatch = useAppDispatch();
+  const { loans, selectedLoan, loading } = useAppSelector((state) => state.manager);
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [statusVisible, setStatusVisible] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [form] = Form.useForm();
 
   useEffect(() => {
-    fetchLoans();
-  }, []);
-
-  const fetchLoans = async () => {
-    try {
-      setLoading(true);
-      const data = await managerDashboardAPI.getAllLoans();
-      setLoans(data);
-    } catch (error) {
-      message.error('Failed to load loan applications');
-    } finally {
-      setLoading(false);
-    }
-  };
+    dispatch(fetchAllLoans());
+  }, [dispatch]);
 
   const showDetails = async (id: number) => {
     try {
-      const data = await managerDashboardAPI.getLoanById(id);
-      setSelectedLoan(data);
+      await dispatch(fetchLoanById(id)).unwrap();
       setDetailsVisible(true);
     } catch (error) {
       message.error('Failed to load loan details');
     }
   };
 
-  const showStatusModal = (loan: LoanApplicationDetail) => {
-    setSelectedLoan(loan);
-    form.setFieldsValue({
-      status: loan.status,
-      interestRate: loan.interestRate,
-      rejectionReason: loan.rejectionReason
-    });
+  const showStatusModal = async (loan: LoanApplicationDetail) => {
+    await dispatch(fetchLoanById(loan.loanApplicationBaseId)).unwrap();
+    setSelectedStatus(loan.status);
     setStatusVisible(true);
+    setTimeout(() => {
+      form.setFieldsValue({
+        status: loan.status,
+        rejectionReason: loan.rejectionReason
+      });
+    }, 0);
+  };
+
+  const handleStatusChange = (value: string) => {
+    setSelectedStatus(value);
   };
 
   const handleStatusUpdate = async (values: any) => {
     try {
-      await managerDashboardAPI.updateLoanStatus({
+      await dispatch(updateManagerLoanStatus({
         loanApplicationBaseId: selectedLoan!.loanApplicationBaseId,
-        ...values
-      });
+        status: values.status,
+        rejectionReason: values.status === 'Rejected' ? values.rejectionReason : undefined
+      })).unwrap();
       message.success('Loan status updated successfully');
       setStatusVisible(false);
-      fetchLoans();
+      form.resetFields();
+      dispatch(fetchAllLoans());
     } catch (error) {
       message.error('Failed to update loan status');
+    }
+  };
+
+  const handleDisburse = async (id: number) => {
+    try {
+      await dispatch(disburseLoan(id)).unwrap();
+      message.success('Payment disbursed successfully');
+      dispatch(fetchAllLoans());
+    } catch (error) {
+      message.error('Failed to disburse payment');
     }
   };
 
@@ -121,15 +127,29 @@ const AppliedLoanManager: React.FC = () => {
     {
       title: 'Actions',
       key: 'actions',
+      width: 250,
       render: (_: any, record: LoanApplicationDetail) => (
         <Space>
-          <Button icon={<EyeOutlined />} onClick={() => showDetails(record.loanApplicationBaseId)}>
+          <Button size="small" icon={<EyeOutlined />} onClick={() => showDetails(record.loanApplicationBaseId)}>
             View
           </Button>
           {(record.status === 'Pending' || record.status === 'Submitted') && (
-            <Button type="primary" onClick={() => showStatusModal(record)}>
-              Update Status
+            <Button size="small" type="primary" onClick={() => showStatusModal(record)}>
+              Update
             </Button>
+          )}
+          {record.status === 'Approved' && (
+            <Popconfirm
+              title="Disburse Payment"
+              description="Send the payment to customer?"
+              onConfirm={() => handleDisburse(record.loanApplicationBaseId)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button size="small" type="primary" icon={<DollarOutlined />} style={{ background: '#52c41a' }}>
+                Disburse
+              </Button>
+            </Popconfirm>
           )}
         </Space>
       ),
@@ -150,7 +170,10 @@ const AppliedLoanManager: React.FC = () => {
       <Modal
         title="Loan Application Details"
         open={detailsVisible}
-        onCancel={() => setDetailsVisible(false)}
+        onCancel={() => {
+          setDetailsVisible(false);
+          dispatch(clearSelectedLoan());
+        }}
         footer={null}
         width={800}
       >
@@ -192,32 +215,42 @@ const AppliedLoanManager: React.FC = () => {
       <Modal
         title="Update Loan Status"
         open={statusVisible}
-        onCancel={() => setStatusVisible(false)}
+        onCancel={() => {
+          setStatusVisible(false);
+          form.resetFields();
+          dispatch(clearSelectedLoan());
+        }}
         footer={null}
+        width={500}
       >
         <Form form={form} onFinish={handleStatusUpdate} layout="vertical">
-          <Form.Item name="status" label="Status" rules={[{ required: true }]}>
-            <Select>
-              <Option value="Pending">Pending</Option>
+          <Form.Item name="status" label="Status" rules={[{ required: true, message: 'Please select status' }]}>
+            <Select onChange={handleStatusChange} placeholder="Select status">
               <Option value="Approved">Approved</Option>
               <Option value="Rejected">Rejected</Option>
             </Select>
           </Form.Item>
 
-          <Form.Item name="interestRate" label="Interest Rate (%)">
-            <InputNumber min={0} max={100} step={0.1} style={{ width: '100%' }} />
-          </Form.Item>
-
-          <Form.Item name="rejectionReason" label="Rejection Reason">
-            <TextArea rows={4} />
-          </Form.Item>
+          {selectedStatus === 'Rejected' && (
+            <Form.Item 
+              name="rejectionReason" 
+              label="Rejection Reason"
+              rules={[{ required: true, message: 'Please provide rejection reason' }]}
+            >
+              <TextArea rows={4} placeholder="Enter reason for rejection" />
+            </Form.Item>
+          )}
 
           <Form.Item>
             <Space>
               <Button type="primary" htmlType="submit">
-                Update
+                Update Status
               </Button>
-              <Button onClick={() => setStatusVisible(false)}>
+              <Button onClick={() => {
+                setStatusVisible(false);
+                form.resetFields();
+                dispatch(clearSelectedLoan());
+              }}>
                 Cancel
               </Button>
             </Space>

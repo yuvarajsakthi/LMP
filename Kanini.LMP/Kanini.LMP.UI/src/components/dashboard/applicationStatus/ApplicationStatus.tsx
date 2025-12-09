@@ -4,7 +4,8 @@ import styles from './ApplicationStatus.module.css';
 import { useAuth } from "../../../context";
 import { useNavigate } from "react-router-dom";
 import { CUSTOMER_ROUTES } from "../../../config";
-import { loanAPI } from "../../../services";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { fetchApplicationStatus } from "../../../store";
 
 interface ApplicationData {
   loanType: string;
@@ -36,14 +37,24 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ data }) => {
       year: "numeric"
     }).replace(/\//g, "-");
   };
+  const dispatch = useAppDispatch();
+  const applicationStatusFromStore = useAppSelector((state) => state.dashboard.applicationStatus);
   const [applicationData, setApplicationData] = useState<ApplicationData[]>(data || []);
-  const getApplicationStatus = async () => {
-    if (data) return;
+
+  useEffect(() => {
+    if (data) {
+      setApplicationData(data);
+      return;
+    }
     
-    try {
-      const { customerDashboardAPI } = await import('../../../services/api/customerDashboardAPI');
-      const loans = await customerDashboardAPI.getApplicationStatus();
-      const formattedData = loans.map((item: any) => ({
+    if (applicationStatusFromStore.length === 0) {
+      dispatch(fetchApplicationStatus());
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!data && applicationStatusFromStore.length > 0) {
+      const formattedData = applicationStatusFromStore.map((item: any) => ({
         loanType: item.loanType || 'Personal Loan',
         applicationID: item.applicationId?.toString() || '-',
         loanAmount: item.amount || 0,
@@ -55,14 +66,8 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ data }) => {
         stage: 'Application',
       }));
       setApplicationData(formattedData);
-    } catch (error) {
-      console.error('Failed to fetch application status:', error);
-      setApplicationData([]);
     }
-  };
-  useEffect(() => {
-    getApplicationStatus();
-  }, []);
+  }, [applicationStatusFromStore, data]);
 
   const columns = [
     {
@@ -132,7 +137,7 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ data }) => {
                 borderRadius,
                 border: "none",
               }}
-              onClick={() => navigate(CUSTOMER_ROUTES.INTEGRATION)}
+              onClick={() => navigate(CUSTOMER_ROUTES.LOAN_APPLICATION)}
             >
               {text}
             </Button>

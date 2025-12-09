@@ -6,6 +6,7 @@ interface EligibilityState {
   checkResult: any | null;
   loading: boolean;
   error: string | null;
+  lastFetched: number | null;
 }
 
 const initialState: EligibilityState = {
@@ -13,11 +14,21 @@ const initialState: EligibilityState = {
   checkResult: null,
   loading: false,
   error: null,
+  lastFetched: null,
 };
+
+const CACHE_DURATION = 5 * 60 * 1000;
 
 export const getEligibilityScore = createAsyncThunk(
   'eligibility/getScore',
-  async (customerId: number) => {
+  async (customerId: number, { getState }) => {
+    const state = getState() as any;
+    const { lastFetched, score } = state.eligibility;
+    
+    if (lastFetched && Date.now() - lastFetched < CACHE_DURATION && score) {
+      return score;
+    }
+    
     return await eligibilityAPI.getEligibilityScore(customerId);
   }
 );
@@ -51,6 +62,7 @@ const eligibilitySlice = createSlice({
       state.score = null;
       state.checkResult = null;
       state.error = null;
+      state.lastFetched = null;
     },
   },
   extraReducers: (builder) => {
@@ -62,6 +74,7 @@ const eligibilitySlice = createSlice({
       .addCase(getEligibilityScore.fulfilled, (state, action) => {
         state.loading = false;
         state.score = action.payload;
+        state.lastFetched = Date.now();
       })
       .addCase(getEligibilityScore.rejected, (state, action) => {
         state.loading = false;

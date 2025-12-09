@@ -59,8 +59,11 @@ export const customerAPI = {
   },
 
   async getCustomerByUserId(userId: number): Promise<Customer> {
+    console.log('🌐 API Call - getCustomerByUserId for userId:', userId);
+    console.log('🔗 Endpoint:', `${API_ENDPOINTS.GET_CUSTOMER_BY_ID}/user/${userId}`);
     return ApiService.execute(async () => {
       const response = await axiosInstance.get<ApiResponse<Customer>>(`${API_ENDPOINTS.GET_CUSTOMER_BY_ID}/user/${userId}`);
+      console.log('✅ API Response:', response);
       return response;
     });
   },

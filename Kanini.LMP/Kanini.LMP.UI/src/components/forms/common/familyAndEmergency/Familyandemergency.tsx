@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Input, Form, Radio, Button, Divider, Card, message } from 'antd';
+import { Input, Form, Button, Card, message } from 'antd';
 import { NextButtonArrow } from '../../../../assets';
 import { useLoanApplication } from '../../../../context';
 import styles from './Familyandemergency.module.css';
@@ -10,14 +10,6 @@ interface FamilyEmergencyProps {
 }
 
 interface FamilyEmergencyForm {
-  spouse?: string;
-  profession?: string;
-  organization?: string;
-  mobile1?: string;
-  contact?: string;
-  emailid: string;
-  address1: string;
-  radiogroup: string;
   name: string;
   relationship: string;
   mobile2: string;
@@ -30,13 +22,26 @@ const Familyandemergency: React.FC<FamilyEmergencyProps> = ({ onNext, onPrevious
 
   useEffect(() => {
     if (state.formData.familyEmergencyDetails) {
-      form.setFieldsValue(state.formData.familyEmergencyDetails as any);
+      const data = state.formData.familyEmergencyDetails;
+      form.setFieldsValue({
+        name: data.fullName,
+        relationship: data.relationshipWithApplicant,
+        mobile2: data.mobileNumber,
+        address2: data.address
+      });
     }
-  }, []);
+  }, [state.formData.familyEmergencyDetails, form]);
 
   const handleSubmit = async (values: FamilyEmergencyForm) => {
     try {
-      dispatch({ type: 'UPDATE_FORM_DATA', payload: { section: 'familyEmergencyDetails', data: values } });
+      // Map to backend field names
+      const mappedData = {
+        fullName: values.name,
+        relationshipWithApplicant: values.relationship,
+        mobileNumber: values.mobile2,
+        address: values.address2
+      };
+      dispatch({ type: 'UPDATE_FORM_DATA', payload: { section: 'familyEmergencyDetails', data: mappedData } });
       message.success('Family and emergency details saved successfully');
       onNext?.();
     } catch (error) {
@@ -58,79 +63,7 @@ const Familyandemergency: React.FC<FamilyEmergencyProps> = ({ onNext, onPrevious
 
       <Form form={form} onFinish={handleSubmit} layout="vertical" className={styles.form}>
         <div className={styles.section}>
-          <h4 className={styles.sectionTitle}>Family Details</h4>
-          
-          <div className={styles.formRow}>
-            <Form.Item name="spouse" className={styles.formItem}>
-              <Input placeholder="Spouse's Name" />
-            </Form.Item>
-            <Form.Item name="profession" className={styles.formItem}>
-              <Input placeholder="Profession" />
-            </Form.Item>
-            <Form.Item name="organization" className={styles.formItem}>
-              <Input placeholder="Name Of Organization" />
-            </Form.Item>
-          </div>
-
-          <div className={styles.formRow}>
-            <Form.Item
-              name="mobile1"
-              className={styles.formItem}
-              rules={[
-                {
-                  pattern: /^\d{10}$/,
-                  message: 'Please enter a valid 10-digit mobile number'
-                }
-              ]}
-            >
-              <Input placeholder="Mobile No" />
-            </Form.Item>
-            <Form.Item
-              name="contact"
-              className={styles.formItem}
-              rules={[
-                {
-                  pattern: /^\d{10}$/,
-                  message: 'Please enter a valid 10-digit contact number'
-                }
-              ]}
-            >
-              <Input placeholder="Office Contact No" />
-            </Form.Item>
-            <Form.Item
-              name="emailid"
-              className={styles.formItem}
-              rules={[
-                { required: true, message: 'Please enter email address' },
-                { type: 'email', message: 'Please enter a valid email address' }
-              ]}
-            >
-              <Input placeholder="Email ID*" />
-            </Form.Item>
-          </div>
-
-          <Form.Item
-            name="address1"
-            rules={[{ required: true, message: 'Office Address is required' }]}
-          >
-            <Input placeholder="Office Address*" />
-          </Form.Item>
-
-          <div className={styles.radioSection}>
-            <span className={styles.radioLabel}>Is spouse applying jointly?</span>
-            <Form.Item name="radiogroup" initialValue="No">
-              <Radio.Group>
-                <Radio value="Yes">Yes</Radio>
-                <Radio value="No">No</Radio>
-              </Radio.Group>
-            </Form.Item>
-          </div>
-        </div>
-
-        <Divider />
-
-        <div className={styles.section}>
-          <h4 className={styles.sectionTitle}>Emergency Contact</h4>
+          <h4 className={styles.sectionTitle}>Emergency Contact Details</h4>
           
           <div className={styles.formRow}>
             <Form.Item

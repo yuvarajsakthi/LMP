@@ -12,5 +12,6 @@ namespace Kanini.LMP.Application.Services.Interfaces
         Task<LoanApplicationDetailDTO?> GetLoanApplicationByIdAsync(int id);
         Task<List<LoanApplicationDetailDTO>> GetLoanApplicationsByStatusAsync(string status);
         Task<bool> UpdateApplicationStatusAsync(UpdateApplicationStatusDTO dto);
+        Task<bool> DisburseLoanAsync(int loanApplicationBaseId);
     }
 }

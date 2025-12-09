@@ -2,6 +2,7 @@ import React from 'react';
 import { Form, Input, InputNumber, Button, Select, Row, Col, Card } from 'antd';
 import { PropertyType, OwnershipType, LoanPurposeHome } from '../../../types/homeLoan';
 import { useLoanApplication } from '../../../context';
+import styles from './HomeLoanDetails.module.css';
 
 interface HomeLoanDetailsProps {
   onNext: () => void;
@@ -19,19 +20,33 @@ const HomeLoanDetails: React.FC<HomeLoanDetailsProps> = ({ onNext, onPrevious })
   }, []);
 
   const handleSubmit = (values: any) => {
+    const loanData = {
+      requestedLoanAmount: values.requestedLoanAmount,
+      tenureMonths: values.tenureMonths,
+      propertyType: values.propertyType,
+      propertyAddress: values.propertyAddress,
+      city: values.city,
+      zipCode: values.zipCode,
+      ownershipType: values.ownershipType,
+      propertyCost: values.propertyCost,
+      downPayment: values.downPayment,
+      loanPurpose: values.loanPurpose
+    };
     dispatch({
       type: 'UPDATE_FORM_DATA',
-      payload: { section: 'loanDetails', data: values }
+      payload: { section: 'loanDetails', data: loanData }
     });
     dispatch({ type: 'SET_LOAN_TYPE', payload: 'home' });
     onNext();
   };
 
   return (
-    <Card>
-      <h2>Home Loan Details</h2>
-      <p style={{ marginBottom: 24, color: '#666' }}>Enter your home loan and property details</p>
-      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+    <Card className={styles.card}>
+      <div className={styles.header}>
+        <h2 className={styles.title}>Home Loan Details</h2>
+        <p className={styles.subtitle}>Enter your home loan and property details</p>
+      </div>
+      <Form form={form} layout="vertical" onFinish={handleSubmit} className={styles.form}>
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item name="requestedLoanAmount" label="Requested Loan Amount (₹)" rules={[{ required: true }]}>
@@ -104,10 +119,10 @@ const HomeLoanDetails: React.FC<HomeLoanDetailsProps> = ({ onNext, onPrevious })
           </Select>
         </Form.Item>
 
-        <Form.Item>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            {onPrevious && <Button onClick={onPrevious}>BACK</Button>}
-            <Button type="primary" htmlType="submit">NEXT</Button>
+        <Form.Item className={styles.buttonGroup}>
+          <div className={styles.buttons}>
+            {onPrevious && <Button onClick={onPrevious} size="large" className={styles.backButton}>BACK</Button>}
+            <Button type="primary" htmlType="submit" size="large" className={styles.nextButton}>NEXT</Button>
           </div>
         </Form.Item>
       </Form>

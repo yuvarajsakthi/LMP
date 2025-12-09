@@ -6,18 +6,29 @@ interface NotificationState {
   unreadCount: number;
   loading: boolean;
   error: string | null;
+  lastFetched: number | null;
 }
+
+const CACHE_DURATION = 2 * 60 * 1000;
 
 const initialState: NotificationState = {
   notifications: [],
   unreadCount: 0,
   loading: false,
   error: null,
+  lastFetched: null,
 };
 
 export const getAllNotifications = createAsyncThunk(
   'notification/getAll',
-  async () => {
+  async (_, { getState }) => {
+    const state = getState() as any;
+    const { lastFetched, notifications } = state.notification;
+    
+    if (lastFetched && Date.now() - lastFetched < CACHE_DURATION && notifications.length > 0) {
+      return notifications;
+    }
+    
     return await notificationAPI.getAllNotifications();
   }
 );
@@ -38,6 +49,7 @@ const notificationSlice = createSlice({
       state.notifications = [];
       state.unreadCount = 0;
       state.error = null;
+      state.lastFetched = null;
     },
     markAsRead: (state, action) => {
       const notification = state.notifications.find(n => n.notificationId === action.payload);
@@ -57,6 +69,7 @@ const notificationSlice = createSlice({
         state.loading = false;
         state.notifications = action.payload;
         state.unreadCount = action.payload.filter(n => !n.isRead).length;
+        state.lastFetched = Date.now();
       })
       .addCase(getAllNotifications.rejected, (state, action) => {
         state.loading = false;

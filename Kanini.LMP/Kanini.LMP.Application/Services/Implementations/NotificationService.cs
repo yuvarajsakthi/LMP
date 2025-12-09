@@ -33,5 +33,13 @@ namespace Kanini.LMP.Application.Services.Implementations
             await _unitOfWork.SaveChangesAsync();
             return new BoolDTO { Value = true };
         }
+
+        public async Task<NotificationDTO> CreateNotificationAsync(NotificationDTO notificationDto)
+        {
+            var notification = _mapper.Map<Database.Entities.Notification>(notificationDto);
+            var created = await _unitOfWork.Notifications.AddAsync(notification);
+            await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<NotificationDTO>(created);
+        }
     }
 }

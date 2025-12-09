@@ -17,14 +17,16 @@ namespace Kanini.LMP.Application.Services.Implementations
         private readonly ILogger<LoanApplicationService> _logger;
         private readonly IEligibilityService _eligibilityService;
         private readonly IPdfService _pdfService;
+        private readonly INotificationService _notificationService;
 
-        public LoanApplicationService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<LoanApplicationService> logger, IEligibilityService eligibilityService, IPdfService pdfService)
+        public LoanApplicationService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<LoanApplicationService> logger, IEligibilityService eligibilityService, IPdfService pdfService, INotificationService notificationService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
             _eligibilityService = eligibilityService;
             _pdfService = pdfService;
+            _notificationService = notificationService;
         }
 
         public async Task<PersonalLoanApplicationDTO> CreatePersonalLoanAsync(PersonalLoanApplicationDTO dto, IdDTO customerId)
@@ -137,7 +139,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             return allLoans.Select(l => new { l.LoanApplicationBaseId, l.Status, l.SubmissionDate });
         }
 
-        public async Task<dynamic> UpdateLoanStatusAsync(IdDTO loanId, ApplicationStatus status)
+        public async Task<dynamic> UpdateLoanStatusAsync(IdDTO loanId, ApplicationStatus status, string? rejectionReason = null)
         {
             var personalLoan = await _unitOfWork.PersonalLoanApplications.GetByIdAsync(loanId.Id);
             if (personalLoan != null)
@@ -145,6 +147,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                 personalLoan.Status = status;
                 await _unitOfWork.PersonalLoanApplications.UpdateAsync(personalLoan);
                 await _unitOfWork.SaveChangesAsync();
+                await CreateStatusNotificationAsync(personalLoan.CustomerId, loanId.Id, status, rejectionReason);
                 return new { Status = status };
             }
 
@@ -154,6 +157,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                 homeLoan.Status = status;
                 await _unitOfWork.HomeLoanApplications.UpdateAsync(homeLoan);
                 await _unitOfWork.SaveChangesAsync();
+                await CreateStatusNotificationAsync(homeLoan.CustomerId, loanId.Id, status, rejectionReason);
                 return new { Status = status };
             }
 
@@ -163,6 +167,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                 vehicleLoan.Status = status;
                 await _unitOfWork.VehicleLoanApplications.UpdateAsync(vehicleLoan);
                 await _unitOfWork.SaveChangesAsync();
+                await CreateStatusNotificationAsync(vehicleLoan.CustomerId, loanId.Id, status, rejectionReason);
                 return new { Status = status };
             }
 
@@ -174,14 +179,26 @@ namespace Kanini.LMP.Application.Services.Implementations
             var customer = await _unitOfWork.Customers.GetByIdAsync(customerId);
             if (customer != null)
             {
-                var notification = new Notification
+                await _notificationService.CreateNotificationAsync(new Database.EntitiesDto.NotificationDTO
                 {
                     UserId = customer.UserId,
                     NotificationMessage = message
-                };
-                await _unitOfWork.Notifications.AddAsync(notification);
-                await _unitOfWork.SaveChangesAsync();
+                });
             }
+        }
+
+        private async Task CreateStatusNotificationAsync(int customerId, int loanId, ApplicationStatus status, string? rejectionReason = null)
+        {
+            var message = status switch
+            {
+                ApplicationStatus.Approved => $"Loan application #{loanId} has been approved",
+                ApplicationStatus.Rejected => $"Loan application #{loanId} has been rejected" + (string.IsNullOrEmpty(rejectionReason) ? "" : $". Reason: {rejectionReason}"),
+                ApplicationStatus.Disbursed => $"Loan #{loanId} has been disbursed successfully",
+                _ => null
+            };
+
+            if (message != null)
+                await CreateNotificationAsync(customerId, message);
         }
     }
 }

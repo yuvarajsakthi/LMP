@@ -6,6 +6,7 @@ import eligibilityReducer from './slices/eligibilitySlice';
 import faqReducer from './slices/faqSlice';
 import loanApplicationReducer from './slices/loanApplicationSlice';
 import notificationReducer from './slices/notificationSlice';
+import managerReducer from './slices/managerSlice';
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
     faq: faqReducer,
     loanApplication: loanApplicationReducer,
     notification: notificationReducer,
+    manager: managerReducer,
   },
 });
 
@@ -28,5 +30,7 @@ export * from './slices/customerSlice';
 export * from './slices/eligibilitySlice';
 export * from './slices/faqSlice';
 export * from './slices/loanApplicationSlice';
+export { updateLoanStatus as updateManagerLoanStatus } from './slices/managerSlice';
 export * from './slices/notificationSlice';
+export * from './slices/managerSlice';
 export { fetchCustomerById } from './slices/customerSlice';
