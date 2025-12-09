@@ -8,7 +8,6 @@ import { navigationService } from '../../services';
 import { useAuth } from '../../context';
 import ManagerDashboard from '../../pages/manager/managerDashboard/ManagerDashboard';
 import AppliedLoans from '../../pages/manager/appliedLoans/AppliedLoans';
-import LoanDetails from '../../pages/manager/loanDetails/LoanDetails';
 import ManagerFAQ from '../../pages/manager/faq/ManagerFAQ';
 
 const AppRoutes = () => {
@@ -90,11 +89,6 @@ const AppRoutes = () => {
       <Route path={MANAGER_ROUTES.APPLIED_LOAN} element={
         <ProtectedRoute requiredRole="manager">
           <AppliedLoans />
-        </ProtectedRoute>
-      } />
-      <Route path="/manager/applied-loans/:applicationNumber" element={
-        <ProtectedRoute requiredRole="manager">
-          <LoanDetails />
         </ProtectedRoute>
       } />
       <Route path="/manager/faq" element={

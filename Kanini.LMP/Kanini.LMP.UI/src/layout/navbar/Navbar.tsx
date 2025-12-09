@@ -54,10 +54,10 @@ const Navbar = () => {
   const userMenuItems = isManager ? managerMenuItems : customerMenuItems;
 
   useEffect(() => {
-    if (!isManager && token?.CustomerId) {
+    if (!isManager && token?.CustomerId && !currentCustomer) {
       dispatch(fetchCustomerById(parseInt(token.CustomerId)));
     }
-  }, [token?.CustomerId, isManager, dispatch]);
+  }, [token?.CustomerId, isManager, dispatch, currentCustomer]);
 
   const profileImage = (currentCustomer?.profileImageBase64 || currentCustomer?.profileImage)
     ? `data:image/jpeg;base64,${currentCustomer.profileImageBase64 || currentCustomer.profileImage}` 

@@ -1,53 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import { Form, Button, Input, DatePicker, Select, Card, message } from 'antd';
+import React, { useEffect } from 'react';
+import { Form, Button, Input, DatePicker, Select, Card, message, Radio } from 'antd';
 import { NextButtonArrow } from '../../../../assets';
-import { useLoanApplication } from '../../../../context';
+import { useLoanApplication, useAuth } from '../../../../context';
+import { useAppDispatch, useAppSelector } from '../../../../hooks';
+import { fetchCustomerByUserId } from '../../../../store/slices/customerSlice';
+import { Gender, EducationQualification, ResidentialStatus } from '../../../../types/loanApplicationCreate';
 import styles from './PersonalInformationPage.module.css';
+import dayjs from 'dayjs';
 
 interface PersonalInformationProps {
   onNext?: () => void;
   onPrevious?: () => void;
 }
 
-interface PersonalInformationForm {
-  fullname: string;
-  dob: string;
-  district?: string;
-  country: string;
-  taxid: string;
-  education: string;
-  resident: string;
-  residing: string;
-}
-
-interface DistrictOption {
-  label: string;
-  value: string;
-}
-
 const PersonalInformationPage: React.FC<PersonalInformationProps> = ({ onNext, onPrevious }) => {
   const { state, dispatch } = useLoanApplication();
-  const [form] = Form.useForm<PersonalInformationForm>();
-  const [districtOptions, setDistrictOptions] = useState<DistrictOption[]>([]);
+  const { token } = useAuth();
+  const reduxDispatch = useAppDispatch();
+  const { currentCustomer } = useAppSelector((state) => state.customer);
+  const [form] = Form.useForm();
 
   useEffect(() => {
-    const mockDistricts = [
-      { label: 'Mumbai', value: 'mumbai' },
-      { label: 'Delhi', value: 'delhi' },
-      { label: 'Bangalore', value: 'bangalore' },
-      { label: 'Chennai', value: 'chennai' },
-      { label: 'Kolkata', value: 'kolkata' }
-    ];
-    setDistrictOptions(mockDistricts);
-    
-    if (state.formData.personalDetails) {
-      form.setFieldsValue(state.formData.personalDetails as any);
+    const userId = parseInt(token?.userId || '0');
+    if (userId && !currentCustomer) {
+      reduxDispatch(fetchCustomerByUserId(userId));
     }
-  }, []);
+  }, [token, currentCustomer, reduxDispatch]);
 
-  const handleSubmit = async (values: PersonalInformationForm) => {
+  useEffect(() => {
+    if (state.formData.personalDetails) {
+      const data = state.formData.personalDetails;
+      form.setFieldsValue({
+        ...data,
+        dateOfBirth: data.dateOfBirth ? dayjs(data.dateOfBirth) : null
+      });
+    } else if (currentCustomer) {
+      form.setFieldsValue({
+        panNumber: currentCustomer.panNumber || '',
+        dateOfBirth: currentCustomer.dateOfBirth ? dayjs(currentCustomer.dateOfBirth) : null
+      });
+    }
+  }, [state.formData.personalDetails, currentCustomer, form]);
+
+  const handleSubmit = async (values: any) => {
     try {
-      dispatch({ type: 'UPDATE_FORM_DATA', payload: { section: 'personalDetails', data: values } });
+      const mappedData = {
+        ...state.formData.personalDetails,
+        fullName: values.fullName,
+        dateOfBirth: values.dateOfBirth ? values.dateOfBirth.format('YYYY-MM-DD') : '',
+        districtOfBirth: values.districtOfBirth,
+        panNumber: values.panNumber,
+        educationQualification: values.educationQualification,
+        residentialStatus: values.residentialStatus,
+        gender: values.gender
+      };
+      dispatch({ type: 'UPDATE_FORM_DATA', payload: { section: 'personalDetails', data: mappedData } });
       message.success('Personal information saved successfully');
       onNext?.();
     } catch (error) {
@@ -59,21 +66,7 @@ const PersonalInformationPage: React.FC<PersonalInformationProps> = ({ onNext, o
     onPrevious?.();
   };
 
-  const validateFullName = (_: any, value: string) => {
-    const nameRegex = /^[A-Za-z\s]+$/;
-    if (value && !nameRegex.test(value)) {
-      return Promise.reject('Please enter valid name!');
-    }
-    return Promise.resolve();
-  };
 
-  const validateTaxIdNumber = (_: any, value: string) => {
-    const taxIdNumberRegex = /^[0-9]+$/;
-    if (value && !taxIdNumberRegex.test(value)) {
-      return Promise.reject('Enter valid Tax ID');
-    }
-    return Promise.resolve();
-  };
 
   return (
     <Card className={styles.container}>
@@ -85,20 +78,16 @@ const PersonalInformationPage: React.FC<PersonalInformationProps> = ({ onNext, o
       <Form form={form} onFinish={handleSubmit} layout="vertical" className={styles.form}>
         <div className={styles.formRow}>
           <Form.Item
-            name="fullname"
+            name="fullName"
             label="Full Name"
-            help="Same as ID Proof"
             className={styles.formItem}
-            rules={[
-              { required: true, message: 'Full Name is required!' },
-              { validator: validateFullName }
-            ]}
+            rules={[{ required: true, message: 'Full Name is required' }]}
           >
             <Input placeholder="Enter full name" />
           </Form.Item>
 
           <Form.Item
-            name="dob"
+            name="dateOfBirth"
             label="Date of Birth"
             className={styles.formItem}
             rules={[{ required: true, message: 'Date of Birth is required' }]}
@@ -107,92 +96,73 @@ const PersonalInformationPage: React.FC<PersonalInformationProps> = ({ onNext, o
           </Form.Item>
 
           <Form.Item
-            name="district"
+            name="districtOfBirth"
             label="District of Birth"
             className={styles.formItem}
+            rules={[{ required: true, message: 'District of Birth is required' }]}
           >
-            <Select
-              showSearch
-              placeholder="Select district of birth"
-              options={districtOptions}
-              filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-              }
-            />
+            <Input placeholder="Enter district of birth" />
           </Form.Item>
         </div>
 
         <div className={styles.formRow}>
           <Form.Item
-            name="country"
-            label="Country of Birth"
-            className={styles.formItem}
-            rules={[{ required: true, message: 'Country of birth is required!' }]}
-          >
-            <Select
-              placeholder="Select country of birth"
-              options={[{ value: 'india', label: 'India' }]}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="taxid"
-            label="Tax ID Number (eTIN)"
+            name="panNumber"
+            label="PAN Number"
             className={styles.formItem}
             rules={[
-              { required: true, message: 'Tax ID is required!' },
-              { validator: validateTaxIdNumber }
+              { required: true, message: 'PAN Number is required' },
+              { pattern: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, message: 'Enter valid PAN (e.g., ABCDE1234F)' }
             ]}
           >
-            <Input placeholder="Enter tax ID number" />
+            <Input placeholder="Enter PAN number" maxLength={10} style={{ textTransform: 'uppercase' }} />
           </Form.Item>
 
           <Form.Item
-            name="education"
+            name="educationQualification"
             label="Educational Qualification"
             className={styles.formItem}
-            rules={[{ required: true, message: 'Educational qualification is required!' }]}
+            rules={[{ required: true, message: 'Educational qualification is required' }]}
           >
-            <Select
-              placeholder="Select educational qualification"
-              options={[
-                { value: 'student', label: 'Student' },
-                { value: 'degree', label: 'Degree Holder' },
-                { value: 'highschool', label: 'High School Education' }
-              ]}
-            />
+            <Select placeholder="Select educational qualification">
+              <Select.Option value={EducationQualification.BelowMatric}>Below Matric</Select.Option>
+              <Select.Option value={EducationQualification.Matric}>Matric</Select.Option>
+              <Select.Option value={EducationQualification.HigherSecondary}>Higher Secondary</Select.Option>
+              <Select.Option value={EducationQualification.Graduate}>Graduate</Select.Option>
+              <Select.Option value={EducationQualification.PostGraduate}>Post Graduate</Select.Option>
+              <Select.Option value={EducationQualification.Doctorate}>Doctorate</Select.Option>
+              <Select.Option value={EducationQualification.Other}>Other</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="residentialStatus"
+            label="Residential Status"
+            className={styles.formItem}
+            rules={[{ required: true, message: 'Residential status is required' }]}
+          >
+            <Select placeholder="Select residential status">
+              <Select.Option value={ResidentialStatus.Owned}>Owned</Select.Option>
+              <Select.Option value={ResidentialStatus.Rented}>Rented</Select.Option>
+              <Select.Option value={ResidentialStatus.Parental}>Parental</Select.Option>
+              <Select.Option value={ResidentialStatus.CompanyProvided}>Company Provided</Select.Option>
+              <Select.Option value={ResidentialStatus.PayingGuest}>Paying Guest</Select.Option>
+              <Select.Option value={ResidentialStatus.Other}>Other</Select.Option>
+            </Select>
           </Form.Item>
         </div>
 
         <div className={styles.formRow}>
           <Form.Item
-            name="resident"
-            label="Residential Status"
+            name="gender"
+            label="Gender"
             className={styles.formItem}
-            rules={[{ required: true, message: 'Residential status is required!' }]}
+            rules={[{ required: true, message: 'Gender is required' }]}
           >
-            <Select
-              placeholder="Select residential status"
-              options={[
-                { value: 'citizen', label: 'Citizen' },
-                { value: 'permanent resident', label: 'Permanent Resident' },
-                { value: 'temporary Resident', label: 'Temporary Resident' },
-                { value: 'refugee', label: 'Refugee' },
-                { value: 'military personnel', label: 'Military Personnel' }
-              ]}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="residing"
-            label="Residing For (In Years)"
-            className={styles.formItem}
-            rules={[
-              { required: true, message: 'Residing years is required!' },
-              { pattern: /^[0-9]+$/, message: 'Enter valid residing years' }
-            ]}
-          >
-            <Input placeholder="Enter residing years" />
+            <Radio.Group>
+              <Radio value={Gender.Male}>Male</Radio>
+              <Radio value={Gender.Female}>Female</Radio>
+            </Radio.Group>
           </Form.Item>
         </div>
 

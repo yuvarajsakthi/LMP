@@ -6,13 +6,17 @@ interface FaqState {
   currentFaq: FaqDTO | null;
   loading: boolean;
   error: string | null;
+  lastFetched: number | null;
 }
+
+const CACHE_DURATION = 5 * 60 * 1000;
 
 const initialState: FaqState = {
   faqs: [],
   currentFaq: null,
   loading: false,
   error: null,
+  lastFetched: null,
 };
 
 export const createFaq = createAsyncThunk(
@@ -24,7 +28,14 @@ export const createFaq = createAsyncThunk(
 
 export const getAllFaqs = createAsyncThunk(
   'faq/getAll',
-  async () => {
+  async (_, { getState }) => {
+    const state = getState() as any;
+    const { lastFetched, faqs } = state.faq;
+    
+    if (lastFetched && Date.now() - lastFetched < CACHE_DURATION && faqs.length > 0) {
+      return faqs;
+    }
+    
     return await faqAPI.getAllFaqs();
   }
 );
@@ -66,6 +77,7 @@ const faqSlice = createSlice({
       state.faqs = [];
       state.currentFaq = null;
       state.error = null;
+      state.lastFetched = null;
     },
   },
   extraReducers: (builder) => {
@@ -89,6 +101,7 @@ const faqSlice = createSlice({
       .addCase(getAllFaqs.fulfilled, (state, action) => {
         state.loading = false;
         state.faqs = action.payload;
+        state.lastFetched = Date.now();
       })
       .addCase(getAllFaqs.rejected, (state, action) => {
         state.loading = false;

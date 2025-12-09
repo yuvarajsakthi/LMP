@@ -17,10 +17,10 @@ const EligibilityScore: React.FC<EligibilityScoreProps> = ({ score }) => {
 
   useEffect(() => {
     const customerId = token?.CustomerId || token?.customerId;
-    if (customerId) {
+    if (customerId && !eligibilityData) {
       dispatch(getEligibilityScore(Number(customerId)));
     }
-  }, [dispatch, token]);
+  }, []);
 
   const eScore = score ?? eligibilityData?.EligibilityScore ?? eligibilityData?.eligibilityScore ?? eligibilityData?.creditScore ?? token?.EligibilityScore ?? 0;
   const eligibilityPercentage = eScore / 900;

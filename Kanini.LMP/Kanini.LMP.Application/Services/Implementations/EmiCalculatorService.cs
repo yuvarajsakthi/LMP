@@ -11,11 +11,13 @@ namespace Kanini.LMP.Application.Services.Implementations
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly INotificationService _notificationService;
 
-        public EmiCalculatorService(IUnitOfWork unitOfWork, IMapper mapper)
+        public EmiCalculatorService(IUnitOfWork unitOfWork, IMapper mapper, INotificationService notificationService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _notificationService = notificationService;
         }
 
         public async Task<EMIPlanDTO> CalculateAndCreateEmiPlanAsync(IdDTO loanApplicationId, IdDTO customerId, decimal principalAmount, decimal interestRate, int termMonths, LoanType loanType)
@@ -113,7 +115,8 @@ namespace Kanini.LMP.Application.Services.Implementations
             emiPlan.LastPaymentDate = DateTime.UtcNow;
             emiPlan.NextPaymentDate = DateTime.UtcNow.AddMonths(1);
 
-            if (emiPlan.PaidInstallments >= emiPlan.TermMonths)
+            var isFullyPaid = emiPlan.PaidInstallments >= emiPlan.TermMonths;
+            if (isFullyPaid)
             {
                 emiPlan.IsCompleted = true;
                 emiPlan.Status = EMIPlanStatus.Closed;
@@ -121,6 +124,8 @@ namespace Kanini.LMP.Application.Services.Implementations
 
             await _unitOfWork.EMIPlans.UpdateAsync(emiPlan);
             await _unitOfWork.SaveChangesAsync();
+
+            await CreateEMINotificationAsync(emiPlan.CustomerId, emiPlan.LoanApplicationBaseId, isFullyPaid);
             return true;
         }
 
@@ -133,6 +138,23 @@ namespace Kanini.LMP.Application.Services.Implementations
                 LoanType.Vehicle => baseRate + 0.3m,
                 _ => baseRate
             };
+        }
+
+        private async Task CreateEMINotificationAsync(int customerId, int loanId, bool isFullyPaid)
+        {
+            var customer = await _unitOfWork.Customers.GetByIdAsync(customerId);
+            if (customer != null)
+            {
+                var message = isFullyPaid
+                    ? $"Congratulations! Loan #{loanId} has been fully settled"
+                    : $"EMI payment for loan #{loanId} received successfully";
+
+                await _notificationService.CreateNotificationAsync(new Database.EntitiesDto.NotificationDTO
+                {
+                    UserId = customer.UserId,
+                    NotificationMessage = message
+                });
+            }
         }
     }
 }

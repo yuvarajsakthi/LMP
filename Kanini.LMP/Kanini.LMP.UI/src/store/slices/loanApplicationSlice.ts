@@ -38,28 +38,6 @@ export const createVehicleLoan = createAsyncThunk(
   }
 );
 
-export const updateLoanStatus = createAsyncThunk(
-  'loanApplication/updateStatus',
-  async ({ loanId, status }: { loanId: number; status: number }) => {
-    return await loanApplicationAPI.updateLoanStatus(loanId, status);
-  }
-);
-
-export const withdrawLoan = createAsyncThunk(
-  'loanApplication/withdraw',
-  async (loanId: number) => {
-    await loanApplicationAPI.withdrawLoan(loanId);
-    return loanId;
-  }
-);
-
-export const fetchLoanCategories = createAsyncThunk(
-  'loanApplication/fetchCategories',
-  async () => {
-    return await loanApplicationAPI.getLoanCategories();
-  }
-);
-
 const loanApplicationSlice = createSlice({
   name: 'loanApplication',
   initialState,
@@ -107,44 +85,6 @@ const loanApplicationSlice = createSlice({
       .addCase(createVehicleLoan.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to create vehicle loan';
-      })
-      .addCase(updateLoanStatus.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateLoanStatus.fulfilled, (state, action) => {
-        state.loading = false;
-        if (state.currentApplication?.loanId === action.payload.loanId) {
-          state.currentApplication.status = action.payload.status;
-        }
-      })
-      .addCase(updateLoanStatus.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to update loan status';
-      })
-      .addCase(withdrawLoan.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(withdrawLoan.fulfilled, (state, action) => {
-        state.loading = false;
-        state.applications = state.applications.filter(app => app.loanId !== action.payload);
-      })
-      .addCase(withdrawLoan.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to withdraw loan';
-      })
-      .addCase(fetchLoanCategories.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchLoanCategories.fulfilled, (state, action) => {
-        state.loading = false;
-        state.loanCategories = action.payload;
-      })
-      .addCase(fetchLoanCategories.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to fetch loan categories';
       });
   },
 });

@@ -58,5 +58,14 @@ namespace Kanini.LMP.Api.Controllers
             if (!result) return BadRequest("Failed to update application status");
             return Ok(new { message = "Application status updated successfully" });
         }
+
+        // 2. Applied Loans - Disburse Payment
+        [HttpPost("loans/{id}/disburse")]
+        public async Task<IActionResult> DisburseLoan(int id)
+        {
+            var result = await _service.DisburseLoanAsync(id);
+            if (!result) return BadRequest("Failed to disburse loan. Loan must be approved first.");
+            return Ok(new { message = "Loan disbursed successfully" });
+        }
     }
 }

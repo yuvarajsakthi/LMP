@@ -1,9 +1,10 @@
+using AutoMapper;
 using Kanini.LMP.Application.Services.Interfaces;
 using Kanini.LMP.Data.UnitOfWork;
 using Kanini.LMP.Database.Entities;
 using Kanini.LMP.Database.Entities.CustomerEntities;
-using Kanini.LMP.Database.Entities.LoanProductEntities.CommonLoanProductEntities;
 using Kanini.LMP.Database.EntitiesDtos;
+using Kanini.LMP.Database.EntitiesDtos.EMIPlanDtos;
 using Kanini.LMP.Database.Enums;
 
 namespace Kanini.LMP.Application.Services.Implementations
@@ -11,10 +12,12 @@ namespace Kanini.LMP.Application.Services.Implementations
     public class ManagerDashboardService : IManagerDashboardService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public ManagerDashboardService(IUnitOfWork unitOfWork)
+        public ManagerDashboardService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         // 1. Dashboard Stats with Graphs
@@ -32,7 +35,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                 {
                     LoanType = g.Key.ToString(),
                     Count = g.Count(),
-                    TotalAmount = g.Sum(a => a.RequestedLoanAmount)
+                    TotalAmount = g.Sum(a => a.RequestedAmount)
                 }).ToList();
 
             var monthlyTrend = allApplications
@@ -51,7 +54,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                 ApprovedApplications = allApplications.Count(a => a.Status == ApplicationStatus.Approved),
                 RejectedApplications = allApplications.Count(a => a.Status == ApplicationStatus.Rejected),
                 DisbursedApplications = allApplications.Count(a => a.Status == ApplicationStatus.Disbursed),
-                TotalDisbursedAmount = allApplications.Where(a => a.Status == ApplicationStatus.Disbursed).Sum(a => a.RequestedLoanAmount),
+                TotalDisbursedAmount = allApplications.Where(a => a.Status == ApplicationStatus.Disbursed).Sum(a => a.RequestedAmount),
                 ActiveLoans = emiPlans.Count(e => e.Status == EMIPlanStatus.Active),
                 LoanTypeDistribution = loanTypeDistribution,
                 MonthlyTrend = monthlyTrend
@@ -113,9 +116,13 @@ namespace Kanini.LMP.Application.Services.Implementations
             if (personalLoan != null)
             {
                 personalLoan.Status = newStatus;
-                if (dto.InterestRate.HasValue) personalLoan.InterestRate = dto.InterestRate.Value;
                 if (!string.IsNullOrEmpty(dto.RejectionReason)) personalLoan.RejectionReason = dto.RejectionReason;
-                if (newStatus == ApplicationStatus.Approved) personalLoan.ApprovedDate = DateOnly.FromDateTime(DateTime.UtcNow);
+                if (newStatus == ApplicationStatus.Approved)
+                {
+                    personalLoan.ApprovedDate = DateOnly.FromDateTime(DateTime.UtcNow);
+                    var interestRate = dto.InterestRate ?? CalculateInterestRate(personalLoan.LoanProductType, personalLoan.RequestedAmount);
+                    personalLoan.MonthlyInstallment = CalculateEMI(personalLoan.RequestedAmount, interestRate, personalLoan.TenureMonths);
+                }
                 await _unitOfWork.PersonalLoanApplications.UpdateAsync(personalLoan);
                 await _unitOfWork.SaveChangesAsync();
                 return true;
@@ -125,9 +132,13 @@ namespace Kanini.LMP.Application.Services.Implementations
             if (homeLoan != null)
             {
                 homeLoan.Status = newStatus;
-                if (dto.InterestRate.HasValue) homeLoan.InterestRate = dto.InterestRate.Value;
                 if (!string.IsNullOrEmpty(dto.RejectionReason)) homeLoan.RejectionReason = dto.RejectionReason;
-                if (newStatus == ApplicationStatus.Approved) homeLoan.ApprovedDate = DateOnly.FromDateTime(DateTime.UtcNow);
+                if (newStatus == ApplicationStatus.Approved)
+                {
+                    homeLoan.ApprovedDate = DateOnly.FromDateTime(DateTime.UtcNow);
+                    var interestRate = dto.InterestRate ?? CalculateInterestRate(homeLoan.LoanProductType, homeLoan.RequestedAmount);
+                    homeLoan.MonthlyInstallment = CalculateEMI(homeLoan.RequestedAmount, interestRate, homeLoan.TenureMonths);
+                }
                 await _unitOfWork.HomeLoanApplications.UpdateAsync(homeLoan);
                 await _unitOfWork.SaveChangesAsync();
                 return true;
@@ -137,9 +148,13 @@ namespace Kanini.LMP.Application.Services.Implementations
             if (vehicleLoan != null)
             {
                 vehicleLoan.Status = newStatus;
-                if (dto.InterestRate.HasValue) vehicleLoan.InterestRate = dto.InterestRate.Value;
                 if (!string.IsNullOrEmpty(dto.RejectionReason)) vehicleLoan.RejectionReason = dto.RejectionReason;
-                if (newStatus == ApplicationStatus.Approved) vehicleLoan.ApprovedDate = DateOnly.FromDateTime(DateTime.UtcNow);
+                if (newStatus == ApplicationStatus.Approved)
+                {
+                    vehicleLoan.ApprovedDate = DateOnly.FromDateTime(DateTime.UtcNow);
+                    var interestRate = dto.InterestRate ?? CalculateInterestRate(vehicleLoan.LoanProductType, vehicleLoan.RequestedAmount);
+                    vehicleLoan.MonthlyInstallment = CalculateEMI(vehicleLoan.RequestedAmount, interestRate, vehicleLoan.TenureMonths);
+                }
                 await _unitOfWork.VehicleLoanApplications.UpdateAsync(vehicleLoan);
                 await _unitOfWork.SaveChangesAsync();
                 return true;
@@ -148,9 +163,94 @@ namespace Kanini.LMP.Application.Services.Implementations
             return false;
         }
 
+        public async Task<bool> DisburseLoanAsync(int loanApplicationBaseId)
+        {
+            var personalLoan = await _unitOfWork.PersonalLoanApplications.GetByIdAsync(loanApplicationBaseId);
+            if (personalLoan != null && personalLoan.Status == ApplicationStatus.Approved)
+            {
+                personalLoan.Status = ApplicationStatus.Disbursed;
+                await _unitOfWork.PersonalLoanApplications.UpdateAsync(personalLoan);
+                await CreateEMIPlanAsync(personalLoan);
+                await _unitOfWork.SaveChangesAsync();
+                return true;
+            }
+
+            var homeLoan = await _unitOfWork.HomeLoanApplications.GetByIdAsync(loanApplicationBaseId);
+            if (homeLoan != null && homeLoan.Status == ApplicationStatus.Approved)
+            {
+                homeLoan.Status = ApplicationStatus.Disbursed;
+                await _unitOfWork.HomeLoanApplications.UpdateAsync(homeLoan);
+                await CreateEMIPlanAsync(homeLoan);
+                await _unitOfWork.SaveChangesAsync();
+                return true;
+            }
+
+            var vehicleLoan = await _unitOfWork.VehicleLoanApplications.GetByIdAsync(loanApplicationBaseId);
+            if (vehicleLoan != null && vehicleLoan.Status == ApplicationStatus.Approved)
+            {
+                vehicleLoan.Status = ApplicationStatus.Disbursed;
+                await _unitOfWork.VehicleLoanApplications.UpdateAsync(vehicleLoan);
+                await CreateEMIPlanAsync(vehicleLoan);
+                await _unitOfWork.SaveChangesAsync();
+                return true;
+            }
+
+            return false;
+        }
+
+        private async Task CreateEMIPlanAsync(LoanApplicationBase loan)
+        {
+            var interestRate = CalculateInterestRate(loan.LoanProductType, loan.RequestedAmount);
+            var monthlyEMI = loan.MonthlyInstallment ?? CalculateEMI(loan.RequestedAmount, interestRate, loan.TenureMonths);
+            var totalRepayment = monthlyEMI * loan.TenureMonths;
+            var totalInterest = totalRepayment - loan.RequestedAmount;
+
+            var createDto = new EMIPlanCreateDTO
+            {
+                LoanApplicationBaseId = loan.LoanApplicationBaseId,
+                CustomerId = loan.CustomerId,
+                PrincipleAmount = loan.RequestedAmount,
+                TermMonths = loan.TenureMonths,
+                RateOfInterest = interestRate,
+                MonthlyEMI = monthlyEMI,
+                TotalRepaymentAmount = totalRepayment,
+                TotalInterestPaid = totalInterest
+            };
+
+            var emiPlan = _mapper.Map<EMIPlan>(createDto);
+            emiPlan.Status = EMIPlanStatus.Active;
+            emiPlan.IsCompleted = false;
+            emiPlan.PaidInstallments = 0;
+            emiPlan.NextPaymentDate = DateTime.UtcNow.AddMonths(1);
+
+            await _unitOfWork.EMIPlans.AddAsync(emiPlan);
+        }
+
+        private decimal CalculateInterestRate(LoanType loanType, decimal amount)
+        {
+            return loanType switch
+            {
+                LoanType.Personal => amount > 500000 ? 10.5m : 12.0m,
+                LoanType.Home => amount > 2000000 ? 8.5m : 9.0m,
+                LoanType.Vehicle => amount > 1000000 ? 9.0m : 10.0m,
+                _ => 10.0m
+            };
+        }
+
+        private decimal CalculateEMI(decimal principal, decimal annualRate, int months)
+        {
+            if (annualRate == 0 || months == 0) return 0;
+            var monthlyRate = annualRate / 12 / 100;
+            if (monthlyRate == 0) return principal / months;
+            return principal * monthlyRate * (decimal)Math.Pow((double)(1 + monthlyRate), months) / 
+                   ((decimal)Math.Pow((double)(1 + monthlyRate), months) - 1);
+        }
+
         // Helper Methods
         private async Task<LoanApplicationDetailDTO> MapToDetailDTO(LoanApplicationBase app)
         {
+            var customer = await _unitOfWork.Customers.GetByIdAsync(app.CustomerId);
+            var user = customer != null ? await _unitOfWork.Users.GetByIdAsync(customer.UserId) : null;
             var emiPlans = (await _unitOfWork.EMIPlans.GetAllAsync()).Where(e => e.LoanApplicationBaseId == app.LoanApplicationBaseId);
             var emiPlan = emiPlans.FirstOrDefault();
 
@@ -158,13 +258,13 @@ namespace Kanini.LMP.Application.Services.Implementations
             {
                 LoanApplicationBaseId = app.LoanApplicationBaseId,
                 CustomerId = app.CustomerId,
-                CustomerName = app.PersonalDetails?.FullName ?? "N/A",
-                CustomerEmail = app.AddressInformation?.EmailId ?? "N/A",
-                CustomerPhone = app.AddressInformation?.MobileNumber1 ?? "N/A",
+                CustomerName = user?.FullName ?? "N/A",
+                CustomerEmail = user?.Email ?? "N/A",
+                CustomerPhone = customer?.PhoneNumber ?? "N/A",
                 LoanType = app.LoanProductType.ToString(),
-                RequestedAmount = app.RequestedLoanAmount,
+                RequestedAmount = app.RequestedAmount,
                 TenureMonths = app.TenureMonths,
-                InterestRate = app.InterestRate,
+                InterestRate = 0,
                 Status = app.Status.ToString(),
                 SubmissionDate = app.SubmissionDate.ToDateTime(TimeOnly.MinValue),
                 ApprovedDate = app.ApprovedDate?.ToDateTime(TimeOnly.MinValue),
@@ -179,17 +279,7 @@ namespace Kanini.LMP.Application.Services.Implementations
                     Status = emiPlan.Status.ToString(),
                     IsCompleted = emiPlan.IsCompleted
                 } : null,
-                Documents = app.DocumentUpload != null ? new List<DocumentDTO>
-                {
-                    new DocumentDTO
-                    {
-                        DocumentId = app.DocumentUpload.DocumentId,
-                        DocumentName = app.DocumentUpload.DocumentName,
-                        DocumentType = app.DocumentUpload.DocumentType.ToString(),
-                        UploadedAt = app.DocumentUpload.UploadedAt,
-                        DocumentData = app.DocumentUpload.DocumentData
-                    }
-                } : new List<DocumentDTO>()
+                Documents = new List<DocumentDTO>()
             };
         }
     }

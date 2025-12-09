@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Select, Button, Radio, InputNumber, Divider, Card, Progress, Tag } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, BankOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { checkEligibility } from '../../store/slices/eligibilitySlice';
+import { fetchCustomerByUserId } from '../../store/slices/customerSlice';
+import { useAuth } from '../../context/AuthContext';
 import styles from './EligibilityModal.module.css';
 
 interface EligibilityModalProps {
@@ -16,6 +18,39 @@ const EligibilityModal: React.FC<EligibilityModalProps> = ({ visible, onClose })
   const [isExisting, setIsExisting] = useState(false);
   const dispatch = useAppDispatch();
   const { checkResult, loading } = useAppSelector((state) => state.eligibility);
+  const { currentCustomer } = useAppSelector((state) => state.customer);
+  const { token } = useAuth();
+
+  useEffect(() => {
+    const userId = token?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+    if (visible && userId) {
+      if (!currentCustomer) {
+        dispatch(fetchCustomerByUserId(Number(userId)));
+      } else if (isExisting) {
+        form.setFieldsValue({
+          pan: currentCustomer.panNumber,
+          age: currentCustomer.age,
+          annualIncome: currentCustomer.annualIncome,
+          occupation: currentCustomer.occupation,
+          homeOwnershipStatus: currentCustomer.homeOwnershipStatus
+        });
+      }
+    }
+  }, [visible, token, currentCustomer, dispatch, isExisting, form]);
+
+  useEffect(() => {
+    if (isExisting && currentCustomer) {
+      form.setFieldsValue({
+        pan: currentCustomer.panNumber,
+        age: currentCustomer.age,
+        annualIncome: currentCustomer.annualIncome,
+        occupation: currentCustomer.occupation,
+        homeOwnershipStatus: currentCustomer.homeOwnershipStatus
+      });
+    }
+  }, [isExisting, currentCustomer, form]);
+
+
 
   const handleSubmit = async (values: any) => {
     const request = {
@@ -30,6 +65,12 @@ const EligibilityModal: React.FC<EligibilityModalProps> = ({ visible, onClose })
     form.resetFields();
     setIsExisting(false);
   };
+
+  useEffect(() => {
+    if (!visible) {
+      setIsExisting(false);
+    }
+  }, [visible]);
 
   const handleClose = () => {
     resetForm();
@@ -120,7 +161,10 @@ const EligibilityModal: React.FC<EligibilityModalProps> = ({ visible, onClose })
       >
         <Form form={form} onFinish={handleSubmit} layout="vertical" className={styles.eligibilityForm}>
         <Form.Item label="Are you an existing borrower?">
-          <Radio.Group value={isExisting} onChange={(e) => setIsExisting(e.target.value)}>
+          <Radio.Group value={isExisting} onChange={(e) => {
+            console.log('📻 Radio changed to:', e.target.value);
+            setIsExisting(e.target.value);
+          }}>
             <Radio value={false}>New Customer</Radio>
             <Radio value={true}>Existing Borrower</Radio>
           </Radio.Group>
@@ -195,49 +239,28 @@ const EligibilityModal: React.FC<EligibilityModalProps> = ({ visible, onClose })
 
         {isExisting && (
           <>
-            <Form.Item name="experienceYears" label="Work Experience (Years)">
-              <InputNumber min={0} max={50} style={{ width: '100%' }} />
+            <Form.Item name="pan" label="PAN Number">
+              <Input disabled placeholder="ABCDE1234F" />
             </Form.Item>
 
-            <Form.Item name="employerName" label="Current Employer">
-              <Input placeholder="Company name" />
+            <Form.Item name="age" label="Age">
+              <InputNumber disabled min={18} max={80} style={{ width: '100%' }} />
             </Form.Item>
 
-            <Form.Item name="monthlyEMI" label="Current Monthly EMI (₹)">
-              <InputNumber min={0} max={100000} style={{ width: '100%' }} />
+            <Form.Item name="annualIncome" label="Annual Income (₹)">
+              <InputNumber disabled min={100000} max={50000000} style={{ width: '100%' }} />
             </Form.Item>
 
-            <Form.Item name="existingLoanAmount" label="Existing Loan Amount (₹)">
-              <InputNumber min={0} max={10000000} style={{ width: '100%' }} />
+            <Form.Item name="occupation" label="Occupation">
+              <Input disabled />
             </Form.Item>
 
-            <Form.Item name="previousLoanCount" label="Previous Loan Count">
-              <InputNumber min={0} max={20} style={{ width: '100%' }} />
-            </Form.Item>
-
-            <Divider>Payment History</Divider>
-
-            <Form.Item name="onTimePayments" label="On-time Payments">
-              <InputNumber min={0} style={{ width: '100%' }} />
-            </Form.Item>
-
-            <Form.Item name="latePayments" label="Late Payments">
-              <InputNumber min={0} style={{ width: '100%' }} />
-            </Form.Item>
-
-            <Form.Item name="missedPayments" label="Missed Payments">
-              <InputNumber min={0} style={{ width: '100%' }} />
-            </Form.Item>
-
-            <Form.Item name="hasDefaultHistory" label="Any Default History?">
-              <Radio.Group>
-                <Radio value={false}>No</Radio>
-                <Radio value={true}>Yes</Radio>
-              </Radio.Group>
-            </Form.Item>
-
-            <Form.Item name="daysOverdueMax" label="Maximum Days Overdue">
-              <InputNumber min={0} style={{ width: '100%' }} />
+            <Form.Item name="homeOwnershipStatus" label="Home Ownership">
+              <Select disabled placeholder="Select home ownership">
+                <Select.Option value={0}>Rented</Select.Option>
+                <Select.Option value={1}>Owned</Select.Option>
+                <Select.Option value={2}>Mortgage</Select.Option>
+              </Select>
             </Form.Item>
           </>
         )}

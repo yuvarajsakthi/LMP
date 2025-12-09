@@ -24,6 +24,7 @@ const ApplicationProfile: React.FC = () => {
 
   useEffect(() => {
     fetchEMIData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchEMIData = async () => {

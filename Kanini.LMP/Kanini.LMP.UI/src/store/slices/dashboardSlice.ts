@@ -8,6 +8,7 @@ interface DashboardState {
   applicationStatus: any[];
   isLoading: boolean;
   lastFetched: number | null;
+  lastFetchedApplicationStatus: number | null;
 }
 
 const initialState: DashboardState = {
@@ -17,6 +18,7 @@ const initialState: DashboardState = {
   applicationStatus: [],
   isLoading: false,
   lastFetched: null,
+  lastFetchedApplicationStatus: null,
 };
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
@@ -47,7 +49,16 @@ export const fetchEligibilityScore = createAsyncThunk(
 
 export const fetchApplicationStatus = createAsyncThunk(
   'dashboard/fetchApplicationStatus',
-  async () => await customerDashboardAPI.getApplicationStatus()
+  async (_, { getState }) => {
+    const state = getState() as any;
+    const { lastFetchedApplicationStatus, applicationStatus } = state.dashboard;
+    
+    if (lastFetchedApplicationStatus && Date.now() - lastFetchedApplicationStatus < CACHE_DURATION && applicationStatus.length > 0) {
+      return applicationStatus;
+    }
+    
+    return await customerDashboardAPI.getApplicationStatus();
+  }
 );
 
 const dashboardSlice = createSlice({
@@ -56,6 +67,7 @@ const dashboardSlice = createSlice({
   reducers: {
     clearDashboardCache: (state) => {
       state.lastFetched = null;
+      state.lastFetchedApplicationStatus = null;
     },
   },
   extraReducers: (builder) => {
@@ -79,6 +91,7 @@ const dashboardSlice = createSlice({
       })
       .addCase(fetchApplicationStatus.fulfilled, (state, action) => {
         state.applicationStatus = action.payload;
+        state.lastFetchedApplicationStatus = Date.now();
       });
   },
 });

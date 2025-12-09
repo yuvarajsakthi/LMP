@@ -1,8 +1,9 @@
 import { Modal, List, Badge, Empty, Button } from 'antd';
 import { BellOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useState, useEffect } from 'react';
-import { notificationAPI } from '../../services';
 import { useAuth } from '../../context';
+import { useAppDispatch, useAppSelector } from '../../hooks';
+import { getAllNotifications, deleteNotification } from '../../store';
 
 interface Notification {
   notificationId: number;
@@ -13,39 +14,19 @@ interface Notification {
 
 export const NotificationModal = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(false);
   const { token } = useAuth();
-
-  const fetchNotifications = async () => {
-    if (!token?.customerId) return;
-    setLoading(true);
-    try {
-      const response = await notificationAPI.getAllNotifications(Number(token.customerId));
-      setNotifications(response || []);
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const dispatch = useAppDispatch();
+  const { notifications, unreadCount, loading } = useAppSelector((state) => state.notification);
 
   useEffect(() => {
-    if (isOpen) {
-      fetchNotifications();
+    if (isOpen && notifications.length === 0) {
+      dispatch(getAllNotifications());
     }
-  }, [isOpen]);
+  }, [isOpen, dispatch, notifications.length]);
 
-  const handleDelete = async (id: number) => {
-    try {
-      await notificationAPI.deleteNotification(id);
-      setNotifications(prev => prev.filter(n => n.notificationId !== id));
-    } catch (error) {
-      console.error('Failed to delete notification:', error);
-    }
+  const handleDelete = (id: number) => {
+    dispatch(deleteNotification(id));
   };
-
-  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
     <>

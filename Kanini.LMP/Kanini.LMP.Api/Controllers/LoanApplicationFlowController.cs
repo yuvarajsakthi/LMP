@@ -76,11 +76,11 @@ namespace Kanini.LMP.Api.Controllers
         }
 
         [HttpPut(ApiConstants.Routes.LoanApplicationFlowController.UpdateStatus)]
-        public async Task<ActionResult<ApiResponse<object>>> UpdateLoanStatus(int loanId, [FromBody] ApplicationStatus status)
+        public async Task<ActionResult<ApiResponse<object>>> UpdateLoanStatus(int loanId, [FromBody] UpdateStatusDTO dto)
         {
             try
             {
-                var updated = await _loanApplicationService.UpdateLoanStatusAsync(new IdDTO { Id = loanId }, status);
+                var updated = await _loanApplicationService.UpdateLoanStatusAsync(new IdDTO { Id = loanId }, dto.Status, dto.RejectionReason);
                 return Ok(ApiResponse<object>.SuccessResponse(new { loanId, status = updated.Status }));
             }
             catch (ArgumentException ex)

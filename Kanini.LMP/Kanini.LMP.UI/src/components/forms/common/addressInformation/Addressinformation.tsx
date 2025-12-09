@@ -143,24 +143,6 @@ const Addressinformation: React.FC<AddressinformationProps> = ({
           </Col>
         </Row>
 
-        <Row gutter={16}>
-          <Col span={8}>
-            <Form.Item name="emailId" label="Email ID (Optional)" rules={[{ type: 'email' }, { max: 100 }]}>
-              <Input placeholder="Enter email address" className={styles.input} />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item name="mobileNumber1" label="Mobile Number 1" rules={[{ required: true, message: 'Mobile number is required' }, { pattern: /^[0-9]{10}$/, message: 'Enter valid 10-digit number' }, { max: 15 }]}>
-              <Input placeholder="Enter mobile number" className={styles.input} maxLength={15} />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item name="mobileNumber2" label="Mobile Number 2 (Optional)" rules={[{ pattern: /^[0-9]{10}$/, message: 'Enter valid 10-digit number' }, { max: 15 }]}>
-              <Input placeholder="Enter alternate mobile" className={styles.input} maxLength={15} />
-            </Form.Item>
-          </Col>
-        </Row>
-
         <div className={styles.buttonContainer}>
           <Space size="large">
             <Button 

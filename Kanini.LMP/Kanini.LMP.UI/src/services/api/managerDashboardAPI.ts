@@ -24,5 +24,10 @@ export const managerDashboardAPI = {
   updateLoanStatus: async (data: { loanApplicationBaseId: number; status: string; interestRate?: number; rejectionReason?: string }) => {
     const response = await axiosInstance.put('/api/ManagerDashboard/loans/status', data);
     return response.data;
+  },
+
+  disburseLoan: async (id: number) => {
+    const response = await axiosInstance.post(`/api/ManagerDashboard/loans/${id}/disburse`);
+    return response.data;
   }
 };

@@ -2,6 +2,7 @@ import React from 'react';
 import { Form, Input, InputNumber, Button, Select, Row, Col, Card } from 'antd';
 import { VehicleType, LoanPurposeVehicle } from '../../../types/vehicleLoan';
 import { useLoanApplication } from '../../../context';
+import styles from './VehicleLoanDetails.module.css';
 
 interface VehicleLoanDetailsProps {
   onNext: () => void;
@@ -28,10 +29,12 @@ const VehicleLoanDetails: React.FC<VehicleLoanDetailsProps> = ({ onNext, onPrevi
   };
 
   return (
-    <Card>
-      <h2>Vehicle Loan Details</h2>
-      <p style={{ marginBottom: 24, color: '#666' }}>Enter your vehicle loan details</p>
-      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+    <Card className={styles.card}>
+      <div className={styles.header}>
+        <h2 className={styles.title}>Vehicle Loan Details</h2>
+        <p className={styles.subtitle}>Enter your vehicle loan details</p>
+      </div>
+      <Form form={form} layout="vertical" onFinish={handleSubmit} className={styles.form}>
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item name="requestedLoanAmount" label="Requested Loan Amount (₹)" rules={[{ required: true }]}>
@@ -99,10 +102,10 @@ const VehicleLoanDetails: React.FC<VehicleLoanDetailsProps> = ({ onNext, onPrevi
           <InputNumber style={{ width: '100%' }} min={0} placeholder="Enter down payment" />
         </Form.Item>
 
-        <Form.Item>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            {onPrevious && <Button onClick={onPrevious}>BACK</Button>}
-            <Button type="primary" htmlType="submit">NEXT</Button>
+        <Form.Item className={styles.buttonGroup}>
+          <div className={styles.buttons}>
+            {onPrevious && <Button onClick={onPrevious} size="large" className={styles.backButton}>BACK</Button>}
+            <Button type="primary" htmlType="submit" size="large" className={styles.nextButton}>NEXT</Button>
           </div>
         </Form.Item>
       </Form>

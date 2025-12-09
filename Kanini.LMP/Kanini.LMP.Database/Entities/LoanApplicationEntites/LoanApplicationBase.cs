@@ -14,7 +14,7 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         [ForeignKey(nameof(Customer))]
         public int CustomerId { get; set; }
 
-        public Customer CustomerRef { get; set; } = null!;
+        public Customer Customer { get; set; } = null!;
 
         [Required]
         [ForeignKey(nameof(LoanProduct))]
@@ -87,8 +87,5 @@ namespace Kanini.LMP.Database.Entities.CustomerEntities
         
         [Required]
         public bool IsActive { get; set; } = true;
-
-        public Customer? Customer { get; set; }
-
     }
 }

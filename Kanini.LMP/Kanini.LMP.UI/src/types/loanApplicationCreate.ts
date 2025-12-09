@@ -72,7 +72,7 @@ export enum DocumentType {
   Other = 6
 }
 
-// DTOs matching backend structure
+// Frontend helper interfaces for form state
 export interface DocumentUploadDTO {
   documentName: string;
   documentType: DocumentType;
@@ -80,43 +80,43 @@ export interface DocumentUploadDTO {
 }
 
 export interface PersonalDetailsDTO {
-  fullName: string;
-  dateOfBirth: string;
-  districtOfBirth: string;
-  panNumber: string;
-  educationQualification: EducationQualification;
-  residentialStatus: ResidentialStatus;
-  gender: Gender;
-  signatureImage: File;
-  idProofImage: File;
+  fullName?: string;
+  dateOfBirth?: string;
+  districtOfBirth?: string;
+  panNumber?: string;
+  educationQualification?: EducationQualification;
+  residentialStatus?: ResidentialStatus;
+  gender?: Gender;
+  signatureImage?: File;
+  idProofImage?: File;
 }
 
 export interface AddressInformationDTO {
-  presentAddress: string;
-  permanentAddress: string;
-  district: string;
-  state: IndianStates;
-  zipCode: string;
+  presentAddress?: string;
+  permanentAddress?: string;
+  district?: string;
+  state?: IndianStates;
+  zipCode?: string;
   emailId?: string;
-  mobileNumber1: string;
+  mobileNumber1?: string;
   mobileNumber2?: string;
 }
 
 export interface FamilyEmergencyDetailsDTO {
-  fullName: string;
-  relationshipWithApplicant: string;
-  mobileNumber: string;
-  address: string;
+  fullName?: string;
+  relationshipWithApplicant?: string;
+  mobileNumber?: string;
+  address?: string;
 }
 
 export interface DeclarationDTO {
-  name: string;
-  amount: number;
-  description: string;
-  purpose: string;
+  name?: string;
+  amount?: number;
+  description?: string;
+  purpose?: string;
 }
 
-// Personal Loan Application
+// API DTOs - nested structure for frontend convenience
 export interface PersonalLoanApplicationCreateDTO {
   customerId: number;
   tenureMonths: number;
@@ -132,7 +132,6 @@ export interface PersonalLoanApplicationCreateDTO {
   declaration: DeclarationDTO;
 }
 
-// Home Loan Application
 export interface HomeLoanApplicationCreateDTO {
   customerId: number;
   tenureMonths: number;
@@ -152,7 +151,6 @@ export interface HomeLoanApplicationCreateDTO {
   declaration: DeclarationDTO;
 }
 
-// Vehicle Loan Application
 export interface VehicleLoanApplicationCreateDTO {
   customerId: number;
   tenureMonths: number;

@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Col, Row } from 'antd';
+import { Col, Row, message, Spin } from 'antd';
+import { useSelector, useDispatch } from 'react-redux';
+import { getEligibilityScore } from '../../../store/slices/eligibilitySlice';
 import { 
   OneBlue, TwoGrey, ThreeGrey, FourGrey,
   TwoBlue, ThreeBlue, FourBlue,
@@ -21,6 +23,7 @@ import Declaration from '../../../components/forms/common/declaration/Declaratio
 import Layout from '../../../layout/Layout';
 import ApplicationSummary from '../../../components/forms/common/applicationSummary/ApplicationSummary';
 import { LoanApplicationProvider, useLoanApplication } from '../../../context';
+import type { AppDispatch, RootState } from '../../../store';
 
 function LoanApplicationFormContent() {
   const location = useLocation();
@@ -29,7 +32,38 @@ function LoanApplicationFormContent() {
   const loanType = selectedCategory?.loanProductName || 'Personal Loan';
   
   const { state, dispatch } = useLoanApplication();
+  const reduxDispatch = useDispatch<AppDispatch>();
+  const { currentCustomer } = useSelector((state: RootState) => state.customer);
+  const { loading: eligibilityLoading } = useSelector((state: RootState) => state.eligibility);
   const [step, setStep] = useState(1);
+  const [checkingEligibility, setCheckingEligibility] = useState(true);
+
+  useEffect(() => {
+    const checkEligibility = async () => {
+      if (!currentCustomer?.customerId) {
+        message.error('Customer information not found');
+        navigate('/customer/dashboard');
+        return;
+      }
+
+      try {
+        const result = await reduxDispatch(getEligibilityScore(currentCustomer.customerId)).unwrap();
+        const eligibilityStatus = result?.eligibilityStatus || result?.Status || result?.status;
+        
+        if (eligibilityStatus?.toLowerCase() !== 'eligible') {
+          message.error('You are not eligible to apply for a loan. Please check your eligibility score.');
+          navigate('/customer/dashboard');
+        }
+      } catch (error) {
+        message.error('Unable to verify eligibility. Please try again.');
+        navigate('/customer/dashboard');
+      } finally {
+        setCheckingEligibility(false);
+      }
+    };
+
+    checkEligibility();
+  }, [currentCustomer, reduxDispatch, navigate]);
 
   useEffect(() => {
     const loanTypeLower = loanType.toLowerCase();
@@ -90,6 +124,16 @@ function LoanApplicationFormContent() {
     }
   };
 
+  if (checkingEligibility || eligibilityLoading) {
+    return (
+      <Layout>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+          <Spin size="large" tip="Verifying eligibility..." />
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className={styles.container}>
@@ -123,7 +167,7 @@ function LoanApplicationFormContent() {
                 totalSteps={6}
                 loanAmount={state.formData.loanDetails?.requestedLoanAmount}
                 tenure={state.formData.loanDetails?.tenureMonths}
-                documentsUploaded={state.formData.documents?.length > 0}
+                documentsUploaded={!!(state.formData.personalDetails?.signatureImage && state.formData.personalDetails?.idProofImage)}
               />
             </Col>
           </Row>

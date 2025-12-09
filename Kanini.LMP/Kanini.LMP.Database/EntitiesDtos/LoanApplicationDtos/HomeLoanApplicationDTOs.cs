@@ -20,7 +20,6 @@ namespace Kanini.LMP.Database.EntitiesDtos.LoanApplicationDtos
         public decimal DownPayment { get; set; }
         [Required]
         public LoanPurposeHome LoanPurpose { get; set; }
-        public IFormFile? DocumentUpload { get; set; }
     }
 
     public class UpdateHomeLoanApplicationDTO

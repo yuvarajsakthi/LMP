@@ -30,14 +30,12 @@ const LoanRecommendation: React.FC<LoanRecommendationProps> = ({
   const [showEligibilityModal, setShowEligibilityModal] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchLoanProducts());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (loanProductsFromStore.length > 0) {
+    if (loanProductsFromStore.length === 0) {
+      dispatch(fetchLoanProducts());
+    } else {
       setLoanProducts(loanProductsFromStore);
     }
-  }, [loanProductsFromStore]);
+  }, []);
 
   const handleApplyClick = () => {
     if (onApplyClick) {

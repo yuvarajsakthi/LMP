@@ -14,29 +14,18 @@ interface LoanDocumentsProps {
 
 const LoanDocuments: React.FC<LoanDocumentsProps> = ({ onNext, onPrevious }) => {
   const { state, dispatch } = useLoanApplication();
-  const [passportPhoto, setPassportPhoto] = useState<File | null>(null);
   const [signature, setSignature] = useState<File | null>(null);
   const [idProof, setIdProof] = useState<File | null>(null);
 
   useEffect(() => {
-    const docs = state.formData.documents;
-    if (docs && docs.length > 0) {
-      // Restore files from context if available
-      const passportDoc = docs.find(d => d.documentName === 'passportPhoto');
-      const signatureDoc = docs.find(d => d.documentName === 'signature');
-      const idProofDoc = docs.find(d => d.documentName === 'idProof');
-      
-      if (passportDoc?.documentFile) setPassportPhoto(passportDoc.documentFile);
-      if (signatureDoc?.documentFile) setSignature(signatureDoc.documentFile);
-      if (idProofDoc?.documentFile) setIdProof(idProofDoc.documentFile);
+    const personalDetails = state.formData.personalDetails;
+    if (personalDetails) {
+      if (personalDetails.signatureImage) setSignature(personalDetails.signatureImage as File);
+      if (personalDetails.idProofImage) setIdProof(personalDetails.idProofImage as File);
     }
   }, []);
 
   const handleSubmit = () => {
-    if (!passportPhoto) {
-      message.warning('Please upload passport size photo');
-      return;
-    }
     if (!signature) {
       message.warning('Please upload signature');
       return;
@@ -46,13 +35,14 @@ const LoanDocuments: React.FC<LoanDocumentsProps> = ({ onNext, onPrevious }) => 
       return;
     }
 
-    const documents = [
-      { documentName: 'passportPhoto', documentType: 0, documentFile: passportPhoto },
-      { documentName: 'signature', documentType: 0, documentFile: signature },
-      { documentName: 'idProof', documentType: 0, documentFile: idProof }
-    ];
+    // Store signature and ID proof in personalDetails for backend mapping
+    const personalDetailsUpdate = {
+      ...state.formData.personalDetails,
+      signatureImage: signature,
+      idProofImage: idProof
+    };
     
-    dispatch({ type: 'UPDATE_FORM_DATA', payload: { section: 'documents', data: documents } });
+    dispatch({ type: 'UPDATE_FORM_DATA', payload: { section: 'personalDetails', data: personalDetailsUpdate } });
     message.success('Documents uploaded successfully');
     onNext?.();
   };
@@ -74,7 +64,6 @@ const LoanDocuments: React.FC<LoanDocumentsProps> = ({ onNext, onPrevious }) => 
     }
   });
 
-  const passportDropzone = createDropzone(setPassportPhoto);
   const signatureDropzone = createDropzone(setSignature);
   const idProofDropzone = createDropzone(setIdProof);
 
@@ -86,20 +75,6 @@ const LoanDocuments: React.FC<LoanDocumentsProps> = ({ onNext, onPrevious }) => 
       </div>
 
       <Form onFinish={handleSubmit} className={styles.form}>
-        <div className={styles.uploadSection}>
-          <Typography.Text className={styles.label}>Passport Size Photo *</Typography.Text>
-          <div {...passportDropzone.getRootProps()} className={styles.dropzone}>
-            <input {...passportDropzone.getInputProps()} />
-            <UploadOutlined style={{ fontSize: 24, marginBottom: 8 }} />
-            {passportPhoto ? (
-              <Typography.Text>{passportPhoto.name}</Typography.Text>
-            ) : (
-              <Typography.Text>Drag & drop or click to select file</Typography.Text>
-            )}
-          </div>
-          <Typography.Text className={styles.hint}>Upload passport size photo (jpg/png, max 2MB)</Typography.Text>
-        </div>
-
         <div className={styles.uploadSection}>
           <Typography.Text className={styles.label}>Signature *</Typography.Text>
           <div {...signatureDropzone.getRootProps()} className={styles.dropzone}>

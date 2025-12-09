@@ -179,8 +179,17 @@
     padding: 0 20px;
   }
 
-  .sidebar-menu .ant-menu-item {
+  .sidebarMenu .ant-menu-item {
     margin: 4px 12px !important;
+  }
+
+  .sidebarMenu .ant-menu-item .ant-menu-title-content {
+    display: none !important;
+  }
+
+  .sidebarMenu .ant-menu-item {
+    justify-content: center !important;
+    padding: 0 !important;
   }
 }
 
