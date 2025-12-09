@@ -88,34 +88,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             return eligibleProducts;
         }
 
-        public async Task UpdateCustomerProfileAsync(IdDTO customerId, EligibilityProfileRequest request)
-        {
-            try
-            {
-                _logger.LogInformation("Processing customer profile update");
 
-                var customer = await _unitOfWork.Customers.GetByIdAsync(customerId.Id);
-                if (customer == null)
-                {
-                    throw new ArgumentException(ApplicationConstants.ErrorMessages.CustomerNotFound);
-                }
-
-                _mapper.Map(request, customer);
-                customer.UpdatedAt = DateTime.UtcNow;
-                var customerDto = _mapper.Map<CustomerDTO>(customer);
-                customer.EligibilityScore = CalculateCreditScore(customerDto);
-
-                await _unitOfWork.Customers.UpdateAsync(customer);
-                await _unitOfWork.SaveChangesAsync();
-
-                _logger.LogInformation("Customer profile updated successfully");
-            }
-            catch (Exception ex) when (!(ex is ArgumentException))
-            {
-                _logger.LogError(ex, "Customer profile update failed");
-                throw new Exception(ApplicationConstants.ErrorMessages.CustomerProfileUpdateFailed);
-            }
-        }
 
         private decimal CalculateCreditScore(CustomerDTO customer)
         {

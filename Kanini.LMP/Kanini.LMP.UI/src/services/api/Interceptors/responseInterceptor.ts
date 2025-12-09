@@ -5,9 +5,26 @@ import { navigationService } from '../..';
 import { secureStorage } from '../../../utils/secureStorage';
 import type { ApiResponse } from '../../../types';
 
+const toCamelCase = (str: string): string => {
+  return str.charAt(0).toLowerCase() + str.slice(1);
+};
+
+const transformKeys = (obj: any): any => {
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(transformKeys);
+  
+  return Object.keys(obj).reduce((acc: any, key: string) => {
+    const camelKey = toCamelCase(key);
+    acc[camelKey] = transformKeys(obj[key]);
+    return acc;
+  }, {});
+};
+
 export const responseInterceptor = (response: AxiosResponse<ApiResponse>) => {
-  // Handle structured API responses from backend
+  // Transform PascalCase to camelCase
   if (response.data && typeof response.data === 'object') {
+    response.data = transformKeys(response.data);
+    
     // If backend returns success: false, treat as error (business logic error)
     if (response.data.success === false) {
       const error = new Error(response.data.message || 'Operation failed');

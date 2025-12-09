@@ -23,10 +23,8 @@ export const API_ENDPOINTS = {
   UPDATE_CUSTOMER_SETTINGS: validateEndpoint('/api/Customer/settings'),
   
   // Eligibility Controller endpoints
-  CHECK_ELIGIBILITY: validateEndpoint('/api/Eligibility/check'),
   GET_ELIGIBILITY_SCORE: validateEndpoint('/api/Eligibility'),
   CALCULATE_ELIGIBILITY: validateEndpoint('/api/Eligibility/calculate'),
-  UPDATE_ELIGIBILITY_PROFILE: validateEndpoint('/api/Eligibility/update'),
   
   // FAQ Controller endpoints
   CREATE_FAQ: validateEndpoint('/api/Faq'),
