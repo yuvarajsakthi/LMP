@@ -22,7 +22,8 @@ export class ApiService {
       enqueueSnackbar(data.message, { variant: 'success' });
     }
 
-    return data.data as T;
+    // If data.data exists, return it; otherwise return data itself
+    return (data.data !== undefined ? data.data : data) as T;
   }
 
   static handleError(error: AxiosError): never {
