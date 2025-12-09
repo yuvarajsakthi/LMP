@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import { Typography, Input, Button, message } from "antd";
 import { LoanAcceleratorLogo } from "../../assets";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import LoginComponentCss from "./LoginComponent.module.css";
 import { useAuth } from "../../context";
-import type { LoginCredentials, InputChangeEvent } from "../../types";
+import type { LoginCredentials } from "../../types";
 import { COMMON_ROUTES, CUSTOMER_ROUTES, MANAGER_ROUTES, USER_ROLES } from "../../config";
 import { validateField } from "../../utils";
 import { useAppDispatch, useAppSelector } from "../../hooks";
@@ -26,14 +26,14 @@ const Login = () => {
 
 
 
-  const handleEmailChange = async (e: InputChangeEvent) => {
+  const handleEmailChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const emailValue = e.target.value;
     setEmail(emailValue);
     const error = await validateField('email', emailValue, 'login');
     setEmailError(error);
   };
 
-  const handlePasswordChange = async (e: InputChangeEvent) => {
+  const handlePasswordChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const passwordValue = e.target.value;
     setPassword(passwordValue);
     const error = await validateField('password', passwordValue, 'login');

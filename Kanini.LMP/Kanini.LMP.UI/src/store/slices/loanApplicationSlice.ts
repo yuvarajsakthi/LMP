@@ -38,6 +38,13 @@ export const createVehicleLoan = createAsyncThunk(
   }
 );
 
+export const fetchApplicationsByCustomerId = createAsyncThunk(
+  'loanApplication/fetchByCustomerId',
+  async (customerId: number) => {
+    return await loanApplicationAPI.getApplicationsByCustomerId(customerId);
+  }
+);
+
 const loanApplicationSlice = createSlice({
   name: 'loanApplication',
   initialState,
@@ -85,6 +92,18 @@ const loanApplicationSlice = createSlice({
       .addCase(createVehicleLoan.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to create vehicle loan';
+      })
+      .addCase(fetchApplicationsByCustomerId.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchApplicationsByCustomerId.fulfilled, (state, action) => {
+        state.loading = false;
+        state.applications = action.payload.data || [];
+      })
+      .addCase(fetchApplicationsByCustomerId.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch applications';
       });
   },
 });

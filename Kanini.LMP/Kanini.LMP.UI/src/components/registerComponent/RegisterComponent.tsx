@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useState, ChangeEvent } from "react";
 import { Typography, Input, Button, message, Select, Steps } from "antd";
 import { LoanAcceleratorLogo } from "../../assets";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import RegisterCss from "./RegisterComponent.module.css";
-import type { InputChangeEvent } from "../../types";
 import { COMMON_ROUTES, ERROR_MESSAGES } from "../../config";
 import { registerSchema } from "../../utils/validationSchemas";
 import { registerUser, verifyOTP } from "../../store/slices/authSlice";
@@ -38,7 +37,7 @@ const RegisterComponent = () => {
 
 
 
-  const handleNameChange = async (e: InputChangeEvent) => {
+  const handleNameChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setName(value);
     try {
@@ -49,7 +48,7 @@ const RegisterComponent = () => {
     }
   };
 
-  const handleEmailChange = async (e: InputChangeEvent) => {
+  const handleEmailChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setEmail(value);
     try {
@@ -60,7 +59,7 @@ const RegisterComponent = () => {
     }
   };
 
-  const handlePasswordChange = async (e: InputChangeEvent) => {
+  const handlePasswordChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setPassword(value);
     try {
@@ -79,7 +78,7 @@ const RegisterComponent = () => {
     }
   };
 
-  const handleConfirmPasswordChange = async (e: InputChangeEvent) => {
+  const handleConfirmPasswordChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setConfirmPassword(value);
     try {
@@ -90,7 +89,7 @@ const RegisterComponent = () => {
     }
   };
 
-  const handlePhoneChange = async (e: InputChangeEvent) => {
+  const handlePhoneChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, '');
     setPhoneNumber(value);
     try {
@@ -101,7 +100,7 @@ const RegisterComponent = () => {
     }
   };
 
-  const handlePanChange = async (e: InputChangeEvent) => {
+  const handlePanChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.toUpperCase();
     setPanNumber(value);
     try {
@@ -112,7 +111,7 @@ const RegisterComponent = () => {
     }
   };
 
-  const handleAadhaarChange = async (e: InputChangeEvent) => {
+  const handleAadhaarChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, '');
     setAadhaarNumber(value);
     try {

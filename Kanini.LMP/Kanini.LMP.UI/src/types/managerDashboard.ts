@@ -36,7 +36,7 @@ export interface LoanApplicationDetail {
   approvedDate?: string;
   rejectionReason?: string;
   emiStatus?: EMIStatus;
-  documents: DocumentType[];
+  documents: DocumentInfo[];
 }
 
 export interface EMIStatus {
@@ -49,7 +49,7 @@ export interface EMIStatus {
   isCompleted: boolean;
 }
 
-export interface DocumentType {
+export interface DocumentInfo {
   documentId: number;
   documentName: string;
   documentType: string;

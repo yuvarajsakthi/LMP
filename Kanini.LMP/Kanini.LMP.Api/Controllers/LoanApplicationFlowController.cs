@@ -11,7 +11,7 @@ namespace Kanini.LMP.Api.Controllers
 {
     [Route(ApiConstants.Routes.ApiController)]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class LoanApplicationFlowController : ControllerBase
     {
         private readonly ILoanApplicationService _loanApplicationService;
@@ -19,6 +19,20 @@ namespace Kanini.LMP.Api.Controllers
         public LoanApplicationFlowController(ILoanApplicationService loanApplicationService)
         {
             _loanApplicationService = loanApplicationService;
+        }
+
+        [HttpGet(ApiConstants.Routes.LoanApplicationFlowController.GetByCustomerId)]
+        public async Task<ActionResult<ApiResponse<IEnumerable<dynamic>>>> GetApplicationsByCustomerId(int customerId)
+        {
+            try
+            {
+                var applications = await _loanApplicationService.GetApplicationsByCustomerIdAsync(new IdDTO { Id = customerId });
+                return Ok(ApiResponse<IEnumerable<dynamic>>.SuccessResponse(applications));
+            }
+            catch (Exception)
+            {
+                return BadRequest(ApiResponse<IEnumerable<dynamic>>.ErrorResponse("Failed to retrieve applications"));
+            }
         }
 
         [HttpPost(ApiConstants.Routes.LoanApplicationFlowController.CreatePersonal)]

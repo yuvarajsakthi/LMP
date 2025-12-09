@@ -14,14 +14,11 @@ export interface DecodedToken {
   FullName?: string;
   customerId?: string;
   CustomerId?: string;
+  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'?: string;
   [key: string]: any;
 }
 
 export interface User {
   role: string;
   FullName?: string;
-}
-
-export interface GuardProps {
-  children: React.ReactNode;
 }
