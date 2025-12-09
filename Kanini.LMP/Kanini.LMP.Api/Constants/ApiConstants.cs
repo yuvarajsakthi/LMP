@@ -76,6 +76,16 @@ namespace Kanini.LMP.Api.Constants
                 public const string ResetPassword = "reset-password";
             }
             
+            // Manager Dashboard routes
+            public static class ManagerDashboardController
+            {
+                public const string Stats = "stats";
+                public const string Loans = "loans";
+                public const string LoanById = "loans/{id}";
+                public const string LoansByStatus = "loans/status/{status}";
+                public const string UpdateStatus = "loans/status";
+                public const string DisburseLoan = "loans/{id}/disburse";
+            }
         }
 
         public static class LogMessages
@@ -265,6 +275,9 @@ namespace Kanini.LMP.Api.Constants
         public static class ErrorMessages
         {
             public const string UserIdsRequired = "User IDs are required";
+            public const string LoanApplicationNotFound = "Loan application not found";
+            public const string FailedToUpdateApplicationStatus = "Failed to update application status";
+            public const string FailedToDisburseLoan = "Failed to disburse loan. Loan must be approved first.";
         }
 
         public static class SuccessMessages
@@ -274,6 +287,13 @@ namespace Kanini.LMP.Api.Constants
             public const string TestNotificationSent = "Test notification sent";
             public const string PaymentProcessedSuccessfully = "Payment processed successfully";
             public const string PreferencesUpdatedSuccessfully = "Preferences updated successfully";
+            public const string ApplicationStatusUpdatedSuccessfully = "Application status updated successfully";
+            public const string LoanDisbursedSuccessfully = "Loan disbursed successfully";
+        }
+
+        public static class Roles
+        {
+            public const string Manager = "Manager";
         }
     }
 }
