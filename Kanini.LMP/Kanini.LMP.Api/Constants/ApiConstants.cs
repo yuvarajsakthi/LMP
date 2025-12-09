@@ -39,6 +39,7 @@ namespace Kanini.LMP.Api.Constants
             // Loan Application Flow routes
             public static class LoanApplicationFlowController
             {
+                public const string GetByCustomerId = "customer/{customerId}";
                 public const string CreatePersonal = "personal/{customerId}";
                 public const string CreateHome = "home/{customerId}";
                 public const string CreateVehicle = "vehicle/{customerId}";

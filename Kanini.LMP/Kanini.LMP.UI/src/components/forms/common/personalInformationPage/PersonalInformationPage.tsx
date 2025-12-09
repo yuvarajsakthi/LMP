@@ -3,7 +3,7 @@ import { Form, Button, Input, DatePicker, Select, Card, message, Radio } from 'a
 import { NextButtonArrow } from '../../../../assets';
 import { useLoanApplication, useAuth } from '../../../../context';
 import { useAppDispatch, useAppSelector } from '../../../../hooks';
-import { fetchCustomerByUserId } from '../../../../store/slices/customerSlice';
+import { fetchCustomerById } from '../../../../store/slices/customerSlice';
 import { Gender, EducationQualification, ResidentialStatus } from '../../../../types/loanApplicationCreate';
 import styles from './PersonalInformationPage.module.css';
 import dayjs from 'dayjs';
@@ -21,11 +21,11 @@ const PersonalInformationPage: React.FC<PersonalInformationProps> = ({ onNext, o
   const [form] = Form.useForm();
 
   useEffect(() => {
-    const userId = parseInt(token?.userId || '0');
-    if (userId && !currentCustomer) {
-      reduxDispatch(fetchCustomerByUserId(userId));
+    const customerId = parseInt(token?.CustomerId || token?.customerId || '0');
+    if (customerId) {
+      reduxDispatch(fetchCustomerById(customerId));
     }
-  }, [token, currentCustomer, reduxDispatch]);
+  }, [token, reduxDispatch]);
 
   useEffect(() => {
     if (state.formData.personalDetails) {
@@ -35,12 +35,18 @@ const PersonalInformationPage: React.FC<PersonalInformationProps> = ({ onNext, o
         dateOfBirth: data.dateOfBirth ? dayjs(data.dateOfBirth) : null
       });
     } else if (currentCustomer) {
+      const genderValue = typeof currentCustomer.gender === 'string' 
+        ? (currentCustomer.gender.toLowerCase() === 'male' ? Gender.Male : Gender.Female)
+        : currentCustomer.gender;
+      
       form.setFieldsValue({
+        fullName: token?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || token?.FullName || '',
         panNumber: currentCustomer.panNumber || '',
-        dateOfBirth: currentCustomer.dateOfBirth ? dayjs(currentCustomer.dateOfBirth) : null
+        dateOfBirth: currentCustomer.dateOfBirth ? dayjs(currentCustomer.dateOfBirth) : null,
+        gender: genderValue
       });
     }
-  }, [state.formData.personalDetails, currentCustomer, form]);
+  }, [state.formData.personalDetails, currentCustomer, form, token]);
 
   const handleSubmit = async (values: any) => {
     try {

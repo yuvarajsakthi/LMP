@@ -38,6 +38,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             var entity = _mapper.Map<PersonalLoanApplication>(dto);
             entity.CustomerId = customerId.Id;
             entity.Status = ApplicationStatus.Submitted;
+            entity.SubmissionDate = DateOnly.FromDateTime(DateTime.UtcNow);
             var created = await _unitOfWork.PersonalLoanApplications.AddAsync(entity);
             await _unitOfWork.SaveChangesAsync();
 
@@ -68,6 +69,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             var entity = _mapper.Map<HomeLoanApplication>(dto);
             entity.CustomerId = customerId.Id;
             entity.Status = ApplicationStatus.Submitted;
+            entity.SubmissionDate = DateOnly.FromDateTime(DateTime.UtcNow);
             var created = await _unitOfWork.HomeLoanApplications.AddAsync(entity);
             await _unitOfWork.SaveChangesAsync();
 
@@ -98,6 +100,7 @@ namespace Kanini.LMP.Application.Services.Implementations
             var entity = _mapper.Map<VehicleLoanApplication>(dto);
             entity.CustomerId = customerId.Id;
             entity.Status = ApplicationStatus.Submitted;
+            entity.SubmissionDate = DateOnly.FromDateTime(DateTime.UtcNow);
             var created = await _unitOfWork.VehicleLoanApplications.AddAsync(entity);
             await _unitOfWork.SaveChangesAsync();
 
@@ -117,6 +120,43 @@ namespace Kanini.LMP.Application.Services.Implementations
         {
             var loan = await _unitOfWork.VehicleLoanApplications.GetByIdAsync(id.Id);
             return loan == null ? null : _mapper.Map<VehicleLoanApplicationDTO>(loan);
+        }
+
+        public async Task<IEnumerable<dynamic>> GetApplicationsByCustomerIdAsync(IdDTO customerId)
+        {
+            var personalLoans = await _unitOfWork.PersonalLoanApplications.GetAllAsync(l => l.CustomerId == customerId.Id);
+            var homeLoans = await _unitOfWork.HomeLoanApplications.GetAllAsync(l => l.CustomerId == customerId.Id);
+            var vehicleLoans = await _unitOfWork.VehicleLoanApplications.GetAllAsync(l => l.CustomerId == customerId.Id);
+            
+            var allLoans = personalLoans.Select(l => new
+            {
+                l.LoanApplicationBaseId,
+                LoanType = "Personal",
+                l.RequestedAmount,
+                l.TenureMonths,
+                l.Status,
+                l.SubmissionDate
+            }).Cast<dynamic>()
+            .Concat(homeLoans.Select(l => new
+            {
+                l.LoanApplicationBaseId,
+                LoanType = "Home",
+                l.RequestedAmount,
+                l.TenureMonths,
+                l.Status,
+                l.SubmissionDate
+            }))
+            .Concat(vehicleLoans.Select(l => new
+            {
+                l.LoanApplicationBaseId,
+                LoanType = "Vehicle",
+                l.RequestedAmount,
+                l.TenureMonths,
+                l.Status,
+                l.SubmissionDate
+            }));
+            
+            return allLoans.OrderByDescending(l => l.SubmissionDate);
         }
 
         public async Task<IEnumerable<dynamic>> GetRecentApplicationsAsync(IdDTO customerId, IdDTO count)

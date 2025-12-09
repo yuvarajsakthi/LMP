@@ -1,4 +1,3 @@
-// Enums matching backend
 export enum Gender {
   Male = 0,
   Female = 1
@@ -62,21 +61,61 @@ export enum ResidentialStatus {
   Other = 6
 }
 
-export enum DocumentType {
-  IdentityProof = 0,
-  AddressProof = 1,
-  IncomeProof = 2,
-  PropertyDocuments = 3,
-  VehicleDocuments = 4,
-  ApplicationPDF = 5,
+export enum EmploymentType {
+  Salaried = 0,
+  SelfEmployed = 1,
+  Business = 2,
+  Professional = 3
+}
+
+export enum LoanPurposePersonal {
+  Medical = 0,
+  Education = 1,
+  Travel = 2,
+  Wedding = 3,
+  DebtConsolidation = 4,
+  HomeRenovation = 5,
   Other = 6
 }
 
-// Frontend helper interfaces for form state
-export interface DocumentUploadDTO {
-  documentName: string;
-  documentType: DocumentType;
-  documentFile?: File;
+export enum PropertyType {
+  Residential = 0,
+  Commercial = 1,
+  Industrial = 2,
+  SpecialPurpose = 3
+}
+
+export enum OwnershipType {
+  Owned = 0,
+  Builder = 1
+}
+
+export enum LoanPurposeHome {
+  Purchase = 0,
+  Construction = 1,
+  Renovation = 2
+}
+
+export enum VehicleType {
+  Car = 0,
+  Bike = 1,
+  Truck = 2,
+  Bus = 3,
+  Scooter = 4,
+  Van = 5,
+  Tractor = 6,
+  Bicycle = 7,
+  AutoRickshaw = 8,
+  Motorcycle = 9,
+  ElectricCar = 10,
+  PickupTruck = 11,
+  SUV = 12,
+  Minivan = 13
+}
+
+export enum LoanPurposeVehicle {
+  New = 0,
+  Used = 1
 }
 
 export interface PersonalDetailsDTO {
@@ -97,9 +136,6 @@ export interface AddressInformationDTO {
   district?: string;
   state?: IndianStates;
   zipCode?: string;
-  emailId?: string;
-  mobileNumber1?: string;
-  mobileNumber2?: string;
 }
 
 export interface FamilyEmergencyDetailsDTO {
@@ -107,64 +143,4 @@ export interface FamilyEmergencyDetailsDTO {
   relationshipWithApplicant?: string;
   mobileNumber?: string;
   address?: string;
-}
-
-export interface DeclarationDTO {
-  name?: string;
-  amount?: number;
-  description?: string;
-  purpose?: string;
-}
-
-// API DTOs - nested structure for frontend convenience
-export interface PersonalLoanApplicationCreateDTO {
-  customerId: number;
-  tenureMonths: number;
-  requestedLoanAmount: number;
-  employmentType: number;
-  monthlyIncome: number;
-  workExperienceYears: number;
-  loanPurpose: number;
-  documents: DocumentUploadDTO[];
-  personalDetails: PersonalDetailsDTO;
-  addressInformation: AddressInformationDTO;
-  familyEmergencyDetails: FamilyEmergencyDetailsDTO;
-  declaration: DeclarationDTO;
-}
-
-export interface HomeLoanApplicationCreateDTO {
-  customerId: number;
-  tenureMonths: number;
-  requestedLoanAmount: number;
-  propertyType: number;
-  propertyAddress: string;
-  city: string;
-  zipCode: number;
-  ownershipType: number;
-  propertyCost: number;
-  downPayment: number;
-  loanPurpose: number;
-  documents: DocumentUploadDTO[];
-  personalDetails: PersonalDetailsDTO;
-  addressInformation: AddressInformationDTO;
-  familyEmergencyDetails: FamilyEmergencyDetailsDTO;
-  declaration: DeclarationDTO;
-}
-
-export interface VehicleLoanApplicationCreateDTO {
-  customerId: number;
-  tenureMonths: number;
-  requestedLoanAmount: number;
-  vehicleType: number;
-  manufacturer: string;
-  model: string;
-  manufacturingYear: number;
-  onRoadPrice: number;
-  downPayment: number;
-  loanPurposeVehicle: number;
-  documents: DocumentUploadDTO[];
-  personalDetails: PersonalDetailsDTO;
-  addressInformation: AddressInformationDTO;
-  familyEmergencyDetails: FamilyEmergencyDetailsDTO;
-  declaration: DeclarationDTO;
 }

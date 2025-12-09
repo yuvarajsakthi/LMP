@@ -57,7 +57,7 @@ const EligibilityScore: React.FC<EligibilityScoreProps> = ({ score }) => {
   };
 
   return (
-    <Card title="Eligibility Score" extra={<a href="#">Generate Report</a>} style={{ height: '100%' }}>
+    <Card title="Eligibility Score" style={{ height: '100%' }}>
         <div className={styles.gauge}>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>

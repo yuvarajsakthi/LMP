@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Table, Card, Button } from "antd";
-import styles from './ApplicationStatus.module.css';
+import { Table, Card } from "antd";
 import { useAuth } from "../../../context";
-import { useNavigate } from "react-router-dom";
-import { CUSTOMER_ROUTES } from "../../../config";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { fetchApplicationStatus } from "../../../store";
+import { loanApplicationAPI } from "../../../services";
+import styles from './ApplicationStatus.module.css';
 
 interface ApplicationData {
   loanType: string;
@@ -25,146 +22,117 @@ interface ApplicationStatusProps {
 
 const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ data }) => {
   const { token } = useAuth();
-  const navigate = useNavigate();
-
-  const addMonthsToDate = (date: string, monthsToAdd: number): string => {
-    if (date === "-") return date;
-    const newDate = new Date(date);
-    newDate.setMonth(newDate.getMonth() + monthsToAdd);
-    return newDate.toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "2-digit", 
-      year: "numeric"
-    }).replace(/\//g, "-");
-  };
-  const dispatch = useAppDispatch();
-  const applicationStatusFromStore = useAppSelector((state) => state.dashboard.applicationStatus);
   const [applicationData, setApplicationData] = useState<ApplicationData[]>(data || []);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (data) {
       setApplicationData(data);
       return;
     }
-    
-    if (applicationStatusFromStore.length === 0) {
-      dispatch(fetchApplicationStatus());
-    }
-  }, []);
 
-  useEffect(() => {
-    if (!data && applicationStatusFromStore.length > 0) {
-      const formattedData = applicationStatusFromStore.map((item: any) => ({
-        loanType: item.loanType || 'Personal Loan',
-        applicationID: item.applicationId?.toString() || '-',
-        loanAmount: item.amount || 0,
-        interest: '-',
-        startDate: item.appliedDate ? new Date(item.appliedDate).toLocaleDateString("en-IN").replace(/\//g, "-") : "-",
-        endDate: "-",
-        loanTenure: 0,
-        status: item.status || 'Pending',
-        stage: 'Application',
-      }));
-      setApplicationData(formattedData);
-    }
-  }, [applicationStatusFromStore, data]);
+    const fetchApplications = async () => {
+      if (!token?.customerId && !token?.CustomerId) return;
+      
+      setLoading(true);
+      try {
+        const customerId = token.customerId || token.CustomerId;
+        const response = await loanApplicationAPI.getApplicationsByCustomerId(Number(customerId));
+        
+        if (response.success && response.data) {
+          const formattedData = response.data.map((item: any) => ({
+            loanType: item.loanType || 'Personal Loan',
+            applicationID: item.loanApplicationBaseId?.toString() || '',
+            loanAmount: item.requestedAmount || 0,
+            interest: item.interestRate || '-',
+            startDate: item.submissionDate ? new Date(item.submissionDate).toLocaleDateString("en-IN").replace(/\//g, "-") : "-",
+            endDate: "-",
+            loanTenure: item.tenureMonths || 0,
+            status: item.status || 'Pending',
+            stage: 'Application',
+          }));
+          setApplicationData(formattedData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch applications:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchApplications();
+  }, [token, data]);
 
   const columns = [
-    {
-      title: "Loan Type",
-      dataIndex: "loanType",
-      key: "loanType",
-    },
     {
       title: "Application ID",
       dataIndex: "applicationID",
       key: "applicationID",
     },
     {
+      title: "Loan Type",
+      dataIndex: "loanType",
+      key: "loanType",
+    },
+    {
       title: "Loan Amount",
       dataIndex: "loanAmount",
       key: "loanAmount",
+      render: (amount: number) => amount > 0 ? `₹${amount.toLocaleString()}` : '-',
     },
     {
-      title: "Interest",
-      dataIndex: "interest",
-      key: "interest",
-    },
-    {
-      title: "Start Date",
-      dataIndex: "startDate",
-      key: "startDate",
-    },
-    {
-      title: "End Date",
-      dataIndex: "endDate",
-      key: "endDate",
-    },
-    {
-      title: "Loan Tenure",
+      title: "Tenure (Months)",
       dataIndex: "loanTenure",
       key: "loanTenure",
+      render: (tenure: number) => tenure > 0 ? tenure : '-',
     },
     {
-      title: "Stage",
-      dataIndex: "stage",
-      key: "stage",
+      title: "Submission Date",
+      dataIndex: "startDate",
+      key: "startDate",
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (text: string, record: ApplicationData) => {
+      render: (text: string) => {
         let backgroundColor;
-        let textColor;
-        let borderRadius = "22px";
+        let textColor = "white";
+        const borderRadius = "22px";
 
-        if (record.status === "Accept") {
-          backgroundColor = "#6DD7C5";
-        } else if (record.status === "Reject") {
-          backgroundColor = "#F87D7C";
-        } else {
-          backgroundColor = "#FFE171";
-          textColor = "black";
+        switch (text) {
+          case "Approved":
+            backgroundColor = "#52c41a";
+            break;
+          case "Rejected":
+            backgroundColor = "#ff4d4f";
+            break;
+          case "Disbursed":
+            backgroundColor = "#722ed1";
+            break;
+          case "Submitted":
+            backgroundColor = "#faad14";
+            break;
+          default:
+            backgroundColor = "#1890ff";
         }
 
-        if (record.status === "Draft") {
-          return (
-            <Button
-              style={{
-                backgroundColor,
-                color: textColor,
-                borderRadius,
-                border: "none",
-              }}
-              onClick={() => navigate(CUSTOMER_ROUTES.LOAN_APPLICATION)}
-            >
-              {text}
-            </Button>
-          );
-        } else {
-          const cellStyle = {
-            backgroundColor,
-            color: textColor,
-            padding: "5px",
-            borderRadius,
-          };
-          return <div style={cellStyle}>{text}</div>;
-        }
+        return <div style={{ backgroundColor, color: textColor, padding: "5px 10px", borderRadius, textAlign: "center" }}>{text}</div>;
       },
     },
   ];
 
   return (
-    <Card title="Application status" style={{ height: '100%' }}>
+    <Card title="Application status" className={styles.box4}>
       <Table
-          dataSource={applicationData}
-          columns={columns}
-          pagination={{ pageSize: 5 }}
-          scroll={{ x: 'max-content' }}
-          size="middle"
-          rowKey={(record) => record.applicationID || Math.random().toString()}
-        />
+        dataSource={applicationData}
+        columns={columns}
+        pagination={{ pageSize: 5 }}
+        scroll={{ x: 'max-content' }}
+        size="middle"
+        loading={loading}
+        rowKey={(record) => record.applicationID}
+      />
     </Card>
   );
 };

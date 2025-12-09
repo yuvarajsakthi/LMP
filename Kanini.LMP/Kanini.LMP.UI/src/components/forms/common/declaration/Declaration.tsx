@@ -23,7 +23,7 @@ const Declaration: React.FC<DeclarationProps> = ({
 }) => {
   const navigate = useNavigate();
   const { token } = useAuth();
-  const { state, dispatch } = useLoanApplication();
+  const { state } = useLoanApplication();
   const { submitPersonalLoan, submitHomeLoan, submitVehicleLoan, loading } = useLoanSubmission();
   
   const [purpose, setPurpose] = useState('');
@@ -51,17 +51,7 @@ const Declaration: React.FC<DeclarationProps> = ({
       return;
     }
 
-    const declarationData = {
-      name: fullname,
-      amount: expectedAmount,
-      description: `Loan application for ${purpose}`,
-      purpose: purpose
-    };
 
-    dispatch({
-      type: 'UPDATE_FORM_DATA',
-      payload: { section: 'declaration', data: declarationData }
-    });
 
     try {
       const customerId = parseInt(token?.customerId || token?.CustomerId || '0');
@@ -74,56 +64,69 @@ const Declaration: React.FC<DeclarationProps> = ({
       const { loanType, formData } = state;
 
       if (loanType === 'personal') {
-        await submitPersonalLoan({
-          customerId,
-          tenureMonths: formData.loanDetails.tenureMonths!,
-          requestedLoanAmount: formData.loanDetails.requestedLoanAmount!,
-          employmentType: formData.loanDetails.employmentType!,
-          monthlyIncome: formData.loanDetails.monthlyIncome!,
-          workExperienceYears: formData.loanDetails.workExperienceYears!,
-          loanPurpose: formData.loanDetails.loanPurpose!,
-          documents: formData.documents || [],
-          personalDetails: formData.personalDetails,
-          addressInformation: formData.addressInformation,
-          familyEmergencyDetails: formData.familyEmergencyDetails,
-          declaration: declarationData
+        await submitPersonalLoan(customerId, {
+          RequestedAmount: formData.loanDetails.requestedLoanAmount!,
+          TenureMonths: formData.loanDetails.tenureMonths!,
+          EmploymentType: formData.loanDetails.employmentType!,
+          MonthlyIncome: formData.loanDetails.monthlyIncome!,
+          WorkExperienceYears: formData.loanDetails.workExperienceYears!,
+          LoanPurpose: formData.loanDetails.loanPurpose!,
+          District: formData.addressInformation?.district!,
+          State: formData.addressInformation?.state!,
+          ZipCode: parseInt(formData.addressInformation?.zipCode || '0'),
+          PresentAddress: formData.addressInformation?.presentAddress!,
+          PermanentAddress: formData.addressInformation?.permanentAddress!,
+          RelationFullName: formData.familyEmergencyDetails?.fullName!,
+          RelationshipWithApplicant: formData.familyEmergencyDetails?.relationshipWithApplicant!,
+          MobileNumber: parseInt(formData.familyEmergencyDetails?.mobileNumber || '0'),
+          RelationAddress: formData.familyEmergencyDetails?.address!,
+          SignatureImage: formData.personalDetails?.signatureImage,
+          DocumentUpload: formData.personalDetails?.idProofImage
         });
       } else if (loanType === 'home') {
-        await submitHomeLoan({
-          customerId,
-          tenureMonths: formData.loanDetails.tenureMonths!,
-          requestedLoanAmount: formData.loanDetails.requestedLoanAmount!,
-          propertyType: formData.loanDetails.propertyType!,
-          propertyAddress: formData.loanDetails.propertyAddress!,
-          city: formData.loanDetails.city!,
-          zipCode: formData.loanDetails.zipCode!,
-          ownershipType: formData.loanDetails.ownershipType!,
-          propertyCost: formData.loanDetails.propertyCost!,
-          downPayment: formData.loanDetails.downPayment!,
-          loanPurpose: formData.loanDetails.loanPurpose!,
-          documents: formData.documents || [],
-          personalDetails: formData.personalDetails,
-          addressInformation: formData.addressInformation,
-          familyEmergencyDetails: formData.familyEmergencyDetails,
-          declaration: declarationData
+        await submitHomeLoan(customerId, {
+          RequestedAmount: formData.loanDetails.requestedLoanAmount!,
+          TenureMonths: formData.loanDetails.tenureMonths!,
+          PropertyType: formData.loanDetails.propertyType!,
+          PropertyAddress: formData.loanDetails.propertyAddress!,
+          City: formData.loanDetails.city!,
+          OwnershipType: formData.loanDetails.ownershipType!,
+          PropertyCost: formData.loanDetails.propertyCost!,
+          DownPayment: formData.loanDetails.downPayment!,
+          LoanPurpose: formData.loanDetails.loanPurpose!,
+          District: formData.addressInformation?.district!,
+          State: formData.addressInformation?.state!,
+          ZipCode: parseInt(formData.addressInformation?.zipCode || '0'),
+          PresentAddress: formData.addressInformation?.presentAddress!,
+          PermanentAddress: formData.addressInformation?.permanentAddress!,
+          RelationFullName: formData.familyEmergencyDetails?.fullName!,
+          RelationshipWithApplicant: formData.familyEmergencyDetails?.relationshipWithApplicant!,
+          MobileNumber: parseInt(formData.familyEmergencyDetails?.mobileNumber || '0'),
+          RelationAddress: formData.familyEmergencyDetails?.address!,
+          SignatureImage: formData.personalDetails?.signatureImage
         });
       } else if (loanType === 'vehicle') {
-        await submitVehicleLoan({
-          customerId,
-          tenureMonths: formData.loanDetails.tenureMonths!,
-          requestedLoanAmount: formData.loanDetails.requestedLoanAmount!,
-          vehicleType: formData.loanDetails.vehicleType!,
-          manufacturer: formData.loanDetails.manufacturer!,
-          model: formData.loanDetails.model!,
-          manufacturingYear: formData.loanDetails.manufacturingYear!,
-          onRoadPrice: formData.loanDetails.onRoadPrice!,
-          downPayment: formData.loanDetails.downPayment!,
-          loanPurposeVehicle: formData.loanDetails.loanPurposeVehicle!,
-          documents: formData.documents || [],
-          personalDetails: formData.personalDetails,
-          addressInformation: formData.addressInformation,
-          familyEmergencyDetails: formData.familyEmergencyDetails,
-          declaration: declarationData
+        await submitVehicleLoan(customerId, {
+          RequestedAmount: formData.loanDetails.requestedLoanAmount!,
+          TenureMonths: formData.loanDetails.tenureMonths!,
+          VehicleType: formData.loanDetails.vehicleType!,
+          Manufacturer: formData.loanDetails.manufacturer!,
+          Model: formData.loanDetails.model!,
+          ManufacturingYear: formData.loanDetails.manufacturingYear!,
+          OnRoadPrice: formData.loanDetails.onRoadPrice!,
+          DownPayment: formData.loanDetails.downPayment!,
+          LoanPurposeVehicle: formData.loanDetails.loanPurposeVehicle!,
+          District: formData.addressInformation?.district!,
+          State: formData.addressInformation?.state!,
+          ZipCode: parseInt(formData.addressInformation?.zipCode || '0'),
+          PresentAddress: formData.addressInformation?.presentAddress!,
+          PermanentAddress: formData.addressInformation?.permanentAddress!,
+          RelationFullName: formData.familyEmergencyDetails?.fullName!,
+          RelationshipWithApplicant: formData.familyEmergencyDetails?.relationshipWithApplicant!,
+          MobileNumber: parseInt(formData.familyEmergencyDetails?.mobileNumber || '0'),
+          RelationAddress: formData.familyEmergencyDetails?.address!,
+          SignatureImage: formData.personalDetails?.signatureImage,
+          DocumentUpload: formData.personalDetails?.idProofImage
         });
       }
 
