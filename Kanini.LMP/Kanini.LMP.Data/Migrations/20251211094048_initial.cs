@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Kanini.LMP.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -78,8 +78,8 @@ namespace Kanini.LMP.Data.Migrations
                     ProfileImage = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     HomeOwnershipStatus = table.Column<int>(type: "int", nullable: true),
-                    AadhaarNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PANNumber = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    AadhaarNumber = table.Column<string>(type: "nvarchar(12)", maxLength: 12, nullable: false),
+                    PANNumber = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -126,12 +126,25 @@ namespace Kanini.LMP.Data.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CustomerId = table.Column<int>(type: "int", nullable: false),
                     LoanProductType = table.Column<int>(type: "int", nullable: false),
+                    RequestedAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TenureMonths = table.Column<int>(type: "int", nullable: false),
+                    AppliedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    MonthlyInstallment = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    DocumentName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    DocumentData = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    SignatureImage = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    RelationFullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    RelationshipWithApplicant = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    MobileNumber = table.Column<int>(type: "int", nullable: false),
+                    RelationAddress = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                    PresentAddress = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                    PermanentAddress = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                    District = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    State = table.Column<string>(type: "varchar(50)", nullable: false),
+                    ZipCode = table.Column<int>(type: "int", maxLength: 10, nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     SubmissionDate = table.Column<DateOnly>(type: "date", nullable: false),
                     ApprovedDate = table.Column<DateOnly>(type: "date", nullable: true),
-                    InterestRate = table.Column<decimal>(type: "decimal(5,2)", nullable: true),
-                    TenureMonths = table.Column<int>(type: "int", nullable: false),
-                    RequestedLoanAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     RejectionReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
@@ -144,86 +157,6 @@ namespace Kanini.LMP.Data.Migrations
                         principalTable: "Customers",
                         principalColumn: "CustomerId",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AddressInformations",
-                columns: table => new
-                {
-                    AddressInformationId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    LoanApplicationBaseId = table.Column<int>(type: "int", nullable: false),
-                    PresentAddress = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
-                    PermanentAddress = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
-                    District = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    State = table.Column<string>(type: "varchar(50)", nullable: false),
-                    ZipCode = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    EmailId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    MobileNumber1 = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: false),
-                    MobileNumber2 = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AddressInformations", x => x.AddressInformationId);
-                    table.ForeignKey(
-                        name: "FK_AddressInformations_LoanApplicationBases_LoanApplicationBaseId",
-                        column: x => x.LoanApplicationBaseId,
-                        principalTable: "LoanApplicationBases",
-                        principalColumn: "LoanApplicationBaseId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Declarations",
-                columns: table => new
-                {
-                    DeclarationId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    LoanApplicationBaseId = table.Column<int>(type: "int", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    Purpose = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Declarations", x => x.DeclarationId);
-                    table.ForeignKey(
-                        name: "FK_Declarations_LoanApplicationBases_LoanApplicationBaseId",
-                        column: x => x.LoanApplicationBaseId,
-                        principalTable: "LoanApplicationBases",
-                        principalColumn: "LoanApplicationBaseId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "DocumentUploads",
-                columns: table => new
-                {
-                    DocumentId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    LoanApplicationBaseId = table.Column<int>(type: "int", nullable: false),
-                    CustomerId = table.Column<int>(type: "int", nullable: false),
-                    DocumentName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    DocumentType = table.Column<int>(type: "int", nullable: false),
-                    DocumentData = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
-                    UploadedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DocumentUploads", x => x.DocumentId);
-                    table.ForeignKey(
-                        name: "FK_DocumentUploads_Customers_CustomerId",
-                        column: x => x.CustomerId,
-                        principalTable: "Customers",
-                        principalColumn: "CustomerId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_DocumentUploads_LoanApplicationBases_LoanApplicationBaseId",
-                        column: x => x.LoanApplicationBaseId,
-                        principalTable: "LoanApplicationBases",
-                        principalColumn: "LoanApplicationBaseId",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -241,7 +174,10 @@ namespace Kanini.LMP.Data.Migrations
                     TotalInterestPaid = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     TotalRepaymentAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    IsCompleted = table.Column<bool>(type: "bit", nullable: false)
+                    IsCompleted = table.Column<bool>(type: "bit", nullable: false),
+                    PaidInstallments = table.Column<int>(type: "int", nullable: false),
+                    LastPaymentDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    NextPaymentDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -261,30 +197,6 @@ namespace Kanini.LMP.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "FamilyEmergencyDetails",
-                columns: table => new
-                {
-                    FamilyEmergencyDetailsId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    LoanApplicationBaseId = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    RelationshipWithApplicant = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    MobileNumber = table.Column<int>(type: "int", nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_FamilyEmergencyDetails", x => x.FamilyEmergencyDetailsId);
-                    table.ForeignKey(
-                        name: "FK_FamilyEmergencyDetails_LoanApplicationBases_LoanApplicationBaseId",
-                        column: x => x.LoanApplicationBaseId,
-                        principalTable: "LoanApplicationBases",
-                        principalColumn: "LoanApplicationBaseId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "HomeLoanApplications",
                 columns: table => new
                 {
@@ -292,7 +204,6 @@ namespace Kanini.LMP.Data.Migrations
                     PropertyType = table.Column<int>(type: "int", nullable: false),
                     PropertyAddress = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
                     City = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    ZipCode = table.Column<int>(type: "int", nullable: false),
                     OwnershipType = table.Column<int>(type: "int", nullable: false),
                     PropertyCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DownPayment = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -303,65 +214,6 @@ namespace Kanini.LMP.Data.Migrations
                     table.PrimaryKey("PK_HomeLoanApplications", x => x.LoanApplicationBaseId);
                     table.ForeignKey(
                         name: "FK_HomeLoanApplications_LoanApplicationBases_LoanApplicationBaseId",
-                        column: x => x.LoanApplicationBaseId,
-                        principalTable: "LoanApplicationBases",
-                        principalColumn: "LoanApplicationBaseId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "LoanDetails",
-                columns: table => new
-                {
-                    LoanDetailsId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    LoanApplicationBaseId = table.Column<int>(type: "int", nullable: false),
-                    LoanApplicationId = table.Column<int>(type: "int", nullable: false),
-                    RequestedAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TenureMonths = table.Column<int>(type: "int", nullable: false),
-                    AppliedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    MonthlyInstallment = table.Column<decimal>(type: "decimal(18,2)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_LoanDetails", x => x.LoanDetailsId);
-                    table.ForeignKey(
-                        name: "FK_LoanDetails_LoanApplicationBases_LoanApplicationBaseId",
-                        column: x => x.LoanApplicationBaseId,
-                        principalTable: "LoanApplicationBases",
-                        principalColumn: "LoanApplicationBaseId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PersonalDetails",
-                columns: table => new
-                {
-                    PersonalDetailsId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    LoanApplicationBaseId = table.Column<int>(type: "int", nullable: false),
-                    CustomerId = table.Column<int>(type: "int", nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    DateOfBirth = table.Column<DateOnly>(type: "date", nullable: false),
-                    DistrictOfBirth = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    PANNumber = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    EducationQualification = table.Column<int>(type: "int", maxLength: 100, nullable: false),
-                    ResidentialStatus = table.Column<int>(type: "int", maxLength: 50, nullable: false),
-                    Gender = table.Column<int>(type: "int", nullable: false),
-                    SignatureImage = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
-                    IDProofImage = table.Column<byte[]>(type: "varbinary(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PersonalDetails", x => x.PersonalDetailsId);
-                    table.ForeignKey(
-                        name: "FK_PersonalDetails_Customers_CustomerId",
-                        column: x => x.CustomerId,
-                        principalTable: "Customers",
-                        principalColumn: "CustomerId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_PersonalDetails_LoanApplicationBases_LoanApplicationBaseId",
                         column: x => x.LoanApplicationBaseId,
                         principalTable: "LoanApplicationBases",
                         principalColumn: "LoanApplicationBaseId",
@@ -429,32 +281,9 @@ namespace Kanini.LMP.Data.Migrations
                 values: new object[] { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "manager@gmail.com", "Manager One", "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzOxJ6.Esi", 1, 1, null });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AddressInformations_LoanApplicationBaseId",
-                table: "AddressInformations",
-                column: "LoanApplicationBaseId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Customers_UserId",
                 table: "Customers",
                 column: "UserId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Declarations_LoanApplicationBaseId",
-                table: "Declarations",
-                column: "LoanApplicationBaseId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DocumentUploads_CustomerId",
-                table: "DocumentUploads",
-                column: "CustomerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DocumentUploads_LoanApplicationBaseId",
-                table: "DocumentUploads",
-                column: "LoanApplicationBaseId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -468,21 +297,9 @@ namespace Kanini.LMP.Data.Migrations
                 column: "LoanApplicationBaseId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FamilyEmergencyDetails_LoanApplicationBaseId",
-                table: "FamilyEmergencyDetails",
-                column: "LoanApplicationBaseId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_LoanApplicationBases_CustomerId",
                 table: "LoanApplicationBases",
                 column: "CustomerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_LoanDetails_LoanApplicationBaseId",
-                table: "LoanDetails",
-                column: "LoanApplicationBaseId",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_LoanProducts_LoanType",
@@ -499,36 +316,13 @@ namespace Kanini.LMP.Data.Migrations
                 name: "IX_Notifications_UserId1",
                 table: "Notifications",
                 column: "UserId1");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PersonalDetails_CustomerId",
-                table: "PersonalDetails",
-                column: "CustomerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PersonalDetails_LoanApplicationBaseId",
-                table: "PersonalDetails",
-                column: "LoanApplicationBaseId",
-                unique: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AddressInformations");
-
-            migrationBuilder.DropTable(
-                name: "Declarations");
-
-            migrationBuilder.DropTable(
-                name: "DocumentUploads");
-
-            migrationBuilder.DropTable(
                 name: "EMIPlans");
-
-            migrationBuilder.DropTable(
-                name: "FamilyEmergencyDetails");
 
             migrationBuilder.DropTable(
                 name: "Faqs");
@@ -537,16 +331,10 @@ namespace Kanini.LMP.Data.Migrations
                 name: "HomeLoanApplications");
 
             migrationBuilder.DropTable(
-                name: "LoanDetails");
-
-            migrationBuilder.DropTable(
                 name: "LoanProducts");
 
             migrationBuilder.DropTable(
                 name: "Notifications");
-
-            migrationBuilder.DropTable(
-                name: "PersonalDetails");
 
             migrationBuilder.DropTable(
                 name: "PersonalLoanApplications");
