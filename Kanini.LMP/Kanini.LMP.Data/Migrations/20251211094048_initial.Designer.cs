@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Kanini.LMP.Data.Migrations
 {
     [DbContext(typeof(LmpDbContext))]
-    [Migration("20251208195858_FixCustomerForeignKey")]
-    partial class FixCustomerForeignKey
+    [Migration("20251211094048_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
